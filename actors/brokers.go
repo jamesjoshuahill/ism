@@ -9,18 +9,15 @@ type BrokerRepository interface {
 	Register(*osbapi.Broker) error
 }
 
-// TODO: godoc
 type BrokersActor struct {
 	Repository BrokerRepository
 }
 
-// TODO: godoc
 func (a *BrokersActor) GetBrokers() ([]*osbapi.Broker, error) {
 	return a.Repository.FindAll()
 }
 
 //TODO: Make names consistent
-// TODO: godoc
 func (a *BrokersActor) Register(broker *osbapi.Broker) error {
 	return a.Repository.Register(broker)
 }
