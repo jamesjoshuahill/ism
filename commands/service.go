@@ -19,7 +19,6 @@ type UI interface {
 	DisplayTable(table [][]string)
 }
 
-// TODO: Rename to Service
 type ServiceCommand struct {
 	ServiceListCommand ServiceListCommand `command:"list" long-description:"List the services that are available in the marketplace."`
 }
@@ -29,7 +28,6 @@ type ServiceListCommand struct {
 	ServiceListUsecase ServiceListUsecase
 }
 
-// TODO: Rename to ServiceList
 func (cmd *ServiceListCommand) Execute([]string) error {
 	services, err := cmd.ServiceListUsecase.GetServices()
 	if err != nil {
