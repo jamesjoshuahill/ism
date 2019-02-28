@@ -30,8 +30,8 @@ var _ = Describe("KubeBrokerRepo", func() {
 			Spec: v1alpha1.BrokerSpec{
 				Name:     "broker-1",
 				URL:      "http://example.org/broker",
-				Username: "john",
-				Password: "welcome",
+				Username: "admin",
+				Password: "password",
 			},
 		}
 
