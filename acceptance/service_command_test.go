@@ -1,9 +1,7 @@
 package acceptance
 
 import (
-	"os"
 	"os/exec"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -38,10 +36,10 @@ var _ = Describe("CLI service command", func() {
 		It("displays help and exits 0", func() {
 			Eventually(session).Should(Exit(0))
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`sm \[OPTIONS\] service <list>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] service <list>`))
 			Eventually(session).Should(Say("\n"))
 			Eventually(session).Should(Say("The service command group lets you list the available services in the"))
-			Eventually(session).Should(Say("marketplace\\."))
+			Eventually(session).Should(Say("marketplace"))
 		})
 	})
 
@@ -58,13 +56,12 @@ var _ = Describe("CLI service command", func() {
 			It("displays help and exits 0", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("Usage:"))
-				Eventually(session).Should(Say(`sm \[OPTIONS\] service list`))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] service list`))
 				Eventually(session).Should(Say("\n"))
-				Eventually(session).Should(Say("List the services that are available in the marketplace\\."))
+				Eventually(session).Should(Say("List the services that are available in the marketplace"))
 			})
 		})
 
-		//TODO: -randomizeAllSpecs causes this test to flake due to shared k8s state
 		When("0 brokers are registered", func() {
 			It("displays 'No services found.' and exits 0", func() {
 				Eventually(session).Should(Exit(0))
@@ -72,29 +69,9 @@ var _ = Describe("CLI service command", func() {
 			})
 		})
 
-		//TODO: -randomizeAllSpecs causes this test to flake due to shared k8s state
 		When("1 broker is registered", func() {
 			BeforeEach(func() {
-				brokerURL := os.Getenv("BROKER_URL")
-				brokerUsername := os.Getenv("BROKER_USERNAME")
-				brokerPassword := os.Getenv("BROKER_PASSWORD")
-
-				Expect(brokerURL).NotTo(Equal(""))
-				Expect(brokerUsername).NotTo(Equal(""))
-				Expect(brokerPassword).NotTo(Equal(""))
-
-				registerArgs := []string{"broker", "register",
-					"--name", "test-broker",
-					"--url", brokerURL,
-					"--username", brokerUsername,
-					"--password", brokerPassword}
-				command := exec.Command(pathToCLI, registerArgs...)
-				registerSession, err := Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
-				Eventually(registerSession).Should(Exit(0))
-
-				//TODO: Temporarily sleep until #164240938 is done.
-				time.Sleep(3 * time.Second)
+				registerBroker("test-broker")
 			})
 
 			AfterEach(func() {

@@ -62,7 +62,7 @@ clean:
 
 # Cannot yet -randomizeAllSpecs the acceptance tests
 acceptance-tests:
-	ginkgo -r -p -randomizeSuites acceptance
+	ginkgo -r acceptance
 
 # skip integration/acceptance tests
 unit-tests:

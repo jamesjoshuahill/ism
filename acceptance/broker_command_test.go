@@ -36,9 +36,9 @@ var _ = Describe("CLI broker command", func() {
 		It("displays help and exits 0", func() {
 			Eventually(session).Should(Exit(0))
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`sm \[OPTIONS\] broker <register>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] broker <list | register>`))
 			Eventually(session).Should(Say("\n"))
-			Eventually(session).Should(Say("The broker command group lets you register, update and deregister service"))
+			Eventually(session).Should(Say("The broker command group lets you register, list, update and deregister service"))
 			Eventually(session).Should(Say("brokers from the marketplace"))
 		})
 	})
@@ -74,7 +74,7 @@ var _ = Describe("CLI broker command", func() {
 			It("displays help and exits 0", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("Usage:"))
-				Eventually(session).Should(Say(`sm \[OPTIONS\] broker register \[register-OPTIONS\]`))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] broker register \[register-OPTIONS\]`))
 				Eventually(session).Should(Say("\n"))
 				Eventually(session).Should(Say("Register a service broker into the marketplace"))
 			})
@@ -84,6 +84,51 @@ var _ = Describe("CLI broker command", func() {
 			It("displays an informative message and exits 0", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("the required flags `--name', `--password', `--url' and `--username' were not specified"))
+			})
+		})
+	})
+
+	Describe("list sub command", func() {
+		BeforeEach(func() {
+			args = append(args, "list")
+		})
+
+		When("--help is passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--help")
+			})
+
+			It("displays help and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Usage:"))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] broker list`))
+				Eventually(session).Should(Say("\n"))
+				Eventually(session).Should(Say("Lists the service brokers in the marketplace"))
+			})
+		})
+
+		When("0 brokers are registered", func() {
+			It("displays 'No brokers found.' and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("No brokers found\\."))
+			})
+		})
+
+		When("1 broker is registered", func() {
+			BeforeEach(func() {
+				registerBroker("test-broker")
+			})
+
+			AfterEach(func() {
+				deleteBrokers("test-broker")
+			})
+
+			It("displays the broker", func() {
+				timeRegex := `\d{4,}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}`
+
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("NAME\\s+URL\\s+CREATED AT"))
+				Eventually(session).Should(Say("test-broker\\s+" + brokerURL + "\\s+" + timeRegex))
 			})
 		})
 	})

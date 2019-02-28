@@ -19,7 +19,7 @@ var _ = Describe("CLI", func() {
 			Eventually(session).Should(Exit(0))
 
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`sm \[OPTIONS\] <broker | services>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] <broker | services>`))
 		})
 	})
 
@@ -32,7 +32,7 @@ var _ = Describe("CLI", func() {
 			Eventually(session).Should(Exit(0))
 
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`sm \[OPTIONS\] <broker | services>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] <broker | services>`))
 		})
 	})
 })

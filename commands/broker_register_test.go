@@ -17,7 +17,7 @@ var _ = Describe("Broker Register Command", func() {
 		fakeUI              *commandsfakes.FakeUI
 		fakeBrokerRegistrar *commandsfakes.FakeBrokerRegistrar
 
-		registerCommand RegisterCommand
+		registerCommand BrokerRegisterCommand
 
 		executeErr error
 	)
@@ -26,7 +26,7 @@ var _ = Describe("Broker Register Command", func() {
 		fakeUI = &commandsfakes.FakeUI{}
 		fakeBrokerRegistrar = &commandsfakes.FakeBrokerRegistrar{}
 
-		registerCommand = RegisterCommand{
+		registerCommand = BrokerRegisterCommand{
 			UI:              fakeUI,
 			BrokerRegistrar: fakeBrokerRegistrar,
 		}

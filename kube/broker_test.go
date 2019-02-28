@@ -93,8 +93,9 @@ var _ = Describe("Broker", func() {
 
 	Describe("FindAll", func() {
 		var (
-			brokers []*osbapi.Broker
-			err     error
+			brokers         []*osbapi.Broker
+			brokerCreatedAt string
+			err             error
 		)
 
 		BeforeEach(func() {
@@ -112,6 +113,7 @@ var _ = Describe("Broker", func() {
 			}
 
 			Expect(kubeClient.Create(context.TODO(), brokerResource)).To(Succeed())
+			brokerCreatedAt = createdAtForBroker(kubeClient, brokerResource)
 		})
 
 		JustBeforeEach(func() {
@@ -126,14 +128,25 @@ var _ = Describe("Broker", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(*brokers[0]).To(MatchFields(IgnoreExtras, Fields{
-				"Name":     Equal("broker-1"),
-				"URL":      Equal("broker-1-url"),
-				"Username": Equal("broker-1-username"),
-				"Password": Equal("broker-1-password"),
+				"CreatedAt": Equal(brokerCreatedAt),
+				"Name":      Equal("broker-1"),
+				"URL":       Equal("broker-1-url"),
+				"Username":  Equal("broker-1-username"),
+				"Password":  Equal("broker-1-password"),
 			}))
 		})
 	})
 })
+
+func createdAtForBroker(kubeClient client.Client, brokerResource *v1alpha1.Broker) string {
+	b := &v1alpha1.Broker{}
+	namespacedName := types.NamespacedName{Name: brokerResource.Name, Namespace: brokerResource.Namespace}
+
+	Expect(kubeClient.Get(context.TODO(), namespacedName, b)).To(Succeed())
+
+	time := b.ObjectMeta.CreationTimestamp.String()
+	return time
+}
 
 func deleteBrokers(kubeClient client.Client, brokerNames ...string) {
 	for _, b := range brokerNames {

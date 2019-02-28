@@ -46,13 +46,13 @@ func (cmd *ServiceListCommand) Execute([]string) error {
 		return nil
 	}
 
-	data := buildTableData(services)
-	cmd.UI.DisplayTable(data)
+	servicesTable := buildServiceTableData(services)
+	cmd.UI.DisplayTable(servicesTable)
 
 	return nil
 }
 
-func buildTableData(services []*usecases.Service) [][]string {
+func buildServiceTableData(services []*usecases.Service) [][]string {
 	headers := []string{"SERVICE", "PLANS", "BROKER", "DESCRIPTION"}
 	data := [][]string{headers}
 

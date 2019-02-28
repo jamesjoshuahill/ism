@@ -51,9 +51,13 @@ func main() {
 
 	rootCommand := commands.RootCommand{
 		BrokerCommand: commands.BrokerCommand{
-			RegisterCommand: commands.RegisterCommand{
+			BrokerRegisterCommand: commands.BrokerRegisterCommand{
 				UI:              UI,
 				BrokerRegistrar: brokersActor,
+			},
+			BrokerListCommand: commands.BrokerListCommand{
+				UI:            UI,
+				BrokerFetcher: brokersActor,
 			},
 		},
 		ServiceCommand: commands.ServiceCommand{

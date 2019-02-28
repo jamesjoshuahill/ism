@@ -1,11 +1,12 @@
 package osbapi
 
 type Broker struct {
-	ID       string
-	Name     string
-	URL      string
-	Username string
-	Password string
+	ID        string
+	CreatedAt string
+	Name      string
+	URL       string
+	Username  string
+	Password  string
 }
 
 type Service struct {

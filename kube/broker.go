@@ -24,11 +24,12 @@ func (r *Broker) FindAll() ([]*osbapi.Broker, error) {
 	brokers := []*osbapi.Broker{}
 	for _, b := range list.Items {
 		brokers = append(brokers, &osbapi.Broker{
-			ID:       string(b.UID),
-			Name:     b.Spec.Name,
-			URL:      b.Spec.URL,
-			Username: b.Spec.Username,
-			Password: b.Spec.Password,
+			ID:        string(b.UID),
+			Name:      b.Spec.Name,
+			URL:       b.Spec.URL,
+			Username:  b.Spec.Username,
+			Password:  b.Spec.Password,
+			CreatedAt: b.ObjectMeta.CreationTimestamp.String(),
 		})
 	}
 

@@ -2,6 +2,7 @@ package acceptance
 
 import (
 	"context"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
@@ -26,6 +27,9 @@ var (
 	kubeClient        client.Client
 	controllerSession *Session
 	testEnv           *envtest.Environment
+	brokerURL         = os.Getenv("BROKER_URL")
+	brokerUsername    = os.Getenv("BROKER_USERNAME")
+	brokerPassword    = os.Getenv("BROKER_PASSWORD")
 )
 
 func TestAcceptance(t *testing.T) {
@@ -43,6 +47,10 @@ func TestAcceptance(t *testing.T) {
 
 		return []byte(pathToCLI)
 	}, func(rawPathToCLI []byte) {
+		Expect(brokerURL).NotTo(BeEmpty())
+		Expect(brokerUsername).NotTo(BeEmpty())
+		Expect(brokerPassword).NotTo(BeEmpty())
+
 		pathToCLI = string(rawPathToCLI)
 		testEnv = &envtest.Environment{
 			UseExistingCluster: true,
@@ -97,6 +105,21 @@ func ensureBrokerExists(brokerName string) {
 
 	fetched := &v1alpha1.Broker{}
 	Expect(kubeClient.Get(context.TODO(), key, fetched)).To(Succeed())
+}
+
+func registerBroker(brokerName string) {
+	registerArgs := []string{"broker", "register",
+		"--name", brokerName,
+		"--url", brokerURL,
+		"--username", brokerUsername,
+		"--password", brokerPassword}
+	command := exec.Command(pathToCLI, registerArgs...)
+	registerSession, err := Start(command, GinkgoWriter, GinkgoWriter)
+	Expect(err).NotTo(HaveOccurred())
+	Eventually(registerSession).Should(Exit(0))
+
+	//TODO: Temporarily sleep until #164240938 is done.
+	time.Sleep(3 * time.Second)
 }
 
 func deleteBrokers(brokerNames ...string) {
