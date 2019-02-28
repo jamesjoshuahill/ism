@@ -8,7 +8,7 @@ import (
 	usecases "github.com/pivotal-cf/ism/usecases"
 )
 
-type FakePlansActor struct {
+type FakePlanFetcher struct {
 	GetPlansStub        func(string) ([]*osbapi.Plan, error)
 	getPlansMutex       sync.RWMutex
 	getPlansArgsForCall []struct {
@@ -26,7 +26,7 @@ type FakePlansActor struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakePlansActor) GetPlans(arg1 string) ([]*osbapi.Plan, error) {
+func (fake *FakePlanFetcher) GetPlans(arg1 string) ([]*osbapi.Plan, error) {
 	fake.getPlansMutex.Lock()
 	ret, specificReturn := fake.getPlansReturnsOnCall[len(fake.getPlansArgsForCall)]
 	fake.getPlansArgsForCall = append(fake.getPlansArgsForCall, struct {
@@ -44,26 +44,26 @@ func (fake *FakePlansActor) GetPlans(arg1 string) ([]*osbapi.Plan, error) {
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakePlansActor) GetPlansCallCount() int {
+func (fake *FakePlanFetcher) GetPlansCallCount() int {
 	fake.getPlansMutex.RLock()
 	defer fake.getPlansMutex.RUnlock()
 	return len(fake.getPlansArgsForCall)
 }
 
-func (fake *FakePlansActor) GetPlansCalls(stub func(string) ([]*osbapi.Plan, error)) {
+func (fake *FakePlanFetcher) GetPlansCalls(stub func(string) ([]*osbapi.Plan, error)) {
 	fake.getPlansMutex.Lock()
 	defer fake.getPlansMutex.Unlock()
 	fake.GetPlansStub = stub
 }
 
-func (fake *FakePlansActor) GetPlansArgsForCall(i int) string {
+func (fake *FakePlanFetcher) GetPlansArgsForCall(i int) string {
 	fake.getPlansMutex.RLock()
 	defer fake.getPlansMutex.RUnlock()
 	argsForCall := fake.getPlansArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakePlansActor) GetPlansReturns(result1 []*osbapi.Plan, result2 error) {
+func (fake *FakePlanFetcher) GetPlansReturns(result1 []*osbapi.Plan, result2 error) {
 	fake.getPlansMutex.Lock()
 	defer fake.getPlansMutex.Unlock()
 	fake.GetPlansStub = nil
@@ -73,7 +73,7 @@ func (fake *FakePlansActor) GetPlansReturns(result1 []*osbapi.Plan, result2 erro
 	}{result1, result2}
 }
 
-func (fake *FakePlansActor) GetPlansReturnsOnCall(i int, result1 []*osbapi.Plan, result2 error) {
+func (fake *FakePlanFetcher) GetPlansReturnsOnCall(i int, result1 []*osbapi.Plan, result2 error) {
 	fake.getPlansMutex.Lock()
 	defer fake.getPlansMutex.Unlock()
 	fake.GetPlansStub = nil
@@ -89,7 +89,7 @@ func (fake *FakePlansActor) GetPlansReturnsOnCall(i int, result1 []*osbapi.Plan,
 	}{result1, result2}
 }
 
-func (fake *FakePlansActor) Invocations() map[string][][]interface{} {
+func (fake *FakePlanFetcher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.getPlansMutex.RLock()
@@ -101,7 +101,7 @@ func (fake *FakePlansActor) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakePlansActor) recordInvocation(key string, args []interface{}) {
+func (fake *FakePlanFetcher) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -113,4 +113,4 @@ func (fake *FakePlansActor) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ usecases.PlansActor = new(FakePlansActor)
+var _ usecases.PlanFetcher = new(FakePlanFetcher)

@@ -44,9 +44,9 @@ func main() {
 	}
 
 	serviceListUsecase := &usecases.ServiceListUsecase{
-		BrokersActor:  brokersActor,
-		ServicesActor: servicesActor,
-		PlansActor:    plansActor,
+		BrokerFetcher:  brokersActor,
+		ServiceFetcher: servicesActor,
+		PlanFetcher:    plansActor,
 	}
 
 	rootCommand := commands.RootCommand{

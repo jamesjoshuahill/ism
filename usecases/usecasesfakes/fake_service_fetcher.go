@@ -8,7 +8,7 @@ import (
 	usecases "github.com/pivotal-cf/ism/usecases"
 )
 
-type FakeServicesActor struct {
+type FakeServiceFetcher struct {
 	GetServicesStub        func(string) ([]*osbapi.Service, error)
 	getServicesMutex       sync.RWMutex
 	getServicesArgsForCall []struct {
@@ -26,7 +26,7 @@ type FakeServicesActor struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeServicesActor) GetServices(arg1 string) ([]*osbapi.Service, error) {
+func (fake *FakeServiceFetcher) GetServices(arg1 string) ([]*osbapi.Service, error) {
 	fake.getServicesMutex.Lock()
 	ret, specificReturn := fake.getServicesReturnsOnCall[len(fake.getServicesArgsForCall)]
 	fake.getServicesArgsForCall = append(fake.getServicesArgsForCall, struct {
@@ -44,26 +44,26 @@ func (fake *FakeServicesActor) GetServices(arg1 string) ([]*osbapi.Service, erro
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeServicesActor) GetServicesCallCount() int {
+func (fake *FakeServiceFetcher) GetServicesCallCount() int {
 	fake.getServicesMutex.RLock()
 	defer fake.getServicesMutex.RUnlock()
 	return len(fake.getServicesArgsForCall)
 }
 
-func (fake *FakeServicesActor) GetServicesCalls(stub func(string) ([]*osbapi.Service, error)) {
+func (fake *FakeServiceFetcher) GetServicesCalls(stub func(string) ([]*osbapi.Service, error)) {
 	fake.getServicesMutex.Lock()
 	defer fake.getServicesMutex.Unlock()
 	fake.GetServicesStub = stub
 }
 
-func (fake *FakeServicesActor) GetServicesArgsForCall(i int) string {
+func (fake *FakeServiceFetcher) GetServicesArgsForCall(i int) string {
 	fake.getServicesMutex.RLock()
 	defer fake.getServicesMutex.RUnlock()
 	argsForCall := fake.getServicesArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeServicesActor) GetServicesReturns(result1 []*osbapi.Service, result2 error) {
+func (fake *FakeServiceFetcher) GetServicesReturns(result1 []*osbapi.Service, result2 error) {
 	fake.getServicesMutex.Lock()
 	defer fake.getServicesMutex.Unlock()
 	fake.GetServicesStub = nil
@@ -73,7 +73,7 @@ func (fake *FakeServicesActor) GetServicesReturns(result1 []*osbapi.Service, res
 	}{result1, result2}
 }
 
-func (fake *FakeServicesActor) GetServicesReturnsOnCall(i int, result1 []*osbapi.Service, result2 error) {
+func (fake *FakeServiceFetcher) GetServicesReturnsOnCall(i int, result1 []*osbapi.Service, result2 error) {
 	fake.getServicesMutex.Lock()
 	defer fake.getServicesMutex.Unlock()
 	fake.GetServicesStub = nil
@@ -89,7 +89,7 @@ func (fake *FakeServicesActor) GetServicesReturnsOnCall(i int, result1 []*osbapi
 	}{result1, result2}
 }
 
-func (fake *FakeServicesActor) Invocations() map[string][][]interface{} {
+func (fake *FakeServiceFetcher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.getServicesMutex.RLock()
@@ -101,7 +101,7 @@ func (fake *FakeServicesActor) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeServicesActor) recordInvocation(key string, args []interface{}) {
+func (fake *FakeServiceFetcher) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -113,4 +113,4 @@ func (fake *FakeServicesActor) recordInvocation(key string, args []interface{}) 
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ usecases.ServicesActor = new(FakeServicesActor)
+var _ usecases.ServiceFetcher = new(FakeServiceFetcher)

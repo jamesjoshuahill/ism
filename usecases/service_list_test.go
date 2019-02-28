@@ -14,9 +14,9 @@ import (
 var _ = Describe("Service List Usecase", func() {
 
 	var (
-		fakeBrokersActor  *usecasesfakes.FakeBrokersActor
-		fakeServicesActor *usecasesfakes.FakeServicesActor
-		fakePlansActor    *usecasesfakes.FakePlansActor
+		fakeBrokerFetcher  *usecasesfakes.FakeBrokerFetcher
+		fakeServiceFetcher *usecasesfakes.FakeServiceFetcher
+		fakePlanFetcher    *usecasesfakes.FakePlanFetcher
 
 		serviceListUsecase ServiceListUsecase
 
@@ -25,14 +25,14 @@ var _ = Describe("Service List Usecase", func() {
 	)
 
 	BeforeEach(func() {
-		fakeBrokersActor = &usecasesfakes.FakeBrokersActor{}
-		fakeServicesActor = &usecasesfakes.FakeServicesActor{}
-		fakePlansActor = &usecasesfakes.FakePlansActor{}
+		fakeBrokerFetcher = &usecasesfakes.FakeBrokerFetcher{}
+		fakeServiceFetcher = &usecasesfakes.FakeServiceFetcher{}
+		fakePlanFetcher = &usecasesfakes.FakePlanFetcher{}
 
 		serviceListUsecase = ServiceListUsecase{
-			BrokersActor:  fakeBrokersActor,
-			ServicesActor: fakeServicesActor,
-			PlansActor:    fakePlansActor,
+			BrokerFetcher:  fakeBrokerFetcher,
+			ServiceFetcher: fakeServiceFetcher,
+			PlanFetcher:    fakePlanFetcher,
 		}
 	})
 
@@ -41,12 +41,12 @@ var _ = Describe("Service List Usecase", func() {
 	})
 
 	It("fetches all brokers", func() {
-		Expect(fakeBrokersActor.GetBrokersCallCount()).NotTo(BeZero())
+		Expect(fakeBrokerFetcher.GetBrokersCallCount()).NotTo(BeZero())
 	})
 
 	When("fetching brokers errors", func() {
 		BeforeEach(func() {
-			fakeBrokersActor.GetBrokersReturns([]*osbapi.Broker{}, errors.New("error-getting-brokers"))
+			fakeBrokerFetcher.GetBrokersReturns([]*osbapi.Broker{}, errors.New("error-getting-brokers"))
 		})
 
 		It("propagates the error", func() {
@@ -56,7 +56,7 @@ var _ = Describe("Service List Usecase", func() {
 
 	When("there are no brokers", func() {
 		BeforeEach(func() {
-			fakeBrokersActor.GetBrokersReturns([]*osbapi.Broker{}, nil)
+			fakeBrokerFetcher.GetBrokersReturns([]*osbapi.Broker{}, nil)
 		})
 
 		It("doesn't error", func() {
@@ -70,20 +70,20 @@ var _ = Describe("Service List Usecase", func() {
 
 	When("there are one or more brokers", func() {
 		BeforeEach(func() {
-			fakeBrokersActor.GetBrokersReturns([]*osbapi.Broker{
+			fakeBrokerFetcher.GetBrokersReturns([]*osbapi.Broker{
 				{ID: "broker1-id", Name: "broker1"},
 				{ID: "broker2-id", Name: "broker2"}}, nil)
 		})
 
 		It("fetches services for each broker", func() {
-			Expect(fakeServicesActor.GetServicesCallCount()).To(Equal(2))
-			Expect(fakeServicesActor.GetServicesArgsForCall(0)).To(Equal("broker1-id"))
-			Expect(fakeServicesActor.GetServicesArgsForCall(1)).To(Equal("broker2-id"))
+			Expect(fakeServiceFetcher.GetServicesCallCount()).To(Equal(2))
+			Expect(fakeServiceFetcher.GetServicesArgsForCall(0)).To(Equal("broker1-id"))
+			Expect(fakeServiceFetcher.GetServicesArgsForCall(1)).To(Equal("broker2-id"))
 		})
 
 		When("fetching services errors", func() {
 			BeforeEach(func() {
-				fakeServicesActor.GetServicesReturns([]*osbapi.Service{}, errors.New("error-getting-services"))
+				fakeServiceFetcher.GetServicesReturns([]*osbapi.Service{}, errors.New("error-getting-services"))
 			})
 
 			It("propagates the error", func() {
@@ -93,26 +93,26 @@ var _ = Describe("Service List Usecase", func() {
 
 		When("all the brokers have services", func() {
 			BeforeEach(func() {
-				fakeServicesActor.GetServicesReturnsOnCall(0, []*osbapi.Service{
+				fakeServiceFetcher.GetServicesReturnsOnCall(0, []*osbapi.Service{
 					{ID: "service1-id", Name: "service1", Description: "service1 description"},
 					{ID: "service2-id", Name: "service2", Description: "service2 description"}}, nil)
 
-				fakeServicesActor.GetServicesReturnsOnCall(1, []*osbapi.Service{
+				fakeServiceFetcher.GetServicesReturnsOnCall(1, []*osbapi.Service{
 					{ID: "service3-id", Name: "service3", Description: "service3 description"},
 					{ID: "service4-id", Name: "service4", Description: "service4 description"}}, nil)
 			})
 
 			It("fetches plans for each service", func() {
-				Expect(fakePlansActor.GetPlansCallCount()).To(Equal(4))
-				Expect(fakePlansActor.GetPlansArgsForCall(0)).To(Equal("service1-id"))
-				Expect(fakePlansActor.GetPlansArgsForCall(1)).To(Equal("service2-id"))
-				Expect(fakePlansActor.GetPlansArgsForCall(2)).To(Equal("service3-id"))
-				Expect(fakePlansActor.GetPlansArgsForCall(3)).To(Equal("service4-id"))
+				Expect(fakePlanFetcher.GetPlansCallCount()).To(Equal(4))
+				Expect(fakePlanFetcher.GetPlansArgsForCall(0)).To(Equal("service1-id"))
+				Expect(fakePlanFetcher.GetPlansArgsForCall(1)).To(Equal("service2-id"))
+				Expect(fakePlanFetcher.GetPlansArgsForCall(2)).To(Equal("service3-id"))
+				Expect(fakePlanFetcher.GetPlansArgsForCall(3)).To(Equal("service4-id"))
 			})
 
 			When("fetching plans errors", func() {
 				BeforeEach(func() {
-					fakePlansActor.GetPlansReturns([]*osbapi.Plan{}, errors.New("error-getting-plans"))
+					fakePlanFetcher.GetPlansReturns([]*osbapi.Plan{}, errors.New("error-getting-plans"))
 				})
 
 				It("propagates the error", func() {
@@ -122,10 +122,10 @@ var _ = Describe("Service List Usecase", func() {
 
 			When("all the services have plans", func() {
 				BeforeEach(func() {
-					fakePlansActor.GetPlansReturnsOnCall(0, []*osbapi.Plan{{Name: "plan1"}, {Name: "extra-plan"}}, nil)
-					fakePlansActor.GetPlansReturnsOnCall(1, []*osbapi.Plan{{Name: "plan2"}}, nil)
-					fakePlansActor.GetPlansReturnsOnCall(2, []*osbapi.Plan{{Name: "plan3"}}, nil)
-					fakePlansActor.GetPlansReturnsOnCall(3, []*osbapi.Plan{{Name: "plan4"}}, nil)
+					fakePlanFetcher.GetPlansReturnsOnCall(0, []*osbapi.Plan{{Name: "plan1"}, {Name: "extra-plan"}}, nil)
+					fakePlanFetcher.GetPlansReturnsOnCall(1, []*osbapi.Plan{{Name: "plan2"}}, nil)
+					fakePlanFetcher.GetPlansReturnsOnCall(2, []*osbapi.Plan{{Name: "plan3"}}, nil)
+					fakePlanFetcher.GetPlansReturnsOnCall(3, []*osbapi.Plan{{Name: "plan4"}}, nil)
 				})
 
 				It("doesn't error", func() {
