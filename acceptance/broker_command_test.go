@@ -38,8 +38,8 @@ var _ = Describe("CLI broker command", func() {
 			Eventually(session).Should(Say("Usage:"))
 			Eventually(session).Should(Say(`ism \[OPTIONS\] broker <list | register>`))
 			Eventually(session).Should(Say("\n"))
-			Eventually(session).Should(Say("The broker command group lets you register, list, update and deregister service"))
-			Eventually(session).Should(Say("brokers from the marketplace"))
+			Eventually(session).Should(Say("The broker command group lets you register and list service brokers from the"))
+			Eventually(session).Should(Say("marketplace"))
 		})
 	})
 
