@@ -180,7 +180,6 @@ var _ = Describe("BrokerReconciler", func() {
 			fakeKubeBrokerRepo.UpdateStateReturns(errors.New("error-updating-status"))
 		})
 
-		//TODO: test the state of service / plan creation here.
 		It("returns the error", func() {
 			Expect(err).To(MatchError("error-updating-status"))
 		})

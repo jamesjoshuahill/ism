@@ -41,7 +41,6 @@ func (repo *KubeServiceRepo) Create(broker *v1alpha1.Broker, catalogService osba
 		return nil, err
 	}
 
-	//TODO the returned service should be obtained directly from the API
 	if err := repo.client.Create(context.TODO(), service); err != nil {
 		return nil, err
 	}
