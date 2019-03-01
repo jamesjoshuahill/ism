@@ -93,5 +93,6 @@ func (r *ReconcileBroker) Reconcile(request reconcile.Request) (reconcile.Result
 		kubePlanRepo,
 	)
 
+	log.Info("Reconcile called", "request", request)
 	return reconciler.Reconcile(request)
 }
