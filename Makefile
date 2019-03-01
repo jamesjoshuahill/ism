@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= ismteam/controller:latest
 CLI_NAME = bin/ism
 GINKGO_ARGS = -r -p -randomizeSuites -randomizeAllSpecs
 
