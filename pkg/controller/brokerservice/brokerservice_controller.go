@@ -75,8 +75,6 @@ type ReconcileBrokerService struct {
 // and what is in the BrokerService.Spec
 // a Deployment as an example
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=brokerservices,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=brokerservices/status,verbs=get;update;patch
 func (r *ReconcileBrokerService) Reconcile(request reconcile.Request) (reconcile.Result, error) {
