@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -12,6 +13,7 @@ import (
 	. "github.com/pivotal-cf/ism/pkg/internal/reconcilers"
 	"github.com/pivotal-cf/ism/pkg/internal/reconcilers/reconcilersfakes"
 	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -191,6 +193,17 @@ var _ = Describe("BrokerReconciler", func() {
 
 		It("returns the error", func() {
 			Expect(err).To(MatchError("error-getting-broker"))
+		})
+	})
+
+	When("the broker has been deleted", func() {
+		BeforeEach(func() {
+			notFoundError := kerrors.NewNotFound(schema.GroupResource{}, "broker")
+			fakeKubeBrokerRepo.GetReturns(nil, notFoundError)
+		})
+
+		It("does not error", func() {
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 

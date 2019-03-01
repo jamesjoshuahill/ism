@@ -3,6 +3,7 @@ package reconcilers
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
 	v1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
@@ -61,7 +62,10 @@ func NewBrokerReconciler(
 func (r *BrokerReconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	broker, err := r.kubeBrokerRepo.Get(request.NamespacedName)
 	if err != nil {
-		//TODO handle delete gracefully
+		if errors.IsNotFound(err) {
+			return reconcile.Result{}, nil
+		}
+
 		return reconcile.Result{}, err
 	}
 
