@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overview-broker-deployment
+spec:
+  selector:
+    matchLabels:
+      app: overview-broker
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: overview-broker
+    spec:
+      containers:
+      - name: overview-broker
+        image: mattmcneeney/overview-broker:latest
+        ports:
+        - containerPort: 8080

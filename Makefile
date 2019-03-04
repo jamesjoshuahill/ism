@@ -54,6 +54,9 @@ docker-push:
 
 ### CUSTOM MAKE RULES ###
 
+deploy-test-broker:
+	kubectl apply -f acceptance/assets/broker
+
 cli:
 	go build -o ${CLI_NAME} cmd/ism/main.go
 
@@ -75,3 +78,10 @@ cli-integration-tests:
 
 kube-integration-tests:
 	ginkgo ${GINKGO_ARGS} pkg/controller pkg/api pkg/internal/repositories
+
+uninstall-test-broker:
+	kubectl delete -f acceptance/assets/broker
+
+uninstall:
+	kustomize build config/default | kubectl delete -f -
+	kubectl delete -f config/crds

@@ -22,10 +22,6 @@ jobs:
     file: ism/ci/tasks/acceptance.yml
     params:
       KUBECONFIG_FILE_CONTENTS: {{KUBECONFIG_FILE_CONTENTS}}
-      BROKER_URL: {{BROKER_URL}}
-      BROKER_USERNAME: {{BROKER_USERNAME}}
-      BROKER_PASSWORD: {{BROKER_PASSWORD}}
-
 
 resources:
 - name: ism

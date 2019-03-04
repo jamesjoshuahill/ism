@@ -13,9 +13,6 @@ inputs:
 
 params:
 - KUBECONFIG_FILE_CONTENTS:
-- BROKER_URL:
-- BROKER_USERNAME:
-- BROKER_PASSWORD:
 
 run:
   path: src/github.com/pivotal-cf/ism/ci/shim
