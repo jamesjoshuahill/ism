@@ -19,11 +19,11 @@ run: fmt vet
 	go run ./cmd/manager/main.go
 
 # Install CRDs into a cluster
-install-crds: manifests
+install: manifests
 	kubectl apply -f config/crds
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy-controller: manifests
+deploy: manifests
 	kubectl apply -f config/crds
 	kustomize build config/default | kubectl apply -f -
 
@@ -61,7 +61,7 @@ deploy-test-broker:
 run-test-broker:
 	docker run -d -p 127.0.0.1:1122:8080/tcp mattmcneeney/overview-broker
 
-terminate-test-broker:
+stop-test-broker:
 	docker ps | grep mattmcneeney/overview-broker | awk '{print $$1}' | xargs -n1 docker kill
 
 cli:

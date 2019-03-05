@@ -99,7 +99,7 @@ func buildCLI() string {
 }
 
 func installCRDs() {
-	runMake("install-crds")
+	runMake("install")
 }
 
 func startTestBroker() (string, string, string) {
@@ -108,7 +108,7 @@ func startTestBroker() (string, string, string) {
 }
 
 func stopTestBroker() {
-	runMake("terminate-test-broker")
+	runMake("stop-test-broker")
 }
 
 func deployTestBroker() (string, string, string) {
@@ -138,7 +138,7 @@ func stopController() {
 }
 
 func deployController() {
-	runMake("deploy-controller")
+	runMake("deploy")
 	runKubectl("wait", "-n", "ism-system", "--for=condition=Ready", "pod/ism-controller-manager-0")
 }
 
