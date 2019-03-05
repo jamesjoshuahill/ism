@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
@@ -25,6 +26,7 @@ var (
 	pathToCLI         string
 	kubeClient        client.Client
 	controllerSession *Session
+	brokerSession     *Session
 	testEnv           *envtest.Environment
 	brokerURL         string
 	brokerUsername    string
@@ -49,9 +51,15 @@ func TestAcceptance(t *testing.T) {
 		Expect(err).NotTo(HaveOccurred())
 
 		installCRDs()
-		brokerURL, brokerUsername, brokerPassword := setupTestBroker()
 
-		startController()
+		var brokerURL, brokerUsername, brokerPassword string
+		if os.Getenv("TEST_ACCEPTANCE_IN_CLUSTER") != "" {
+			brokerURL, brokerUsername, brokerPassword = setupTestBroker(false)
+			startController(false)
+		} else {
+			brokerURL, brokerUsername, brokerPassword = setupTestBroker(true)
+			startController(true)
+		}
 
 		nodeData := NodeData{
 			PathToCLI:      pathToCLI,
@@ -90,8 +98,15 @@ func TestAcceptance(t *testing.T) {
 	SynchronizedAfterSuite(func() {
 		Expect(testEnv.Stop()).To(Succeed())
 	}, func() {
-		uninstallTestBroker()
-		uninstallCRDsAndController()
+		if os.Getenv("TEST_ACCEPTANCE_IN_CLUSTER") != "" {
+			uninstallTestBroker()
+			uninstallController()
+		} else {
+			terminateController()
+			terminateBroker()
+		}
+
+		uninstallCRDs()
 		CleanupBuildArtifacts()
 	})
 
@@ -103,10 +118,14 @@ func installCRDs() {
 	runMake("install")
 }
 
-func setupTestBroker() (string, string, string) {
+func setupTestBroker(runLocally bool) (string, string, string) {
+	if runLocally {
+		runMake("run-test-broker")
+		return "http://127.0.0.1:1122", "admin", "password"
+	}
+
 	brokerIP := installTestBroker()
 	Expect(brokerIP).NotTo(BeEmpty())
-
 	return fmt.Sprintf("http://%s:8080", brokerIP), "admin", "password"
 }
 
@@ -120,13 +139,34 @@ func uninstallTestBroker() {
 	runMake("uninstall-test-broker")
 }
 
-func startController() {
-	runMake("deploy")
-	runKubectl("wait", "-n", "ism-system", "--for=condition=Ready", "pod/ism-controller-manager-0")
+func startController(runLocally bool) {
+	if runLocally {
+		pathToController, err := Build("github.com/pivotal-cf/ism/cmd/manager")
+		Expect(err).NotTo(HaveOccurred())
+
+		command := exec.Command(pathToController)
+		controllerSession, err = Start(command, GinkgoWriter, GinkgoWriter)
+		Expect(err).NotTo(HaveOccurred())
+	} else {
+		runMake("deploy")
+		runKubectl("wait", "-n", "ism-system", "--for=condition=Ready", "pod/ism-controller-manager-0")
+	}
 }
 
-func uninstallCRDsAndController() {
-	runMake("uninstall")
+func terminateController() {
+	controllerSession.Interrupt()
+}
+
+func terminateBroker() {
+	runMake("terminate-test-broker")
+}
+
+func uninstallController() {
+	runMake("uninstall-controller")
+}
+
+func uninstallCRDs() {
+	runMake("uninstall-crds")
 }
 
 func registerBroker(brokerName string) {

@@ -1,6 +1,7 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= ismteam/controller:latest
+BROKERIMG ?= mattmcneeney/overview-broker:latest
 CLI_NAME = bin/ism
 GINKGO_ARGS = -r -p -randomizeSuites -randomizeAllSpecs
 
@@ -57,6 +58,12 @@ docker-push:
 deploy-test-broker:
 	kubectl apply -f acceptance/assets/broker
 
+run-test-broker:
+	docker run -d -p 127.0.0.1:1122:8080/tcp mattmcneeney/overview-broker
+
+terminate-test-broker:
+	docker ps | grep mattmcneeney/overview-broker | awk '{print $$1}' | xargs -n1 docker kill
+
 cli:
 	go build -o ${CLI_NAME} cmd/ism/main.go
 
@@ -82,6 +89,8 @@ kube-integration-tests:
 uninstall-test-broker:
 	kubectl delete -f acceptance/assets/broker
 
-uninstall:
+uninstall-controller:
 	kustomize build config/default | kubectl delete -f -
+
+uninstall-crds:
 	kubectl delete -f config/crds

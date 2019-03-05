@@ -13,6 +13,7 @@ inputs:
 
 params:
 - KUBECONFIG_FILE_CONTENTS:
+- TEST_ACCEPTANCE_IN_CLUSTER: true
 
 run:
   path: src/github.com/pivotal-cf/ism/ci/shim
