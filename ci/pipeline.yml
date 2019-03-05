@@ -14,10 +14,19 @@ jobs:
   - task: integration
     file: ism/ci/tasks/integration.yml
 
+- name: build-controller-image
+  plan:
+  - get: ism
+    trigger: true
+    passed: [absolute-unit, integration]
+  - put: ism-controller-image
+    params: {build: ism}
+
 - name: acceptance
   plan:
   - get: ism
     trigger: true
+    passed: [build-controller-image]
   - task: acceptance
     file: ism/ci/tasks/acceptance.yml
     params:
@@ -29,3 +38,10 @@ resources:
   source:
     uri: https://github.com/pivotal-cf/ism
     branch: master
+
+- name: ism-controller-image
+  type: docker-image
+  source:
+    repository: ismteam/controller
+    username: {{DOCKERHUB_USERNAME}}
+    password: {{DOCKERHUB_PASSWORD}}
