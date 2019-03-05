@@ -2,8 +2,12 @@ package kube
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -15,6 +19,7 @@ type Broker struct {
 	KubeClient client.Client
 }
 
+//TODO change r to b
 func (r *Broker) FindAll() ([]*osbapi.Broker, error) {
 	list := &v1alpha1.BrokerList{}
 	if err := r.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
@@ -50,5 +55,34 @@ func (r *Broker) Register(broker *osbapi.Broker) error {
 		},
 	}
 
-	return r.KubeClient.Create(context.TODO(), brokerResource)
+	if err := r.KubeClient.Create(context.TODO(), brokerResource); err != nil {
+		return err
+	}
+
+	return r.waitForBrokerRegistration(brokerResource)
+}
+
+func (r *Broker) waitForBrokerRegistration(broker *v1alpha1.Broker) error {
+	err := wait.Poll(1*time.Second, 10*time.Second, func() (bool, error) {
+		b := &v1alpha1.Broker{}
+
+		err := r.KubeClient.Get(context.TODO(), types.NamespacedName{Name: broker.Name, Namespace: broker.Namespace}, b)
+		if err == nil {
+			if b.Status.State == v1alpha1.BrokerStateRegistered {
+				return true, nil
+			}
+		}
+
+		return false, nil
+	})
+
+	if err != nil {
+		if err == wait.ErrWaitTimeout {
+			return errors.New("timed out waiting for broker to be registered")
+		}
+
+		return err
+	}
+
+	return nil
 }
