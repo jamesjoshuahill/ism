@@ -23,7 +23,7 @@ var _ = Describe("CLI broker command", func() {
 	JustBeforeEach(func() {
 		var err error
 
-		command := exec.Command(pathToCLI, args...)
+		command := exec.Command(nodePathToCLI, args...)
 		session, err = Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -125,7 +125,7 @@ var _ = Describe("CLI broker command", func() {
 
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("NAME\\s+URL\\s+CREATED AT"))
-				Eventually(session).Should(Say("test-broker-2\\s+" + brokerURL + "\\s+" + timeRegex))
+				Eventually(session).Should(Say("test-broker-2\\s+" + nodeBrokerURL + "\\s+" + timeRegex))
 			})
 		})
 	})

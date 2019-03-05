@@ -23,7 +23,7 @@ var _ = Describe("CLI service command", func() {
 	JustBeforeEach(func() {
 		var err error
 
-		command := exec.Command(pathToCLI, args...)
+		command := exec.Command(nodePathToCLI, args...)
 		session, err = Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 	})

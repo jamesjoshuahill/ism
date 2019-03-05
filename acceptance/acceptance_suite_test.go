@@ -7,14 +7,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
-	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
-	"k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/envtest"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,87 +20,62 @@ import (
 )
 
 var (
-	pathToCLI         string
-	kubeClient        client.Client
 	controllerSession *Session
-	brokerSession     *Session
-	testEnv           *envtest.Environment
-	brokerURL         string
-	brokerUsername    string
-	brokerPassword    string
+
+	nodePathToCLI      string
+	nodeBrokerURL      string
+	nodeBrokerUsername string
+	nodeBrokerPassword string
 )
 
 func TestAcceptance(t *testing.T) {
 	SetDefaultEventuallyTimeout(time.Second * 5)
 	SetDefaultConsistentlyDuration(time.Second * 5)
 
-	type NodeData struct {
-		PathToCLI      string
-		BrokerURL      string
-		BrokerUsername string
-		BrokerPassword string
-	}
-
 	SynchronizedBeforeSuite(func() []byte {
-		var err error
-
-		pathToCLI, err = Build("github.com/pivotal-cf/ism/cmd/ism")
-		Expect(err).NotTo(HaveOccurred())
-
+		printClusterName()
+		cliPath := buildCLI()
 		installCRDs()
 
-		var brokerURL, brokerUsername, brokerPassword string
+		var brokerURL, brokerUser, brokerPass string
 		if os.Getenv("TEST_ACCEPTANCE_IN_CLUSTER") != "" {
-			brokerURL, brokerUsername, brokerPassword = setupTestBroker(false)
-			startController(false)
+			brokerURL, brokerUser, brokerPass = deployTestBroker()
+			deployController()
 		} else {
-			brokerURL, brokerUsername, brokerPassword = setupTestBroker(true)
-			startController(true)
+			brokerURL, brokerUser, brokerPass = startTestBroker()
+			startController()
 		}
 
-		nodeData := NodeData{
-			PathToCLI:      pathToCLI,
+		data := nodeData{
+			PathToCLI:      cliPath,
 			BrokerURL:      brokerURL,
-			BrokerUsername: brokerUsername,
-			BrokerPassword: brokerPassword,
+			BrokerUsername: brokerUser,
+			BrokerPassword: brokerPass,
 		}
 
-		b, err := json.Marshal(nodeData)
+		b, err := json.Marshal(data)
 		Expect(err).NotTo(HaveOccurred())
 
 		return []byte(b)
 	}, func(rawNodeData []byte) {
-		var nodeData NodeData
-		err := json.Unmarshal(rawNodeData, &nodeData)
+		var data nodeData
+		err := json.Unmarshal(rawNodeData, &data)
 		Expect(err).NotTo(HaveOccurred())
 
-		pathToCLI = nodeData.PathToCLI
-		brokerURL = nodeData.BrokerURL
-		brokerUsername = nodeData.BrokerUsername
-		brokerPassword = nodeData.BrokerPassword
-
-		testEnv = &envtest.Environment{
-			UseExistingCluster: true,
-		}
-
-		testEnvConfig, err := testEnv.Start()
-		Expect(err).NotTo(HaveOccurred())
-
-		Expect(v1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
-
-		kubeClient, err = client.New(testEnvConfig, client.Options{Scheme: scheme.Scheme})
-		Expect(err).NotTo(HaveOccurred())
+		nodePathToCLI = data.PathToCLI
+		nodeBrokerURL = data.BrokerURL
+		nodeBrokerUsername = data.BrokerUsername
+		nodeBrokerPassword = data.BrokerPassword
 	})
 
 	SynchronizedAfterSuite(func() {
-		Expect(testEnv.Stop()).To(Succeed())
 	}, func() {
 		if os.Getenv("TEST_ACCEPTANCE_IN_CLUSTER") != "" {
-			uninstallTestBroker()
-			uninstallController()
+			deleteController()
+			deleteTestBroker()
 		} else {
-			terminateController()
-			terminateBroker()
+			stopController()
+			stopTestBroker()
 		}
 
 		uninstallCRDs()
@@ -114,55 +86,62 @@ func TestAcceptance(t *testing.T) {
 	RunSpecs(t, "Acceptance Suite")
 }
 
+func printClusterName() {
+	clusterContext := strings.TrimSpace(runKubectl("config", "current-context"))
+	fmt.Printf("Running tests against the '%s' cluster\n", clusterContext)
+}
+
+func buildCLI() string {
+	cliPath, err := Build("github.com/pivotal-cf/ism/cmd/ism")
+	Expect(err).NotTo(HaveOccurred())
+
+	return cliPath
+}
+
 func installCRDs() {
-	runMake("install")
+	runMake("install-crds")
 }
 
-func setupTestBroker(runLocally bool) (string, string, string) {
-	if runLocally {
-		runMake("run-test-broker")
-		return "http://127.0.0.1:1122", "admin", "password"
-	}
-
-	brokerIP := installTestBroker()
-	Expect(brokerIP).NotTo(BeEmpty())
-	return fmt.Sprintf("http://%s:8080", brokerIP), "admin", "password"
+func startTestBroker() (string, string, string) {
+	runMake("run-test-broker")
+	return "http://127.0.0.1:1122", "admin", "password"
 }
 
-func installTestBroker() string {
-	runMake("deploy-test-broker")
-	runKubectl("wait", "--for=condition=available", "deployment/overview-broker-deployment")
-	return runKubectl("get", "service", "overview-broker", "-o", "jsonpath={.spec.clusterIP}")
-}
-
-func uninstallTestBroker() {
-	runMake("uninstall-test-broker")
-}
-
-func startController(runLocally bool) {
-	if runLocally {
-		pathToController, err := Build("github.com/pivotal-cf/ism/cmd/manager")
-		Expect(err).NotTo(HaveOccurred())
-
-		command := exec.Command(pathToController)
-		controllerSession, err = Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
-	} else {
-		runMake("deploy")
-		runKubectl("wait", "-n", "ism-system", "--for=condition=Ready", "pod/ism-controller-manager-0")
-	}
-}
-
-func terminateController() {
-	controllerSession.Interrupt()
-}
-
-func terminateBroker() {
+func stopTestBroker() {
 	runMake("terminate-test-broker")
 }
 
-func uninstallController() {
-	runMake("uninstall-controller")
+func deployTestBroker() (string, string, string) {
+	runMake("deploy-test-broker")
+	runKubectl("wait", "--for=condition=available", "deployment/overview-broker-deployment")
+	brokerIP := runKubectl("get", "service", "overview-broker", "-o", "jsonpath={.spec.clusterIP}")
+	return fmt.Sprintf("http://%s:8080", brokerIP), "admin", "password"
+}
+
+func deleteTestBroker() {
+	runMake("delete-test-broker")
+}
+
+func startController() {
+	pathToController, err := Build("github.com/pivotal-cf/ism/cmd/manager")
+	Expect(err).NotTo(HaveOccurred())
+
+	command := exec.Command(pathToController)
+	controllerSession, err = Start(command, GinkgoWriter, GinkgoWriter)
+	Expect(err).NotTo(HaveOccurred())
+}
+
+func stopController() {
+	controllerSession.Terminate()
+}
+
+func deployController() {
+	runMake("deploy-controller")
+	runKubectl("wait", "-n", "ism-system", "--for=condition=Ready", "pod/ism-controller-manager-0")
+}
+
+func deleteController() {
+	runMake("delete-controller")
 }
 
 func uninstallCRDs() {
@@ -172,16 +151,16 @@ func uninstallCRDs() {
 func registerBroker(brokerName string) {
 	registerArgs := []string{"broker", "register",
 		"--name", brokerName,
-		"--url", brokerURL,
-		"--username", brokerUsername,
-		"--password", brokerPassword}
-	command := exec.Command(pathToCLI, registerArgs...)
+		"--url", nodeBrokerURL,
+		"--username", nodeBrokerUsername,
+		"--password", nodeBrokerPassword}
+	command := exec.Command(nodePathToCLI, registerArgs...)
 	registerSession, err := Start(command, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 	Eventually(registerSession).Should(Exit(0))
 
 	//TODO: Temporarily sleep until #164240938 is done.
-	time.Sleep(20 * time.Second)
+	time.Sleep(10 * time.Second)
 }
 
 func deleteBrokers(brokerNames ...string) {
@@ -207,4 +186,11 @@ func runKubectl(args ...string) string {
 	Expect(command.Run()).To(Succeed())
 
 	return string(outBuf.Contents())
+}
+
+type nodeData struct {
+	PathToCLI      string
+	BrokerURL      string
+	BrokerUsername string
+	BrokerPassword string
 }

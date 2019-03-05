@@ -12,7 +12,7 @@ import (
 var _ = Describe("CLI", func() {
 	When("no command or flag is passed", func() {
 		It("displays help and exits 0", func() {
-			command := exec.Command(pathToCLI)
+			command := exec.Command(nodePathToCLI)
 			session, err := Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -25,7 +25,7 @@ var _ = Describe("CLI", func() {
 
 	When("--help is passed", func() {
 		It("displays help and exits 0", func() {
-			command := exec.Command(pathToCLI, "--help")
+			command := exec.Command(nodePathToCLI, "--help")
 			session, err := Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 

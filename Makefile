@@ -19,11 +19,11 @@ run: fmt vet
 	go run ./cmd/manager/main.go
 
 # Install CRDs into a cluster
-install: manifests
+install-crds: manifests
 	kubectl apply -f config/crds
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: manifests
+deploy-controller: manifests
 	kubectl apply -f config/crds
 	kustomize build config/default | kubectl apply -f -
 
@@ -86,10 +86,10 @@ cli-integration-tests:
 kube-integration-tests:
 	ginkgo ${GINKGO_ARGS} pkg/controller pkg/api pkg/internal/repositories
 
-uninstall-test-broker:
+delete-test-broker:
 	kubectl delete -f acceptance/assets/broker
 
-uninstall-controller:
+delete-controller:
 	kustomize build config/default | kubectl delete -f -
 
 uninstall-crds:
