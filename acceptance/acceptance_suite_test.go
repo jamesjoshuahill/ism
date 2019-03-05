@@ -15,7 +15,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 )
 
@@ -128,6 +128,8 @@ func startController() {
 
 	command := exec.Command(pathToController)
 	controllerSession, err = Start(command, GinkgoWriter, GinkgoWriter)
+	Eventually(controllerSession.Err).Should(Say("Starting the Cmd"))
+
 	Expect(err).NotTo(HaveOccurred())
 }
 
@@ -178,7 +180,7 @@ func runMake(task string) {
 }
 
 func runKubectl(args ...string) string {
-	outBuf := gbytes.NewBuffer()
+	outBuf := NewBuffer()
 	command := exec.Command("kubectl", args...)
 	command.Dir = filepath.Join("..")
 	command.Stdout = io.MultiWriter(GinkgoWriter, outBuf)
