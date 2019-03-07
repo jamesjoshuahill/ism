@@ -50,7 +50,7 @@ var _ = Describe("CLI broker command", func() {
 
 		When("valid args are passed", func() {
 			BeforeEach(func() {
-				args = append(args, "--name", "my-broker", "--url", "url", "--username", "username", "--password", "password")
+				args = append(args, "--name", "my-broker", "--url", nodeBrokerURL, "--username", nodeBrokerUsername, "--password", nodeBrokerPassword)
 			})
 
 			AfterEach(func() {
