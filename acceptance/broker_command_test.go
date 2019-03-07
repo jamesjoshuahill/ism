@@ -50,7 +50,7 @@ var _ = Describe("CLI broker command", func() {
 
 		When("valid args are passed", func() {
 			BeforeEach(func() {
-				args = append(args, "--name", "my-broker", "--url", "url", "--username", "username", "--password", "password")
+				args = append(args, "--name", "my-broker", "--url", nodeBrokerURL, "--username", nodeBrokerUsername, "--password", nodeBrokerPassword)
 			})
 
 			AfterEach(func() {
@@ -78,8 +78,8 @@ var _ = Describe("CLI broker command", func() {
 		})
 
 		When("required arguments are not passed", func() {
-			It("displays an informative message and exits 0", func() {
-				Eventually(session).Should(Exit(0))
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
 				Eventually(session).Should(Say("the required flags `--name', `--password', `--url' and `--username' were not specified"))
 			})
 		})

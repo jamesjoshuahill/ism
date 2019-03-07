@@ -2,6 +2,7 @@ package kube_test
 
 import (
 	"context"
+	"errors"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -53,40 +54,59 @@ var _ = Describe("Broker", func() {
 			deleteBrokers(kubeClient, "broker-1")
 		})
 
-		It("creates a new Broker resource instance", func() {
-			Expect(err).NotTo(HaveOccurred())
+		When("the controller reacts to the broker", func() {
+			var closeChan chan bool
 
-			key := types.NamespacedName{
-				Name:      "broker-1",
-				Namespace: "default",
-			}
-
-			fetched := &v1alpha1.Broker{}
-			Expect(kubeClient.Get(context.TODO(), key, fetched)).To(Succeed())
-
-			Expect(fetched.Spec).To(Equal(v1alpha1.BrokerSpec{
-				Name:     "broker-1",
-				URL:      "broker-1-url",
-				Username: "broker-1-username",
-				Password: "broker-1-password",
-			}))
-		})
-
-		When("creating a new Broker fails", func() {
 			BeforeEach(func() {
-				// register the broker first, so that the second register errors
-				b := &osbapi.Broker{
+				closeChan = make(chan bool)
+				go simulateRegistration(kubeClient, "broker-1", closeChan)
+			})
+
+			AfterEach(func() {
+				closeChan <- true
+			})
+
+			It("creates a new Broker resource instance", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				key := types.NamespacedName{
+					Name:      "broker-1",
+					Namespace: "default",
+				}
+
+				fetched := &v1alpha1.Broker{}
+				Expect(kubeClient.Get(context.TODO(), key, fetched)).To(Succeed())
+
+				Expect(fetched.Spec).To(Equal(v1alpha1.BrokerSpec{
 					Name:     "broker-1",
 					URL:      "broker-1-url",
 					Username: "broker-1-username",
 					Password: "broker-1-password",
-				}
-
-				Expect(broker.Register(b)).To(Succeed())
+				}))
 			})
 
-			It("propagates the error", func() {
-				Expect(err).To(HaveOccurred())
+			When("creating a new Broker fails", func() {
+				BeforeEach(func() {
+					// register the broker first, so that the second register errors
+					b := &osbapi.Broker{
+						Name:     "broker-1",
+						URL:      "broker-1-url",
+						Username: "broker-1-username",
+						Password: "broker-1-password",
+					}
+
+					Expect(broker.Register(b)).To(Succeed())
+				})
+
+				It("propagates the error", func() {
+					Expect(err).To(HaveOccurred())
+				})
+			})
+		})
+
+		When("the status of a broker is never set to registered", func() {
+			It("should eventually timeout", func() {
+				Expect(err).To(MatchError(errors.New("timed out waiting for broker to be registered")))
 			})
 		})
 	})
@@ -157,5 +177,27 @@ func deleteBrokers(kubeClient client.Client, brokerNames ...string) {
 			},
 		}
 		Expect(kubeClient.Delete(context.TODO(), bToDelete)).To(Succeed())
+	}
+}
+
+func simulateRegistration(kubeClient client.Client, brokerName string, done chan bool) {
+	for {
+		select {
+		case <-done:
+			return //exit func
+		default:
+			key := types.NamespacedName{
+				Name:      brokerName,
+				Namespace: "default",
+			}
+			broker := &v1alpha1.Broker{}
+			err := kubeClient.Get(context.TODO(), key, broker)
+			if err != nil {
+				break //loop again
+			}
+
+			broker.Status.State = v1alpha1.BrokerStateRegistered
+			Expect(kubeClient.Status().Update(context.TODO(), broker)).To(Succeed())
+		}
 	}
 }

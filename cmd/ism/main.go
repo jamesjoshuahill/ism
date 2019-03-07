@@ -77,6 +77,12 @@ func main() {
 
 	if err != nil {
 		fmt.Println(err)
+
+		if outErr, ok := err.(*flags.Error); ok && outErr.Type == flags.ErrHelp {
+			os.Exit(0)
+		} else {
+			os.Exit(1)
+		}
 	}
 }
 

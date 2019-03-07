@@ -78,7 +78,6 @@ func TestAcceptance(t *testing.T) {
 			stopTestBroker()
 		}
 
-		uninstallCRDs()
 		CleanupBuildArtifacts()
 	})
 
@@ -160,14 +159,17 @@ func registerBroker(brokerName string) {
 	registerSession, err := Start(command, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 	Eventually(registerSession).Should(Exit(0))
-
-	//TODO: Temporarily sleep until #164240938 is done.
-	time.Sleep(10 * time.Second)
 }
 
 func deleteBrokers(brokerNames ...string) {
 	for _, b := range brokerNames {
 		runKubectl("delete", "broker", b)
+
+		command := exec.Command("kubectl", "wait", "--for=delete", fmt.Sprintf("broker/%s", b))
+		command.Dir = filepath.Join("..")
+		command.Stdout = io.MultiWriter(GinkgoWriter, GinkgoWriter)
+		command.Stderr = GinkgoWriter
+		command.Run()
 	}
 }
 
