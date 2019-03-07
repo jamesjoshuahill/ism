@@ -20,28 +20,28 @@ type Broker struct {
 }
 
 //TODO change r to b
-func (r *Broker) FindAll() ([]*osbapi.Broker, error) {
+func (b *Broker) FindAll() ([]*osbapi.Broker, error) {
 	list := &v1alpha1.BrokerList{}
-	if err := r.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
+	if err := b.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
 		return []*osbapi.Broker{}, err
 	}
 
 	brokers := []*osbapi.Broker{}
-	for _, b := range list.Items {
+	for _, broker := range list.Items {
 		brokers = append(brokers, &osbapi.Broker{
-			ID:        string(b.UID),
-			Name:      b.Spec.Name,
-			URL:       b.Spec.URL,
-			Username:  b.Spec.Username,
-			Password:  b.Spec.Password,
-			CreatedAt: b.ObjectMeta.CreationTimestamp.String(),
+			ID:        string(broker.UID),
+			Name:      broker.Spec.Name,
+			URL:       broker.Spec.URL,
+			Username:  broker.Spec.Username,
+			Password:  broker.Spec.Password,
+			CreatedAt: broker.ObjectMeta.CreationTimestamp.String(),
 		})
 	}
 
 	return brokers, nil
 }
 
-func (r *Broker) Register(broker *osbapi.Broker) error {
+func (b *Broker) Register(broker *osbapi.Broker) error {
 	brokerResource := &v1alpha1.Broker{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      broker.Name,
@@ -55,20 +55,20 @@ func (r *Broker) Register(broker *osbapi.Broker) error {
 		},
 	}
 
-	if err := r.KubeClient.Create(context.TODO(), brokerResource); err != nil {
+	if err := b.KubeClient.Create(context.TODO(), brokerResource); err != nil {
 		return err
 	}
 
-	return r.waitForBrokerRegistration(brokerResource)
+	return b.waitForBrokerRegistration(brokerResource)
 }
 
-func (r *Broker) waitForBrokerRegistration(broker *v1alpha1.Broker) error {
-	err := wait.Poll(1*time.Second, 10*time.Second, func() (bool, error) {
-		b := &v1alpha1.Broker{}
+func (b *Broker) waitForBrokerRegistration(broker *v1alpha1.Broker) error {
+	err := wait.Poll(1*time.Second, 3*time.Second, func() (bool, error) {
+		fetchedBroker := &v1alpha1.Broker{}
 
-		err := r.KubeClient.Get(context.TODO(), types.NamespacedName{Name: broker.Name, Namespace: broker.Namespace}, b)
+		err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: broker.Name, Namespace: broker.Namespace}, fetchedBroker)
 		if err == nil {
-			if b.Status.State == v1alpha1.BrokerStateRegistered {
+			if fetchedBroker.Status.State == v1alpha1.BrokerStateRegistered {
 				return true, nil
 			}
 		}
