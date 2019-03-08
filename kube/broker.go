@@ -66,10 +66,8 @@ func (b *Broker) waitForBrokerRegistration(broker *v1alpha1.Broker) error {
 		fetchedBroker := &v1alpha1.Broker{}
 
 		err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: broker.Name, Namespace: broker.Namespace}, fetchedBroker)
-		if err == nil {
-			if fetchedBroker.Status.State == v1alpha1.BrokerStateRegistered {
-				return true, nil
-			}
+		if err == nil && fetchedBroker.Status.State == v1alpha1.BrokerStateRegistered {
+			return true, nil
 		}
 
 		return false, nil
