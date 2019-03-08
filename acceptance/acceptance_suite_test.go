@@ -164,12 +164,6 @@ func registerBroker(brokerName string) {
 func deleteBrokers(brokerNames ...string) {
 	for _, b := range brokerNames {
 		runKubectl("delete", "broker", b)
-
-		command := exec.Command("kubectl", "wait", "--for=delete", fmt.Sprintf("broker/%s", b))
-		command.Dir = filepath.Join("..")
-		command.Stdout = io.MultiWriter(GinkgoWriter, GinkgoWriter)
-		command.Stderr = GinkgoWriter
-		command.Run()
 	}
 }
 
