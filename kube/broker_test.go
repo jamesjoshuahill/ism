@@ -2,6 +2,7 @@ package kube_test
 
 import (
 	"context"
+	"time"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -22,7 +23,8 @@ var _ = Describe("Broker", func() {
 	var (
 		kubeClient client.Client
 
-		broker *Broker
+		broker              *Broker
+		registrationTimeout time.Duration
 	)
 
 	BeforeEach(func() {
@@ -30,13 +32,19 @@ var _ = Describe("Broker", func() {
 		kubeClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 		Expect(err).NotTo(HaveOccurred())
 
+		registrationTimeout = time.Second
+
 		broker = &Broker{
-			KubeClient: kubeClient,
+			KubeClient:          kubeClient,
+			RegistrationTimeout: registrationTimeout,
 		}
 	})
 
 	Describe("Register", func() {
-		var err error
+		var (
+			err                  error
+			registrationDuration time.Duration
+		)
 
 		JustBeforeEach(func() {
 			b := &osbapi.Broker{
@@ -46,7 +54,9 @@ var _ = Describe("Broker", func() {
 				Password: "broker-1-password",
 			}
 
+			before := time.Now()
 			err = broker.Register(b)
+			registrationDuration = time.Since(before)
 		})
 
 		AfterEach(func() {
@@ -106,6 +116,13 @@ var _ = Describe("Broker", func() {
 		When("the status of a broker is never set to registered", func() {
 			It("should eventually timeout", func() {
 				Expect(err).To(MatchError("timed out waiting for broker 'broker-1' to be registered"))
+			})
+
+			It("times out once the timeout has been reached", func() {
+				estimatedExecutionTime := time.Second * 5 // flake prevention!
+
+				Expect(registrationDuration).To(BeNumerically(">", registrationTimeout))
+				Expect(registrationDuration).To(BeNumerically("<", registrationTimeout+estimatedExecutionTime))
 			})
 		})
 	})

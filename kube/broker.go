@@ -24,7 +24,8 @@ func (e BrokerRegisterTimeoutErr) Error() string {
 }
 
 type Broker struct {
-	KubeClient client.Client
+	KubeClient          client.Client
+	RegistrationTimeout time.Duration
 }
 
 func (b *Broker) FindAll() ([]*osbapi.Broker, error) {
@@ -70,7 +71,7 @@ func (b *Broker) Register(broker *osbapi.Broker) error {
 }
 
 func (b *Broker) waitForBrokerRegistration(broker *v1alpha1.Broker) error {
-	err := wait.Poll(1*time.Second, 10*time.Second, func() (bool, error) {
+	err := wait.Poll(time.Second/2, b.RegistrationTimeout, func() (bool, error) {
 		fetchedBroker := &v1alpha1.Broker{}
 
 		err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: broker.Name, Namespace: broker.Namespace}, fetchedBroker)

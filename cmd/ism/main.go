@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
@@ -17,6 +18,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const timeout = time.Second * 30
+
 func main() {
 	UI := &ui.UI{
 		Out: os.Stdout,
@@ -29,7 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	brokerRepository := &kube.Broker{KubeClient: kubeClient}
+	brokerRepository := &kube.Broker{KubeClient: kubeClient, RegistrationTimeout: timeout}
 	serviceRepository := &kube.Service{KubeClient: kubeClient}
 	planRepository := &kube.Plan{KubeClient: kubeClient}
 
