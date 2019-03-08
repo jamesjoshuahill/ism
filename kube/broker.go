@@ -2,7 +2,7 @@ package kube
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,6 +14,14 @@ import (
 	"github.com/pivotal-cf/ism/osbapi"
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 )
+
+type BrokerRegisterTimeoutErr struct {
+	brokerName string
+}
+
+func (e BrokerRegisterTimeoutErr) Error() string {
+	return fmt.Sprintf("timed out waiting for broker '%s' to be registered", e.brokerName)
+}
 
 type Broker struct {
 	KubeClient client.Client
@@ -75,7 +83,7 @@ func (b *Broker) waitForBrokerRegistration(broker *v1alpha1.Broker) error {
 
 	if err != nil {
 		if err == wait.ErrWaitTimeout {
-			return errors.New("timed out waiting for broker to be registered")
+			return BrokerRegisterTimeoutErr{brokerName: broker.Name}
 		}
 
 		return err

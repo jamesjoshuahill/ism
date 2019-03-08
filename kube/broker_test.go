@@ -2,7 +2,6 @@ package kube_test
 
 import (
 	"context"
-	"errors"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -106,7 +105,7 @@ var _ = Describe("Broker", func() {
 
 		When("the status of a broker is never set to registered", func() {
 			It("should eventually timeout", func() {
-				Expect(err).To(MatchError(errors.New("timed out waiting for broker to be registered")))
+				Expect(err).To(MatchError("timed out waiting for broker 'broker-1' to be registered"))
 			})
 		})
 	})
