@@ -19,6 +19,11 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
+const (
+	serviceName = "overview-service"
+	planName    = "simple"
+)
+
 var (
 	controllerSession *Session
 
@@ -164,6 +169,12 @@ func registerBroker(brokerName string) {
 func deleteBrokers(brokerNames ...string) {
 	for _, b := range brokerNames {
 		runKubectl("delete", "broker", b)
+	}
+}
+
+func deleteServiceInstances(serviceInstanceNames ...string) {
+	for _, s := range serviceInstanceNames {
+		runKubectl("delete", "serviceinstance", s)
 	}
 }
 

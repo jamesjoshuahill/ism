@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package brokerserviceplan
+package serviceinstance
 
 import (
 	osbapiv1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
@@ -30,7 +30,7 @@ import (
 
 var log = logf.Log.WithName("controller")
 
-// Add creates a new BrokerServicePlan Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
+// Add creates a new ServiceInstance Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
@@ -38,19 +38,19 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileBrokerServicePlan{Client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileServiceInstance{Client: mgr.GetClient(), scheme: mgr.GetScheme()}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("brokerserviceplan-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("serviceinstance-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
-	// Watch for changes to BrokerServicePlan
-	err = c.Watch(&source.Kind{Type: &osbapiv1alpha1.BrokerServicePlan{}}, &handler.EnqueueRequestForObject{})
+	// Watch for changes to ServiceInstance
+	err = c.Watch(&source.Kind{Type: &osbapiv1alpha1.ServiceInstance{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -58,19 +58,19 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
-var _ reconcile.Reconciler = &ReconcileBrokerServicePlan{}
+var _ reconcile.Reconciler = &ReconcileServiceInstance{}
 
-// ReconcileBrokerServicePlan reconciles a BrokerServicePlan object
-type ReconcileBrokerServicePlan struct {
+// ReconcileServiceInstance reconciles a ServiceInstance object
+type ReconcileServiceInstance struct {
 	client.Client
 	scheme *runtime.Scheme
 }
 
-// Reconcile reads that state of the cluster for a BrokerServicePlan object and makes changes based on the state read
-// and what is in the BrokerServicePlan.Spec
+// Reconcile reads that state of the cluster for a ServiceInstance object and makes changes based on the state read
+// and what is in the ServiceInstance.Spec
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
-// +kubebuilder:rbac:groups=osbapi.ism.io,resources=brokerserviceplans,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=osbapi.ism.io,resources=brokerserviceplans/status,verbs=get;update;patch
-func (r *ReconcileBrokerServicePlan) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+// +kubebuilder:rbac:groups=osbapi.ism.io,resources=serviceinstances,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=osbapi.ism.io,resources=serviceinstances/status,verbs=get;update;patch
+func (r *ReconcileServiceInstance) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	return reconcile.Result{}, nil
 }

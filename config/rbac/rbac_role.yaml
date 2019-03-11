@@ -65,6 +65,26 @@ rules:
   - update
   - patch
 - apiGroups:
+  - osbapi.ism.io
+  resources:
+  - serviceinstances
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - osbapi.ism.io
+  resources:
+  - serviceinstances/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
   - admissionregistration.k8s.io
   resources:
   - mutatingwebhookconfigurations

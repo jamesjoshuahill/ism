@@ -23,13 +23,14 @@ func (p *Plan) FindByService(serviceID string) ([]*osbapi.Plan, error) {
 	plans := []*osbapi.Plan{}
 	for _, p := range list.Items {
 		// TODO: This code will be refactored so filtering happens in the API - for now
-		// we are assuming there will never be multiple owner references.
+		// we are assuming there will never be multiple owner references. See #164327846
 		if len(p.ObjectMeta.OwnerReferences) == 0 {
 			break
 		}
 
 		if string(p.ObjectMeta.OwnerReferences[0].UID) == serviceID {
 			plans = append(plans, &osbapi.Plan{
+				ID:        p.ObjectMeta.Name,
 				Name:      p.Spec.Name,
 				ServiceID: serviceID,
 			})

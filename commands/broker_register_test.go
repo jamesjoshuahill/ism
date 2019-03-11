@@ -54,7 +54,7 @@ var _ = Describe("Broker Register Command", func() {
 			Expect(data[0]).To(HaveKeyWithValue("BrokerName", "broker-1"))
 		})
 
-		It("registers the broker", func() {
+		It("calls to register the broker", func() {
 			broker := fakeBrokerRegistrar.RegisterArgsForCall(0)
 
 			Expect(broker).To(Equal(&osbapi.Broker{

@@ -55,7 +55,7 @@ var _ = Describe("Plan", func() {
 						}},
 					},
 					Spec: v1alpha1.BrokerServicePlanSpec{
-						Name: "plan-1",
+						Name: "my-plan",
 					},
 				}
 				Expect(kubeClient.Create(context.TODO(), planResource)).To(Succeed())
@@ -72,7 +72,7 @@ var _ = Describe("Plan", func() {
 						}},
 					},
 					Spec: v1alpha1.BrokerServicePlanSpec{
-						Name: "plan-2",
+						Name: "my-plan-2",
 					},
 				}
 				Expect(kubeClient.Create(context.TODO(), planResource2)).To(Succeed())
@@ -86,7 +86,8 @@ var _ = Describe("Plan", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(plans).To(Equal([]*osbapi.Plan{{
-					Name:      "plan-1",
+					Name:      "my-plan",
+					ID:        "plan-1",
 					ServiceID: "service-uid-1",
 				}}))
 			})
@@ -100,7 +101,7 @@ var _ = Describe("Plan", func() {
 						Namespace: "default",
 					},
 					Spec: v1alpha1.BrokerServicePlanSpec{
-						Name: "plan-1",
+						Name: "my-plan",
 					},
 				}
 				Expect(kubeClient.Create(context.TODO(), planResource)).To(Succeed())

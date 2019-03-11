@@ -23,7 +23,7 @@ func (s *Service) FindByBroker(brokerID string) ([]*osbapi.Service, error) {
 	services := []*osbapi.Service{}
 	for _, s := range list.Items {
 		// TODO: This code will be refactored so filtering happens in the API - for now
-		// we are assuming there will never be multiple owner references.
+		// we are assuming there will never be multiple owner references. See #164327846
 		if len(s.ObjectMeta.OwnerReferences) == 0 {
 			break
 		}
