@@ -5,7 +5,7 @@ BROKERIMG ?= mattmcneeney/overview-broker:latest
 CLI_NAME = bin/ism
 GINKGO_ARGS = -r -p -randomizeSuites -randomizeAllSpecs
 
-all: clean test manager cli
+all: clean generate test manager cli
 
 # Run tests
 test: fmt vet manifests unit-tests integration-tests acceptance-tests
