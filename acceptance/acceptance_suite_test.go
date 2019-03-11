@@ -35,6 +35,7 @@ func TestAcceptance(t *testing.T) {
 	SynchronizedBeforeSuite(func() []byte {
 		printClusterName()
 		cliPath := buildCLI()
+		time.Sleep(time.Minute * 1)
 		installCRDs()
 
 		var brokerURL, brokerUser, brokerPass string
@@ -78,6 +79,8 @@ func TestAcceptance(t *testing.T) {
 			stopTestBroker()
 		}
 
+		time.Sleep(time.Minute * 1)
+		uninstallCRDs()
 		CleanupBuildArtifacts()
 	})
 
@@ -163,6 +166,7 @@ func registerBroker(brokerName string) {
 
 func deleteBrokers(brokerNames ...string) {
 	for _, b := range brokerNames {
+		time.Sleep(time.Minute * 1)
 		runKubectl("delete", "broker", b)
 	}
 }
