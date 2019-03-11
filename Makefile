@@ -70,6 +70,9 @@ cli:
 clean:
 	rm -f ${CLI_NAME}
 
+clean-crs:
+	kubectl delete brokers,brokerservices,brokerserviceplans,serviceinstances --all
+
 # Cannot yet -randomizeAllSpecs the acceptance tests
 acceptance-tests:
 	ginkgo -r acceptance
