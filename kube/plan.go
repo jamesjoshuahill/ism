@@ -28,7 +28,7 @@ func (p *Plan) FindByService(serviceID string) ([]*osbapi.Plan, error) {
 			break
 		}
 
-		if string(p.ObjectMeta.OwnerReferences[0].UID) == serviceID {
+		if p.ObjectMeta.OwnerReferences[0].Name == serviceID {
 			plans = append(plans, &osbapi.Plan{
 				ID:        p.ObjectMeta.Name,
 				Name:      p.Spec.Name,

@@ -30,7 +30,7 @@ func (s *Service) FindByBroker(brokerID string) ([]*osbapi.Service, error) {
 
 		if string(s.ObjectMeta.OwnerReferences[0].UID) == brokerID {
 			services = append(services, &osbapi.Service{
-				ID:          string(s.UID),
+				ID:          s.ObjectMeta.Name,
 				Name:        s.Spec.Name,
 				Description: s.Spec.Description,
 				BrokerID:    brokerID,

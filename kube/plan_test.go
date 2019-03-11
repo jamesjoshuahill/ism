@@ -38,7 +38,7 @@ var _ = Describe("Plan", func() {
 		)
 
 		JustBeforeEach(func() {
-			plans, err = plan.FindByService("service-uid-1")
+			plans, err = plan.FindByService("service-1")
 		})
 
 		When("plans contain owner references to services", func() {
@@ -88,7 +88,7 @@ var _ = Describe("Plan", func() {
 				Expect(plans).To(Equal([]*osbapi.Plan{{
 					Name:      "my-plan",
 					ID:        "plan-1",
-					ServiceID: "service-uid-1",
+					ServiceID: "service-1",
 				}}))
 			})
 		})

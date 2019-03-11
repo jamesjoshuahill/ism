@@ -56,7 +56,7 @@ var _ = Describe("Service", func() {
 						}},
 					},
 					Spec: v1alpha1.BrokerServiceSpec{
-						Name:        "service-1",
+						Name:        "my-service-1",
 						Description: "service-1-desc",
 					},
 				}
@@ -74,7 +74,7 @@ var _ = Describe("Service", func() {
 						}},
 					},
 					Spec: v1alpha1.BrokerServiceSpec{
-						Name:        "service-2",
+						Name:        "my-service-2",
 						Description: "service-2-desc",
 					},
 				}
@@ -90,7 +90,8 @@ var _ = Describe("Service", func() {
 
 				Expect(services).To(HaveLen(1))
 				Expect(*services[0]).To(MatchFields(IgnoreExtras, Fields{
-					"Name":        Equal("service-1"),
+					"ID":          Equal("service-1"),
+					"Name":        Equal("my-service-1"),
 					"Description": Equal("service-1-desc"),
 					"BrokerID":    Equal("broker-1"),
 				}))
@@ -105,7 +106,7 @@ var _ = Describe("Service", func() {
 						Namespace: "default",
 					},
 					Spec: v1alpha1.BrokerServiceSpec{
-						Name:        "service-1",
+						Name:        "my-service-1",
 						Description: "service-1-desc",
 					},
 				}
