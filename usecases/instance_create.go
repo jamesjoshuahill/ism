@@ -25,7 +25,7 @@ func (u *InstanceCreateUsecase) Create(name, planName, serviceName, brokerName s
 		return err
 	}
 
-	service, err := u.getService(broker.ID, serviceName)
+	service, err := u.getService(broker.Name, serviceName)
 	if err != nil {
 		return err
 	}
@@ -36,10 +36,10 @@ func (u *InstanceCreateUsecase) Create(name, planName, serviceName, brokerName s
 	}
 
 	instance := &osbapi.Instance{
-		Name:      name,
-		PlanID:    plan.ID,
-		ServiceID: service.ID,
-		BrokerID:  broker.ID,
+		Name:       name,
+		PlanID:     plan.ID,
+		ServiceID:  service.ID,
+		BrokerName: broker.Name,
 	}
 
 	return u.InstanceCreator.Create(instance)

@@ -43,20 +43,18 @@ var _ = Describe("Instance Create Usecase", func() {
 
 		brokers = []*osbapi.Broker{{
 			Name: "another-broker",
-			ID:   "broker-2",
 		}, {
 			Name: "my-broker",
-			ID:   "broker-1",
 		}}
 
 		services = []*osbapi.Service{{
-			Name:     "my-service",
-			ID:       "service-1",
-			BrokerID: "broker-1",
+			Name:       "my-service",
+			ID:         "service-1",
+			BrokerName: "my-broker",
 		}, {
-			Name:     "another-service",
-			ID:       "service-2",
-			BrokerID: "broker-1",
+			Name:       "another-service",
+			ID:         "service-2",
+			BrokerName: "my-broker",
 		}}
 
 		plans = []*osbapi.Plan{{
@@ -86,8 +84,8 @@ var _ = Describe("Instance Create Usecase", func() {
 			Expect(fakeServiceFetcher.GetServicesCallCount()).To(Equal(1))
 			Expect(fakePlanFetcher.GetPlansCallCount()).To(Equal(1))
 
-			passedBrokerID := fakeServiceFetcher.GetServicesArgsForCall(0)
-			Expect(passedBrokerID).To(Equal("broker-1"))
+			passedBrokerName := fakeServiceFetcher.GetServicesArgsForCall(0)
+			Expect(passedBrokerName).To(Equal("my-broker"))
 
 			passedServiceID := fakePlanFetcher.GetPlansArgsForCall(0)
 			Expect(passedServiceID).To(Equal("service-1"))
@@ -96,10 +94,10 @@ var _ = Describe("Instance Create Usecase", func() {
 			passedInstance := fakeInstanceCreator.CreateArgsForCall(0)
 
 			Expect(*passedInstance).To(Equal(osbapi.Instance{
-				Name:      "my-instance",
-				PlanID:    "plan-1",
-				ServiceID: "service-1",
-				BrokerID:  "broker-1",
+				Name:       "my-instance",
+				PlanID:     "plan-1",
+				ServiceID:  "service-1",
+				BrokerName: "my-broker",
 			}))
 
 			Expect(executeErr).NotTo(HaveOccurred())

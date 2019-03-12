@@ -52,7 +52,7 @@ func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, err
 	}
 
-	broker, err := r.kubeBrokerRepo.Get(types.NamespacedName{Name: instance.Spec.BrokerID, Namespace: instance.ObjectMeta.Namespace})
+	broker, err := r.kubeBrokerRepo.Get(types.NamespacedName{Name: instance.Spec.BrokerName, Namespace: instance.ObjectMeta.Namespace})
 	if err != nil {
 		//TODO what if the broker does not exist?
 		return reconcile.Result{}, err

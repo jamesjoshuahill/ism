@@ -22,10 +22,10 @@ import (
 
 // ServiceInstanceSpec defines the desired state of ServiceInstance
 type ServiceInstanceSpec struct {
-	Name      string `json:"name"`
-	PlanID    string `json:"planID"`
-	ServiceID string `json:"serviceID"`
-	BrokerID  string `json:"brokerID"`
+	Name       string `json:"name"`
+	PlanID     string `json:"planID"`
+	ServiceID  string `json:"serviceID"`
+	BrokerName string `json:"brokerName"`
 }
 
 // ServiceInstanceStatus defines the observed state of ServiceInstance

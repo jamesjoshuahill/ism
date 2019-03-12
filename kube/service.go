@@ -14,7 +14,7 @@ type Service struct {
 	KubeClient client.Client
 }
 
-func (s *Service) FindByBroker(brokerID string) ([]*osbapi.Service, error) {
+func (s *Service) FindByBroker(brokerName string) ([]*osbapi.Service, error) {
 	list := &v1alpha1.BrokerServiceList{}
 	if err := s.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
 		return []*osbapi.Service{}, err
@@ -28,12 +28,12 @@ func (s *Service) FindByBroker(brokerID string) ([]*osbapi.Service, error) {
 			break
 		}
 
-		if string(s.ObjectMeta.OwnerReferences[0].UID) == brokerID {
+		if string(s.ObjectMeta.OwnerReferences[0].Name) == brokerName {
 			services = append(services, &osbapi.Service{
 				ID:          s.ObjectMeta.Name,
 				Name:        s.Spec.Name,
 				Description: s.Spec.Description,
-				BrokerID:    brokerID,
+				BrokerName:  brokerName,
 			})
 		}
 	}

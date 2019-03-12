@@ -79,7 +79,7 @@ var _ = Describe("CLI instance command", func() {
 				deleteServiceInstances("my-instance")
 			})
 
-			PIt("creates the service instance", func() {
+			It("creates the service instance", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("Instance 'my-instance' created\\."))
 

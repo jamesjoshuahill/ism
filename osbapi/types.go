@@ -1,9 +1,8 @@
 package osbapi
 
 type Broker struct {
-	ID        string
-	CreatedAt string
 	Name      string
+	CreatedAt string
 	URL       string
 	Username  string
 	Password  string
@@ -13,7 +12,7 @@ type Service struct {
 	ID          string
 	Name        string
 	Description string
-	BrokerID    string
+	BrokerName  string
 }
 
 type Plan struct {
@@ -23,8 +22,8 @@ type Plan struct {
 }
 
 type Instance struct {
-	Name      string
-	ServiceID string
-	PlanID    string
-	BrokerID  string
+	Name       string
+	ServiceID  string
+	PlanID     string
+	BrokerName string
 }

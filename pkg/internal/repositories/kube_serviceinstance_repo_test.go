@@ -28,10 +28,10 @@ var _ = Describe("KubeServiceInstanceRepo", func() {
 				Namespace: resource.Namespace,
 			},
 			Spec: v1alpha1.ServiceInstanceSpec{
-				Name:      "my-serviceinstance-1",
-				PlanID:    "plan-1",
-				ServiceID: "service-1",
-				BrokerID:  "broker-1",
+				Name:       "my-serviceinstance-1",
+				PlanID:     "plan-1",
+				ServiceID:  "service-1",
+				BrokerName: "broker-1",
 			},
 		}
 

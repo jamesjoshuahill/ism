@@ -71,14 +71,14 @@ var _ = Describe("Service List Usecase", func() {
 	When("there are one or more brokers", func() {
 		BeforeEach(func() {
 			fakeBrokerFetcher.GetBrokersReturns([]*osbapi.Broker{
-				{ID: "broker1-id", Name: "broker1"},
-				{ID: "broker2-id", Name: "broker2"}}, nil)
+				{Name: "broker1"},
+				{Name: "broker2"}}, nil)
 		})
 
 		It("fetches services for each broker", func() {
 			Expect(fakeServiceFetcher.GetServicesCallCount()).To(Equal(2))
-			Expect(fakeServiceFetcher.GetServicesArgsForCall(0)).To(Equal("broker1-id"))
-			Expect(fakeServiceFetcher.GetServicesArgsForCall(1)).To(Equal("broker2-id"))
+			Expect(fakeServiceFetcher.GetServicesArgsForCall(0)).To(Equal("broker1"))
+			Expect(fakeServiceFetcher.GetServicesArgsForCall(1)).To(Equal("broker2"))
 		})
 
 		When("fetching services errors", func() {

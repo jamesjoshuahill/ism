@@ -30,7 +30,7 @@ spec:
           type: object
         spec:
           properties:
-            brokerID:
+            brokerName:
               type: string
             name:
               type: string
@@ -42,7 +42,7 @@ spec:
           - name
           - planID
           - serviceID
-          - brokerID
+          - brokerName
           type: object
         status:
           properties:

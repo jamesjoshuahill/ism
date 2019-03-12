@@ -11,7 +11,7 @@ type BrokerFetcher interface {
 //go:generate counterfeiter . ServiceFetcher
 
 type ServiceFetcher interface {
-	GetServices(brokerID string) ([]*osbapi.Service, error)
+	GetServices(brokerName string) ([]*osbapi.Service, error)
 }
 
 //go:generate counterfeiter . PlanFetcher
@@ -34,7 +34,7 @@ func (u *ServiceListUsecase) GetServices() ([]*Service, error) {
 
 	var servicesToDisplay []*Service
 	for _, b := range brokers {
-		services, err := u.ServiceFetcher.GetServices(b.ID)
+		services, err := u.ServiceFetcher.GetServices(b.Name)
 		if err != nil {
 			return []*Service{}, err
 		}

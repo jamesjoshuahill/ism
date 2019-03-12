@@ -46,10 +46,10 @@ var _ = Describe("Instance", func() {
 
 		JustBeforeEach(func() {
 			b := &osbapi.Instance{
-				Name:      "instance-1",
-				PlanID:    "plan-1",
-				ServiceID: "service-1",
-				BrokerID:  "broker-1",
+				Name:       "instance-1",
+				PlanID:     "plan-1",
+				ServiceID:  "service-1",
+				BrokerName: "broker-1",
 			}
 
 			// before := Createtime.Now()
@@ -85,10 +85,10 @@ var _ = Describe("Instance", func() {
 				Expect(kubeClient.Get(context.TODO(), key, fetched)).To(Succeed())
 
 				Expect(fetched.Spec).To(Equal(v1alpha1.ServiceInstanceSpec{
-					Name:      "instance-1",
-					PlanID:    "plan-1",
-					ServiceID: "service-1",
-					BrokerID:  "broker-1",
+					Name:       "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "broker-1",
 				}))
 			})
 
@@ -96,10 +96,10 @@ var _ = Describe("Instance", func() {
 				BeforeEach(func() {
 					// register the instance first, so that the second register errors
 					b := &osbapi.Instance{
-						Name:      "instance-1",
-						PlanID:    "plan-1",
-						ServiceID: "service-1",
-						BrokerID:  "broker-1",
+						Name:       "instance-1",
+						PlanID:     "plan-1",
+						ServiceID:  "service-1",
+						BrokerName: "broker-1",
 					}
 
 					Expect(instance.Create(b)).To(Succeed())

@@ -37,7 +37,6 @@ func (b *Broker) FindAll() ([]*osbapi.Broker, error) {
 	brokers := []*osbapi.Broker{}
 	for _, broker := range list.Items {
 		brokers = append(brokers, &osbapi.Broker{
-			ID:        string(broker.UID),
 			Name:      broker.Spec.Name,
 			URL:       broker.Spec.URL,
 			Username:  broker.Spec.Username,

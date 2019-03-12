@@ -39,7 +39,7 @@ var _ = Describe("Service", func() {
 		)
 
 		JustBeforeEach(func() {
-			services, err = service.FindByBroker("broker-uid-1")
+			services, err = service.FindByBroker("my-broker-1")
 		})
 
 		When("services contain owner references to brokers", func() {
@@ -93,7 +93,7 @@ var _ = Describe("Service", func() {
 					"ID":          Equal("service-1"),
 					"Name":        Equal("my-service-1"),
 					"Description": Equal("service-1-desc"),
-					"BrokerID":    Equal("broker-uid-1"),
+					"BrokerName":  Equal("my-broker-1"),
 				}))
 			})
 		})

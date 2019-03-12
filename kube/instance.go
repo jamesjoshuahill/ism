@@ -32,10 +32,10 @@ func (b *Instance) Create(instance *osbapi.Instance) error {
 			Namespace: "default",
 		},
 		Spec: v1alpha1.ServiceInstanceSpec{
-			Name:      instance.Name,
-			PlanID:    instance.PlanID,
-			ServiceID: instance.ServiceID,
-			BrokerID:  instance.BrokerID,
+			Name:       instance.Name,
+			PlanID:     instance.PlanID,
+			ServiceID:  instance.ServiceID,
+			BrokerName: instance.BrokerName,
 		},
 	}
 

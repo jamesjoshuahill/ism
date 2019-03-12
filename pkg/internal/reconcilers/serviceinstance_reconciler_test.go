@@ -50,10 +50,10 @@ var _ = Describe("ServiceInstanceReconciler", func() {
 				UID:       "serviceinstance-uid-1",
 			},
 			Spec: v1alpha1.ServiceInstanceSpec{
-				Name:      "my-serviceinstance-1",
-				PlanID:    "plan-1",
-				ServiceID: "service-1",
-				BrokerID:  "broker-",
+				Name:       "my-serviceinstance-1",
+				PlanID:     "plan-1",
+				ServiceID:  "service-1",
+				BrokerName: "broker-1",
 			},
 		}
 		returnedBroker = &v1alpha1.Broker{
