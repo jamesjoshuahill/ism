@@ -59,7 +59,7 @@ deploy-test-broker:
 	kubectl apply -f acceptance/assets/broker
 
 run-test-broker:
-	docker run -d -p 127.0.0.1:1122:8080/tcp mattmcneeney/overview-broker
+	docker run -d -p 127.0.0.1:1122:8080/tcp ${BROKERIMG}
 
 stop-test-broker:
 	docker ps | grep mattmcneeney/overview-broker | awk '{print $$1}' | xargs -n1 docker kill
