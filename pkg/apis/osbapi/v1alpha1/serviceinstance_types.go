@@ -36,7 +36,7 @@ type ServiceInstanceStatus struct {
 type ServiceInstanceState string
 
 const (
-	ServiceInstanceStateCreated ServiceInstanceState = "created"
+	ServiceInstanceStateProvisioned ServiceInstanceState = "provisioned"
 )
 
 // +genclient

@@ -39,7 +39,7 @@ var _ = Describe("Service", func() {
 		)
 
 		JustBeforeEach(func() {
-			services, err = service.FindByBroker("broker-1")
+			services, err = service.FindByBroker("broker-uid-1")
 		})
 
 		When("services contain owner references to brokers", func() {
@@ -49,10 +49,10 @@ var _ = Describe("Service", func() {
 						Name:      "service-1",
 						Namespace: "default",
 						OwnerReferences: []metav1.OwnerReference{{
-							Name:       "broker-1",
+							Name:       "my-broker-1",
 							Kind:       "kind",
 							APIVersion: "version",
-							UID:        "broker-1",
+							UID:        "broker-uid-1",
 						}},
 					},
 					Spec: v1alpha1.BrokerServiceSpec{
@@ -67,10 +67,10 @@ var _ = Describe("Service", func() {
 						Name:      "service-2",
 						Namespace: "default",
 						OwnerReferences: []metav1.OwnerReference{{
-							Name:       "broker-2",
+							Name:       "my-broker-2",
 							Kind:       "kind",
 							APIVersion: "version",
-							UID:        "broker-2",
+							UID:        "broker-uid-2",
 						}},
 					},
 					Spec: v1alpha1.BrokerServiceSpec{
@@ -93,7 +93,7 @@ var _ = Describe("Service", func() {
 					"ID":          Equal("service-1"),
 					"Name":        Equal("my-service-1"),
 					"Description": Equal("service-1-desc"),
-					"BrokerID":    Equal("broker-1"),
+					"BrokerID":    Equal("broker-uid-1"),
 				}))
 			})
 		})

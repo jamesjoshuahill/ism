@@ -49,7 +49,7 @@ var _ = Describe("KubeBrokerRepo", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 
-			It("returns broker when it finds the broker", func() {
+			It("returns broker", func() {
 				broker, err := repo.Get(resource)
 				Expect(err).NotTo(HaveOccurred())
 

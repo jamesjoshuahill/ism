@@ -2,7 +2,11 @@ package acceptance
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os/exec"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -66,6 +70,8 @@ var _ = Describe("CLI instance command", func() {
 			BeforeEach(func() {
 				registerBroker("instance-creation-broker")
 				args = append(args, "--name", "my-instance", "--service", serviceName, "--plan", planName, "--broker", "instance-creation-broker")
+
+				Expect(getBrokerData().ServiceInstances).To(HaveLen(0))
 			})
 
 			AfterEach(func() {
@@ -73,21 +79,21 @@ var _ = Describe("CLI instance command", func() {
 				deleteServiceInstances("my-instance")
 			})
 
-			It("creates the service instance", func() {
+			PIt("creates the service instance", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("Instance 'my-instance' created\\."))
 
-				//TODO Replace this once we have ism instance list
-				out := runKubectl("get", "serviceinstance", "-o", "json")
+				time.Sleep(time.Second * 5)
 
-				type instanceList struct {
-					Items []interface{}
+				data := getBrokerData()
+				Expect(data.ServiceInstances).To(HaveLen(1))
+
+				for _, serviceInstance := range data.ServiceInstances {
+					Expect(serviceInstance.ServiceName).To(Equal(serviceName))
+					Expect(serviceInstance.PlanName).To(Equal(planName))
 				}
 
-				result := instanceList{}
-				err := json.Unmarshal([]byte(out), &result)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(result.Items).To(HaveLen(1))
+				//TODO Add a test to check ism instance list
 			})
 		})
 
@@ -99,3 +105,26 @@ var _ = Describe("CLI instance command", func() {
 		})
 	})
 })
+
+type serviceInstance struct {
+	PlanName    string `json:"plan_name"`
+	ServiceName string `json:"service_name"`
+}
+
+type brokerData struct {
+	ServiceInstances map[string]serviceInstance `json:"serviceInstances"`
+}
+
+func getBrokerData() brokerData {
+	brokerDataURL := fmt.Sprintf("%s/data", nodeBrokerURL)
+
+	resp, err := http.Get(brokerDataURL)
+	Expect(err).NotTo(HaveOccurred())
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	Expect(err).NotTo(HaveOccurred())
+
+	var data brokerData
+	Expect(json.Unmarshal(respBytes, &data)).To(Succeed())
+
+	return data
+}

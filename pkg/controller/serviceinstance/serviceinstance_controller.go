@@ -18,6 +18,9 @@ package serviceinstance
 
 import (
 	osbapiv1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
+	"github.com/pivotal-cf/ism/pkg/internal/reconcilers"
+	"github.com/pivotal-cf/ism/pkg/internal/repositories"
+	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -72,5 +75,15 @@ type ReconcileServiceInstance struct {
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=serviceinstances,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=serviceinstances/status,verbs=get;update;patch
 func (r *ReconcileServiceInstance) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	return reconcile.Result{}, nil
+	kubeBrokerRepo := repositories.NewKubeBrokerRepo(r.Client)
+	kubeServiceInstanceRepo := repositories.NewKubeServiceInstanceRepo(r.Client)
+
+	reconciler := reconcilers.NewServiceInstanceReconciler(
+		osbapi.NewClient,
+		kubeServiceInstanceRepo,
+		kubeBrokerRepo,
+	)
+
+	log.Info("Reconcile called", "request", request)
+	return reconciler.Reconcile(request)
 }
