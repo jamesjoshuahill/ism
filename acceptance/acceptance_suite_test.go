@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	serviceName     = "overview-service"
-	planName        = "simple"
-	brokerProxyPort = 8081
+	serviceName = "overview-service"
+	planName    = "simple"
+	brokerPort  = 8081
 )
 
 var (
@@ -120,7 +120,7 @@ func installCRDs() {
 
 func startTestBroker() (string, string, string) {
 	runMake("run-test-broker")
-	return "http://127.0.0.1:1122", "admin", "password"
+	return fmt.Sprintf("http://127.0.0.1:%d", brokerPort), "admin", "password"
 }
 
 func stopTestBroker() {
@@ -137,7 +137,7 @@ func deployTestBroker() (string, string, string) {
 }
 
 func setupProxyAccessToBroker() {
-	cmd := exec.Command("kubectl", "port-forward", "service/overview-broker", fmt.Sprintf("%d:8080", brokerProxyPort))
+	cmd := exec.Command("kubectl", "port-forward", "service/overview-broker", fmt.Sprintf("%d:8080", brokerPort))
 
 	var err error
 	proxySession, err = Start(cmd, GinkgoWriter, GinkgoWriter)
