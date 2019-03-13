@@ -20,12 +20,14 @@ import (
 )
 
 const (
-	serviceName = "overview-service"
-	planName    = "simple"
+	serviceName     = "overview-service"
+	planName        = "simple"
+	brokerProxyPort = 8081
 )
 
 var (
 	controllerSession *Session
+	proxySession      *Session
 
 	nodePathToCLI      string
 	nodeBrokerURL      string
@@ -38,12 +40,13 @@ func TestAcceptance(t *testing.T) {
 	SetDefaultConsistentlyDuration(time.Second * 5)
 
 	SynchronizedBeforeSuite(func() []byte {
-		printClusterName()
+		printTestSetup()
 		cliPath := buildCLI()
 		installCRDs()
 
 		var brokerURL, brokerUser, brokerPass string
-		if os.Getenv("TEST_ACCEPTANCE_IN_CLUSTER") != "" {
+
+		if testingInCluster() {
 			brokerURL, brokerUser, brokerPass = deployTestBroker()
 			deployController()
 		} else {
@@ -75,7 +78,7 @@ func TestAcceptance(t *testing.T) {
 
 	SynchronizedAfterSuite(func() {
 	}, func() {
-		if os.Getenv("TEST_ACCEPTANCE_IN_CLUSTER") != "" {
+		if testingInCluster() {
 			deleteController()
 			deleteTestBroker()
 		} else {
@@ -90,9 +93,18 @@ func TestAcceptance(t *testing.T) {
 	RunSpecs(t, "Acceptance Suite")
 }
 
-func printClusterName() {
+func printTestSetup() {
 	clusterContext := strings.TrimSpace(runKubectl("config", "current-context"))
 	fmt.Printf("Running tests against the '%s' cluster\n", clusterContext)
+	if testingInCluster() {
+		fmt.Println("Deploying test components in kubernetes")
+	} else {
+		fmt.Println("Deploying test components locally")
+	}
+}
+
+func testingInCluster() bool {
+	return os.Getenv("TEST_ACCEPTANCE_IN_CLUSTER") != ""
 }
 
 func buildCLI() string {
@@ -119,11 +131,26 @@ func deployTestBroker() (string, string, string) {
 	runMake("deploy-test-broker")
 	runKubectl("wait", "--for=condition=available", "deployment/overview-broker-deployment")
 	brokerIP := runKubectl("get", "service", "overview-broker", "-o", "jsonpath={.spec.clusterIP}")
+
+	setupProxyAccessToBroker()
 	return fmt.Sprintf("http://%s:8080", brokerIP), "admin", "password"
+}
+
+func setupProxyAccessToBroker() {
+	cmd := exec.Command("kubectl", "port-forward", "service/overview-broker", fmt.Sprintf("%d:8080", brokerProxyPort))
+
+	var err error
+	proxySession, err = Start(cmd, GinkgoWriter, GinkgoWriter)
+	Expect(err).NotTo(HaveOccurred())
+}
+
+func teardownProxyAccessToBroker() {
+	proxySession.Terminate()
 }
 
 func deleteTestBroker() {
 	runMake("delete-test-broker")
+	teardownProxyAccessToBroker()
 }
 
 func startController() {

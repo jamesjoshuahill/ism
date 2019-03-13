@@ -116,7 +116,7 @@ type brokerData struct {
 }
 
 func getBrokerData() brokerData {
-	brokerDataURL := fmt.Sprintf("%s/data", nodeBrokerURL)
+	brokerDataURL := fmt.Sprintf("http://127.0.0.1:%d/data", brokerProxyPort)
 
 	resp, err := http.Get(brokerDataURL)
 	Expect(err).NotTo(HaveOccurred())
