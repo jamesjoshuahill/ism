@@ -56,9 +56,9 @@ var _ = Describe("CLI instance command", func() {
 		It("displays help and exits 0", func() {
 			Eventually(session).Should(Exit(0))
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`ism \[OPTIONS\] instance <create>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] instance <create | list>`))
 			Eventually(session).Should(Say("\n"))
-			Eventually(session).Should(Say("The instance command group lets you create service instances"))
+			Eventually(session).Should(Say("The instance command group lets you create and list service instances"))
 		})
 	})
 
@@ -107,6 +107,53 @@ var _ = Describe("CLI instance command", func() {
 			It("displays an informative message and exits 1", func() {
 				Eventually(session).Should(Exit(1))
 				Eventually(session).Should(Say("the required flags `--broker', `--name', `--plan' and `--service' were not specified"))
+			})
+		})
+	})
+
+	Describe("list sub command", func() {
+		BeforeEach(func() {
+			args = append(args, "list")
+		})
+
+		When("--help is passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--help")
+			})
+
+			It("displays help and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Usage:"))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] instance list`))
+				Eventually(session).Should(Say("\n"))
+				Eventually(session).Should(Say("List the service instances"))
+			})
+		})
+
+		When("0 service instances are created", func() {
+			It("displays 'No instances found.' and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("No instances found\\."))
+			})
+		})
+
+		When("1 instance is created", func() {
+			BeforeEach(func() {
+				registerBroker("test-broker-1")
+				createInstance("test-instance", "test-broker-1")
+			})
+
+			AfterEach(func() {
+				deleteServiceInstances("test-instance")
+				deleteBrokers("test-broker-1")
+			})
+
+			PIt("displays the instance", func() {
+				timeRegex := `\d{4,}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}`
+
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("NAME\\s+SERVICE\\s+PLAN\\s+BROKER\\s+CREATED AT"))
+				Eventually(session).Should(Say("test-instance\\s+" + serviceName + "\\s+" + planName + "\\s+test-broker-1\\s+" + timeRegex))
 			})
 		})
 	})

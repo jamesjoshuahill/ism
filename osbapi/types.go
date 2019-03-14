@@ -39,6 +39,7 @@ type Plan struct {
 
 type Instance struct {
 	Name       string
+	CreatedAt  string
 	ServiceID  string
 	PlanID     string
 	BrokerName string

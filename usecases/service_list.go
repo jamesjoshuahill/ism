@@ -18,45 +18,45 @@ package usecases
 
 import "github.com/pivotal-cf/ism/osbapi"
 
-//go:generate counterfeiter . BrokerFetcher
+//go:generate counterfeiter . BrokersFetcher
 
-type BrokerFetcher interface {
+type BrokersFetcher interface {
 	GetBrokers() ([]*osbapi.Broker, error)
 }
 
-//go:generate counterfeiter . ServiceFetcher
+//go:generate counterfeiter . ServicesFetcher
 
-type ServiceFetcher interface {
+type ServicesFetcher interface {
 	GetServices(brokerName string) ([]*osbapi.Service, error)
 }
 
-//go:generate counterfeiter . PlanFetcher
+//go:generate counterfeiter . PlansFetcher
 
-type PlanFetcher interface {
+type PlansFetcher interface {
 	GetPlans(serviceID string) ([]*osbapi.Plan, error)
 }
 
 type ServiceListUsecase struct {
-	BrokerFetcher  BrokerFetcher
-	ServiceFetcher ServiceFetcher
-	PlanFetcher    PlanFetcher
+	BrokersFetcher  BrokersFetcher
+	ServicesFetcher ServicesFetcher
+	PlansFetcher    PlansFetcher
 }
 
 func (u *ServiceListUsecase) GetServices() ([]*Service, error) {
-	brokers, err := u.BrokerFetcher.GetBrokers()
+	brokers, err := u.BrokersFetcher.GetBrokers()
 	if err != nil {
 		return []*Service{}, err
 	}
 
 	var servicesToDisplay []*Service
 	for _, b := range brokers {
-		services, err := u.ServiceFetcher.GetServices(b.Name)
+		services, err := u.ServicesFetcher.GetServices(b.Name)
 		if err != nil {
 			return []*Service{}, err
 		}
 
 		for _, s := range services {
-			plans, err := u.PlanFetcher.GetPlans(s.ID)
+			plans, err := u.PlansFetcher.GetPlans(s.ID)
 			if err != nil {
 				return []*Service{}, err
 			}

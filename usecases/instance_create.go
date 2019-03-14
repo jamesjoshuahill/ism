@@ -29,9 +29,9 @@ type InstanceCreator interface {
 }
 
 type InstanceCreateUsecase struct {
-	BrokerFetcher   BrokerFetcher
-	ServiceFetcher  ServiceFetcher
-	PlanFetcher     PlanFetcher
+	BrokersFetcher  BrokersFetcher
+	ServicesFetcher ServicesFetcher
+	PlansFetcher    PlansFetcher
 	InstanceCreator InstanceCreator
 }
 
@@ -62,7 +62,7 @@ func (u *InstanceCreateUsecase) Create(name, planName, serviceName, brokerName s
 }
 
 func (u *InstanceCreateUsecase) getBroker(brokerName string) (*osbapi.Broker, error) {
-	brokers, err := u.BrokerFetcher.GetBrokers()
+	brokers, err := u.BrokersFetcher.GetBrokers()
 	if err != nil {
 		return &osbapi.Broker{}, err
 	}
@@ -78,7 +78,7 @@ func (u *InstanceCreateUsecase) getBroker(brokerName string) (*osbapi.Broker, er
 }
 
 func (u *InstanceCreateUsecase) getService(brokerID, serviceName string) (*osbapi.Service, error) {
-	services, err := u.ServiceFetcher.GetServices(brokerID)
+	services, err := u.ServicesFetcher.GetServices(brokerID)
 	if err != nil {
 		return &osbapi.Service{}, err
 	}
@@ -94,7 +94,7 @@ func (u *InstanceCreateUsecase) getService(brokerID, serviceName string) (*osbap
 }
 
 func (u *InstanceCreateUsecase) getPlan(serviceID, planName string) (*osbapi.Plan, error) {
-	plans, err := u.PlanFetcher.GetPlans(serviceID)
+	plans, err := u.PlansFetcher.GetPlans(serviceID)
 	if err != nil {
 		return &osbapi.Plan{}, err
 	}

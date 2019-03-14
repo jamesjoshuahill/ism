@@ -101,6 +101,9 @@ func main() {
 				UI:                    UI,
 				InstanceCreateUsecase: instanceCreateUsecase,
 			},
+			InstanceListCommand: commands.InstanceListCommand{
+				UI: UI,
+			},
 		},
 	}
 	parser := flags.NewParser(&rootCommand, flags.HelpFlag|flags.PassDoubleDash)
