@@ -22,6 +22,7 @@ import "github.com/pivotal-cf/ism/osbapi"
 
 type InstanceRepository interface {
 	Create(*osbapi.Instance) error
+	FindAll() ([]*osbapi.Instance, error)
 }
 
 type InstancesActor struct {
@@ -30,4 +31,8 @@ type InstancesActor struct {
 
 func (a *InstancesActor) Create(instance *osbapi.Instance) error {
 	return a.Repository.Create(instance)
+}
+
+func (a *InstancesActor) GetInstances() ([]*osbapi.Instance, error) {
+	return a.Repository.FindAll()
 }

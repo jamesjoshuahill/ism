@@ -67,16 +67,22 @@ func main() {
 	}
 
 	serviceListUsecase := &usecases.ServiceListUsecase{
-		BrokerFetcher:  brokersActor,
-		ServiceFetcher: servicesActor,
-		PlanFetcher:    plansActor,
+		BrokersFetcher:  brokersActor,
+		ServicesFetcher: servicesActor,
+		PlansFetcher:    plansActor,
 	}
 
 	instanceCreateUsecase := &usecases.InstanceCreateUsecase{
-		BrokerFetcher:   brokersActor,
-		ServiceFetcher:  servicesActor,
-		PlanFetcher:     plansActor,
+		BrokersFetcher:  brokersActor,
+		ServicesFetcher: servicesActor,
+		PlansFetcher:    plansActor,
 		InstanceCreator: instancesActor,
+	}
+
+	instanceListUsecase := &usecases.InstanceListUsecase{
+		InstancesFetcher: instancesActor,
+		ServiceFetcher:   servicesActor,
+		PlanFetcher:      plansActor,
 	}
 
 	rootCommand := commands.RootCommand{
@@ -100,6 +106,10 @@ func main() {
 			InstanceCreateCommand: commands.InstanceCreateCommand{
 				UI:                    UI,
 				InstanceCreateUsecase: instanceCreateUsecase,
+			},
+			InstanceListCommand: commands.InstanceListCommand{
+				UI:                  UI,
+				InstanceListUsecase: instanceListUsecase,
 			},
 		},
 	}

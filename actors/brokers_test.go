@@ -62,10 +62,10 @@ var _ = Describe("Brokers Actor", func() {
 
 		It("finds all brokers from the repository", func() {
 			Expect(fakeBrokerRepository.FindAllCallCount()).NotTo(BeZero())
-			Expect(brokers).To(Equal([]*osbapi.Broker{
-				{Name: "broker-1"},
-				{Name: "broker-2"},
-			}))
+			Expect(brokers).To(ConsistOf(
+				&osbapi.Broker{Name: "broker-1"},
+				&osbapi.Broker{Name: "broker-2"},
+			))
 		})
 
 		When("finding all brokers returns an error", func() {

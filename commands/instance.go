@@ -16,14 +16,25 @@ specific language governing permissions and limitations under the License.
 
 package commands
 
+import (
+	"github.com/pivotal-cf/ism/usecases"
+)
+
 //go:generate counterfeiter . InstanceCreateUsecase
 
 type InstanceCreateUsecase interface {
 	Create(name, planName, serviceName, brokerName string) error
 }
 
+//go:generate counterfeiter . InstanceListUsecase
+
+type InstanceListUsecase interface {
+	GetInstances() ([]*usecases.Instance, error)
+}
+
 type InstanceCommand struct {
 	InstanceCreateCommand InstanceCreateCommand `command:"create" long-description:"Create a service instance"`
+	InstanceListCommand   InstanceListCommand   `command:"list" long-description:"List the service instances"`
 }
 
 type InstanceCreateCommand struct {
@@ -44,4 +55,37 @@ func (cmd *InstanceCreateCommand) Execute([]string) error {
 	cmd.UI.DisplayText("Instance '{{.InstanceName}}' is being created.", map[string]interface{}{"InstanceName": cmd.Name})
 
 	return nil
+}
+
+type InstanceListCommand struct {
+	UI                  UI
+	InstanceListUsecase InstanceListUsecase
+}
+
+func (cmd *InstanceListCommand) Execute([]string) error {
+	instances, err := cmd.InstanceListUsecase.GetInstances()
+	if err != nil {
+		return err
+	}
+
+	if len(instances) == 0 {
+		cmd.UI.DisplayText("No instances found.")
+		return nil
+	}
+
+	instancesTable := buildInstanceTableData(instances)
+	cmd.UI.DisplayTable(instancesTable)
+	return nil
+}
+
+func buildInstanceTableData(instances []*usecases.Instance) [][]string {
+	headers := []string{"NAME", "SERVICE", "PLAN", "BROKER", "CREATED AT"}
+	data := [][]string{headers}
+
+	for _, i := range instances {
+		row := []string{i.Name, i.ServiceName, i.PlanName, i.BrokerName, i.CreatedAt}
+		data = append(data, row)
+	}
+
+	return data
 }

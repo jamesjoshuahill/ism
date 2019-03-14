@@ -67,4 +67,44 @@ var _ = Describe("Instance Actor", func() {
 			})
 		})
 	})
+
+	Describe("FindAll", func() {
+		var (
+			err       error
+			instances []*osbapi.Instance
+		)
+
+		BeforeEach(func() {
+			fakeInstanceRepository.FindAllReturns([]*osbapi.Instance{
+				{
+					Name: "my-instance-2",
+				},
+				{
+					Name: "my-instance",
+				},
+			}, nil)
+		})
+
+		JustBeforeEach(func() {
+			instances, err = instancesActor.GetInstances()
+		})
+
+		It("finds all the instances", func() {
+			Expect(instances).To(HaveLen(2))
+			Expect(instances).To(ConsistOf(
+				&osbapi.Instance{Name: "my-instance"},
+				&osbapi.Instance{Name: "my-instance-2"},
+			))
+		})
+
+		When("finding the instances fails", func() {
+			BeforeEach(func() {
+				fakeInstanceRepository.FindAllReturns(nil, errors.New("error-finding-instances"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-finding-instances"))
+			})
+		})
+	})
 })

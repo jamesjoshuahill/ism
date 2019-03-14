@@ -53,6 +53,8 @@ type BrokerRegisterCommand struct {
 }
 
 func (cmd *BrokerRegisterCommand) Execute([]string) error {
+
+	//TODO: This is the only command that uses the osbapi types, should this just pass params instead?
 	newBroker := &osbapi.Broker{
 		Name:     cmd.Name,
 		URL:      cmd.URL,

@@ -43,6 +43,43 @@ var _ = Describe("Services Actor", func() {
 		}
 	})
 
+	Describe("GetService", func() {
+		var (
+			service *osbapi.Service
+			err     error
+		)
+
+		BeforeEach(func() {
+			fakeServiceRepository.FindReturns(&osbapi.Service{
+				ID:   "service-id-1",
+				Name: "service-1",
+			}, nil)
+		})
+
+		JustBeforeEach(func() {
+			service, err = servicesActor.GetService("service-id-1")
+		})
+
+		It("finds the service by service id", func() {
+			Expect(fakeServiceRepository.FindArgsForCall(0)).To(Equal("service-id-1"))
+
+			Expect(service).To(Equal(&osbapi.Service{
+				Name: "service-1",
+				ID:   "service-id-1",
+			}))
+		})
+
+		When("finding the service returns an error", func() {
+			BeforeEach(func() {
+				fakeServiceRepository.FindReturns(nil, errors.New("error-finding-service"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-finding-service"))
+			})
+		})
+	})
+
 	Describe("GetServices", func() {
 		var (
 			services []*osbapi.Service
@@ -79,5 +116,4 @@ var _ = Describe("Services Actor", func() {
 			})
 		})
 	})
-
 })

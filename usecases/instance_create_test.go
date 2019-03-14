@@ -30,9 +30,9 @@ import (
 var _ = Describe("Instance Create Usecase", func() {
 
 	var (
-		fakeBrokerFetcher   *usecasesfakes.FakeBrokerFetcher
-		fakeServiceFetcher  *usecasesfakes.FakeServiceFetcher
-		fakePlanFetcher     *usecasesfakes.FakePlanFetcher
+		fakeBrokersFetcher  *usecasesfakes.FakeBrokersFetcher
+		fakeServicesFetcher *usecasesfakes.FakeServicesFetcher
+		fakePlansFetcher    *usecasesfakes.FakePlansFetcher
 		fakeInstanceCreator *usecasesfakes.FakeInstanceCreator
 
 		instanceCreateUsecase InstanceCreateUsecase
@@ -45,15 +45,15 @@ var _ = Describe("Instance Create Usecase", func() {
 	)
 
 	BeforeEach(func() {
-		fakeBrokerFetcher = &usecasesfakes.FakeBrokerFetcher{}
-		fakeServiceFetcher = &usecasesfakes.FakeServiceFetcher{}
-		fakePlanFetcher = &usecasesfakes.FakePlanFetcher{}
+		fakeBrokersFetcher = &usecasesfakes.FakeBrokersFetcher{}
+		fakeServicesFetcher = &usecasesfakes.FakeServicesFetcher{}
+		fakePlansFetcher = &usecasesfakes.FakePlansFetcher{}
 		fakeInstanceCreator = &usecasesfakes.FakeInstanceCreator{}
 
 		instanceCreateUsecase = InstanceCreateUsecase{
-			BrokerFetcher:   fakeBrokerFetcher,
-			ServiceFetcher:  fakeServiceFetcher,
-			PlanFetcher:     fakePlanFetcher,
+			BrokersFetcher:  fakeBrokersFetcher,
+			ServicesFetcher: fakeServicesFetcher,
+			PlansFetcher:    fakePlansFetcher,
 			InstanceCreator: fakeInstanceCreator,
 		}
 
@@ -90,20 +90,20 @@ var _ = Describe("Instance Create Usecase", func() {
 
 	When("passed valid args", func() {
 		BeforeEach(func() {
-			fakeBrokerFetcher.GetBrokersReturns(brokers, nil)
-			fakeServiceFetcher.GetServicesReturns(services, nil)
-			fakePlanFetcher.GetPlansReturns(plans, nil)
+			fakeBrokersFetcher.GetBrokersReturns(brokers, nil)
+			fakeServicesFetcher.GetServicesReturns(services, nil)
+			fakePlansFetcher.GetPlansReturns(plans, nil)
 		})
 
 		It("creates an instance", func() {
-			Expect(fakeBrokerFetcher.GetBrokersCallCount()).To(Equal(1))
-			Expect(fakeServiceFetcher.GetServicesCallCount()).To(Equal(1))
-			Expect(fakePlanFetcher.GetPlansCallCount()).To(Equal(1))
+			Expect(fakeBrokersFetcher.GetBrokersCallCount()).To(Equal(1))
+			Expect(fakeServicesFetcher.GetServicesCallCount()).To(Equal(1))
+			Expect(fakePlansFetcher.GetPlansCallCount()).To(Equal(1))
 
-			passedBrokerName := fakeServiceFetcher.GetServicesArgsForCall(0)
+			passedBrokerName := fakeServicesFetcher.GetServicesArgsForCall(0)
 			Expect(passedBrokerName).To(Equal("my-broker"))
 
-			passedServiceID := fakePlanFetcher.GetPlansArgsForCall(0)
+			passedServiceID := fakePlansFetcher.GetPlansArgsForCall(0)
 			Expect(passedServiceID).To(Equal("service-1"))
 
 			Expect(fakeInstanceCreator.CreateCallCount()).To(Equal(1))
@@ -122,7 +122,7 @@ var _ = Describe("Instance Create Usecase", func() {
 
 	When("there are no brokers", func() {
 		BeforeEach(func() {
-			fakeBrokerFetcher.GetBrokersReturns([]*osbapi.Broker{}, nil)
+			fakeBrokersFetcher.GetBrokersReturns([]*osbapi.Broker{}, nil)
 		})
 
 		It("returns an error", func() {
@@ -132,8 +132,8 @@ var _ = Describe("Instance Create Usecase", func() {
 
 	When("there are no services", func() {
 		BeforeEach(func() {
-			fakeBrokerFetcher.GetBrokersReturns(brokers, nil)
-			fakeServiceFetcher.GetServicesReturns([]*osbapi.Service{}, nil)
+			fakeBrokersFetcher.GetBrokersReturns(brokers, nil)
+			fakeServicesFetcher.GetServicesReturns([]*osbapi.Service{}, nil)
 		})
 
 		It("returns an error", func() {
@@ -143,9 +143,9 @@ var _ = Describe("Instance Create Usecase", func() {
 
 	When("there are no plans", func() {
 		BeforeEach(func() {
-			fakeBrokerFetcher.GetBrokersReturns(brokers, nil)
-			fakeServiceFetcher.GetServicesReturns(services, nil)
-			fakePlanFetcher.GetPlansReturns([]*osbapi.Plan{}, nil)
+			fakeBrokersFetcher.GetBrokersReturns(brokers, nil)
+			fakeServicesFetcher.GetServicesReturns(services, nil)
+			fakePlansFetcher.GetPlansReturns([]*osbapi.Plan{}, nil)
 		})
 
 		It("returns an error", func() {
@@ -155,7 +155,7 @@ var _ = Describe("Instance Create Usecase", func() {
 
 	When("fetching brokers errors", func() {
 		BeforeEach(func() {
-			fakeBrokerFetcher.GetBrokersReturns([]*osbapi.Broker{}, errors.New("error-getting-brokers"))
+			fakeBrokersFetcher.GetBrokersReturns([]*osbapi.Broker{}, errors.New("error-getting-brokers"))
 		})
 
 		It("propagates the error", func() {
@@ -165,8 +165,8 @@ var _ = Describe("Instance Create Usecase", func() {
 
 	When("fetching services errors", func() {
 		BeforeEach(func() {
-			fakeBrokerFetcher.GetBrokersReturns(brokers, nil)
-			fakeServiceFetcher.GetServicesReturns([]*osbapi.Service{}, errors.New("error-getting-services"))
+			fakeBrokersFetcher.GetBrokersReturns(brokers, nil)
+			fakeServicesFetcher.GetServicesReturns([]*osbapi.Service{}, errors.New("error-getting-services"))
 		})
 
 		It("propagates the error", func() {
@@ -176,9 +176,9 @@ var _ = Describe("Instance Create Usecase", func() {
 
 	When("fetching plans errors", func() {
 		BeforeEach(func() {
-			fakeBrokerFetcher.GetBrokersReturns(brokers, nil)
-			fakeServiceFetcher.GetServicesReturns(services, nil)
-			fakePlanFetcher.GetPlansReturns([]*osbapi.Plan{}, errors.New("error-getting-plans"))
+			fakeBrokersFetcher.GetBrokersReturns(brokers, nil)
+			fakeServicesFetcher.GetServicesReturns(services, nil)
+			fakePlansFetcher.GetPlansReturns([]*osbapi.Plan{}, errors.New("error-getting-plans"))
 		})
 
 		It("propagates the error", func() {
@@ -188,9 +188,9 @@ var _ = Describe("Instance Create Usecase", func() {
 
 	When("creating the instance errors", func() {
 		BeforeEach(func() {
-			fakeBrokerFetcher.GetBrokersReturns(brokers, nil)
-			fakeServiceFetcher.GetServicesReturns(services, nil)
-			fakePlanFetcher.GetPlansReturns(plans, nil)
+			fakeBrokersFetcher.GetBrokersReturns(brokers, nil)
+			fakeServicesFetcher.GetServicesReturns(services, nil)
+			fakePlansFetcher.GetPlansReturns(plans, nil)
 			fakeInstanceCreator.CreateReturns(errors.New("error-creating-instance"))
 		})
 

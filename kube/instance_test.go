@@ -50,6 +50,77 @@ var _ = Describe("Instance", func() {
 		}
 	})
 
+	Describe("FindAll", func() {
+		var (
+			instances          []*osbapi.Instance
+			instanceCreatedAt1 string
+			instanceCreatedAt2 string
+			err                error
+		)
+
+		BeforeEach(func() {
+			instanceResource1 := &v1alpha1.ServiceInstance{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "instance-1",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceInstanceSpec{
+					Name:       "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "my-broker-1",
+				},
+			}
+
+			instanceResource2 := &v1alpha1.ServiceInstance{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "instance-2",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceInstanceSpec{
+					Name:       "instance-2",
+					PlanID:     "plan-2",
+					ServiceID:  "service-2",
+					BrokerName: "my-broker-2",
+				},
+			}
+
+			Expect(kubeClient.Create(context.TODO(), instanceResource1)).To(Succeed())
+			Expect(kubeClient.Create(context.TODO(), instanceResource2)).To(Succeed())
+			instanceCreatedAt1 = createdAtForInstance(kubeClient, instanceResource1)
+			instanceCreatedAt2 = createdAtForInstance(kubeClient, instanceResource2)
+		})
+
+		JustBeforeEach(func() {
+			instances, err = instance.FindAll()
+		})
+
+		AfterEach(func() {
+			deleteInstances(kubeClient, "instance-1", "instance-2")
+		})
+
+		It("returns all instances", func() {
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(instances).To(ConsistOf(
+				&osbapi.Instance{
+					CreatedAt:  instanceCreatedAt1,
+					Name:       "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "my-broker-1",
+				},
+				&osbapi.Instance{
+					CreatedAt:  instanceCreatedAt2,
+					Name:       "instance-2",
+					PlanID:     "plan-2",
+					ServiceID:  "service-2",
+					BrokerName: "my-broker-2",
+				},
+			))
+		})
+	})
+
 	Describe("Create", func() {
 		var err error
 
@@ -106,6 +177,16 @@ var _ = Describe("Instance", func() {
 		})
 	})
 })
+
+func createdAtForInstance(kubeClient client.Client, instanceResource *v1alpha1.ServiceInstance) string {
+	i := &v1alpha1.ServiceInstance{}
+	namespacedName := types.NamespacedName{Name: instanceResource.Name, Namespace: instanceResource.Namespace}
+
+	Expect(kubeClient.Get(context.TODO(), namespacedName, i)).To(Succeed())
+
+	time := i.ObjectMeta.CreationTimestamp.String()
+	return time
+}
 
 func deleteInstances(kubeClient client.Client, instanceNames ...string) {
 	for _, b := range instanceNames {

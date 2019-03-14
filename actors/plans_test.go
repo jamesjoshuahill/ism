@@ -43,6 +43,36 @@ var _ = Describe("Plans Actor", func() {
 		}
 	})
 
+	Describe("GetPlan", func() {
+		var (
+			plan *osbapi.Plan
+			err  error
+		)
+
+		BeforeEach(func() {
+			fakePlanRepository.FindReturns(&osbapi.Plan{ID: "plan-1", Name: "my-plan-1"}, nil)
+		})
+
+		JustBeforeEach(func() {
+			plan, err = plansActor.GetPlan("plan-1")
+		})
+
+		It("finds the plan by plan id", func() {
+			Expect(fakePlanRepository.FindArgsForCall(0)).To(Equal("plan-1"))
+			Expect(plan).To(Equal(&osbapi.Plan{ID: "plan-1", Name: "my-plan-1"}))
+		})
+
+		When("finding the plan returns an error", func() {
+			BeforeEach(func() {
+				fakePlanRepository.FindReturns(nil, errors.New("error-finding-plan"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-finding-plan"))
+			})
+		})
+	})
+
 	Describe("GetPlans", func() {
 		var (
 			plans []*osbapi.Plan

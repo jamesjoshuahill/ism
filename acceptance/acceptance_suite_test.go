@@ -209,6 +209,18 @@ func registerBroker(brokerName string) {
 	Eventually(registerSession).Should(Exit(0))
 }
 
+func createInstance(instanceName, brokerName string) {
+	createArgs := []string{"instance", "create",
+		"--name", instanceName,
+		"--service", serviceName,
+		"--plan", planName,
+		"--broker", brokerName}
+	command := exec.Command(nodePathToCLI, createArgs...)
+	createSession, err := Start(command, GinkgoWriter, GinkgoWriter)
+	Expect(err).NotTo(HaveOccurred())
+	Eventually(createSession).Should(Exit(0))
+}
+
 func deleteBrokers(brokerNames ...string) {
 	for _, b := range brokerNames {
 		runKubectl("delete", "broker", b)

@@ -18,6 +18,7 @@ package kube_test
 
 import (
 	"context"
+	"time"
 
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -34,8 +35,8 @@ import (
 
 var _ = Describe("Service", func() {
 	var (
-		kubeClient client.Client
-		service    *Service
+		kubeClient  client.Client
+		serviceRepo *Service
 	)
 
 	BeforeEach(func() {
@@ -43,9 +44,83 @@ var _ = Describe("Service", func() {
 		kubeClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 		Expect(err).NotTo(HaveOccurred())
 
-		service = &Service{
+		serviceRepo = &Service{
 			KubeClient: kubeClient,
 		}
+	})
+
+	Describe("Find", func() {
+		var (
+			service *osbapi.Service
+			err     error
+		)
+
+		JustBeforeEach(func() {
+			service, err = serviceRepo.Find("service-1")
+		})
+
+		When("the service exists", func() {
+			BeforeEach(func() {
+				serviceResource := &v1alpha1.BrokerService{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "service-1",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.BrokerServiceSpec{
+						Name:        "my-service",
+						Description: "my-service-description",
+						BrokerID:    "my-broker",
+					},
+				}
+
+				Expect(kubeClient.Create(context.TODO(), serviceResource)).To(Succeed())
+			})
+
+			AfterEach(func() {
+				deleteServices(kubeClient, "service-1")
+			})
+
+			It("returns the service", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(service).To(Equal(&osbapi.Service{
+					ID:          "service-1",
+					Name:        "my-service",
+					Description: "my-service-description",
+					BrokerName:  "my-broker",
+				}))
+			})
+		})
+
+		When("the service does not exist", func() {
+			It("returns nil with no error", func() {
+				Expect(err).NotTo(HaveOccurred())
+				Expect(service).To(BeNil())
+			})
+		})
+
+		When("the client errors", func() {
+			BeforeEach(func() {
+				// The purpose of this test is to ensure that we are properly propagating errors from the kubeclient
+
+				// We change the config to be unreachable after the client has been created because
+				// the client checks the connection on client.New
+				unreachableCfg := *cfg
+				badKubeClient, clientErr := client.New(&unreachableCfg, client.Options{Scheme: scheme.Scheme})
+				Expect(clientErr).NotTo(HaveOccurred())
+
+				unreachableCfg.Host = "192.0.2.1"
+				unreachableCfg.Timeout = time.Second
+
+				serviceRepo = &Service{
+					KubeClient: badKubeClient,
+				}
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(HaveOccurred())
+			})
+		})
 	})
 
 	Describe("FindByBroker", func() {
@@ -55,7 +130,7 @@ var _ = Describe("Service", func() {
 		)
 
 		JustBeforeEach(func() {
-			services, err = service.FindByBroker("my-broker-1")
+			services, err = serviceRepo.FindByBroker("my-broker-1")
 		})
 
 		When("services contain owner references to brokers", func() {

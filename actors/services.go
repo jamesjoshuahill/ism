@@ -22,10 +22,15 @@ import "github.com/pivotal-cf/ism/osbapi"
 
 type ServiceRepository interface {
 	FindByBroker(brokerID string) ([]*osbapi.Service, error)
+	Find(serviceID string) (*osbapi.Service, error)
 }
 
 type ServicesActor struct {
 	Repository ServiceRepository
+}
+
+func (a *ServicesActor) GetService(serviceID string) (*osbapi.Service, error) {
+	return a.Repository.Find(serviceID)
 }
 
 func (a *ServicesActor) GetServices(brokerID string) ([]*osbapi.Service, error) {

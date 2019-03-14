@@ -22,10 +22,15 @@ import "github.com/pivotal-cf/ism/osbapi"
 
 type PlanRepository interface {
 	FindByService(serviceID string) ([]*osbapi.Plan, error)
+	Find(planID string) (*osbapi.Plan, error)
 }
 
 type PlansActor struct {
 	Repository PlanRepository
+}
+
+func (a *PlansActor) GetPlan(planID string) (*osbapi.Plan, error) {
+	return a.Repository.Find(planID)
 }
 
 func (a *PlansActor) GetPlans(serviceID string) ([]*osbapi.Plan, error) {

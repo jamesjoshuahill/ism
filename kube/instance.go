@@ -31,7 +31,7 @@ type Instance struct {
 	KubeClient client.Client
 }
 
-func (b *Instance) Create(instance *osbapi.Instance) error {
+func (i *Instance) Create(instance *osbapi.Instance) error {
 	instanceResource := &v1alpha1.ServiceInstance{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance.Name,
@@ -45,5 +45,25 @@ func (b *Instance) Create(instance *osbapi.Instance) error {
 		},
 	}
 
-	return b.KubeClient.Create(context.TODO(), instanceResource)
+	return i.KubeClient.Create(context.TODO(), instanceResource)
+}
+
+func (i *Instance) FindAll() ([]*osbapi.Instance, error) {
+	list := &v1alpha1.ServiceInstanceList{}
+	if err := i.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
+		return []*osbapi.Instance{}, err
+	}
+
+	instances := []*osbapi.Instance{}
+	for _, instance := range list.Items {
+		instances = append(instances, &osbapi.Instance{
+			Name:       instance.Spec.Name,
+			PlanID:     instance.Spec.PlanID,
+			ServiceID:  instance.Spec.ServiceID,
+			BrokerName: instance.Spec.BrokerName,
+			CreatedAt:  instance.ObjectMeta.CreationTimestamp.String(),
+		})
+	}
+
+	return instances, nil
 }

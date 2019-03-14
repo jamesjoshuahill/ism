@@ -19,6 +19,8 @@ package kube
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -28,6 +30,25 @@ import (
 
 type Service struct {
 	KubeClient client.Client
+}
+
+func (s *Service) Find(serviceID string) (*osbapi.Service, error) {
+	service := &v1alpha1.BrokerService{}
+	err := s.KubeClient.Get(context.TODO(), types.NamespacedName{Name: serviceID, Namespace: "default"}, service)
+
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &osbapi.Service{
+		ID:          service.ObjectMeta.Name,
+		Name:        service.Spec.Name,
+		Description: service.Spec.Description,
+		BrokerName:  service.Spec.BrokerID,
+	}, nil
 }
 
 func (s *Service) FindByBroker(brokerName string) ([]*osbapi.Service, error) {

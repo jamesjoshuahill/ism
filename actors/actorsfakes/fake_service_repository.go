@@ -9,6 +9,19 @@ import (
 )
 
 type FakeServiceRepository struct {
+	FindStub        func(string) (*osbapi.Service, error)
+	findMutex       sync.RWMutex
+	findArgsForCall []struct {
+		arg1 string
+	}
+	findReturns struct {
+		result1 *osbapi.Service
+		result2 error
+	}
+	findReturnsOnCall map[int]struct {
+		result1 *osbapi.Service
+		result2 error
+	}
 	FindByBrokerStub        func(string) ([]*osbapi.Service, error)
 	findByBrokerMutex       sync.RWMutex
 	findByBrokerArgsForCall []struct {
@@ -24,6 +37,69 @@ type FakeServiceRepository struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeServiceRepository) Find(arg1 string) (*osbapi.Service, error) {
+	fake.findMutex.Lock()
+	ret, specificReturn := fake.findReturnsOnCall[len(fake.findArgsForCall)]
+	fake.findArgsForCall = append(fake.findArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("Find", []interface{}{arg1})
+	fake.findMutex.Unlock()
+	if fake.FindStub != nil {
+		return fake.FindStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.findReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeServiceRepository) FindCallCount() int {
+	fake.findMutex.RLock()
+	defer fake.findMutex.RUnlock()
+	return len(fake.findArgsForCall)
+}
+
+func (fake *FakeServiceRepository) FindCalls(stub func(string) (*osbapi.Service, error)) {
+	fake.findMutex.Lock()
+	defer fake.findMutex.Unlock()
+	fake.FindStub = stub
+}
+
+func (fake *FakeServiceRepository) FindArgsForCall(i int) string {
+	fake.findMutex.RLock()
+	defer fake.findMutex.RUnlock()
+	argsForCall := fake.findArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeServiceRepository) FindReturns(result1 *osbapi.Service, result2 error) {
+	fake.findMutex.Lock()
+	defer fake.findMutex.Unlock()
+	fake.FindStub = nil
+	fake.findReturns = struct {
+		result1 *osbapi.Service
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceRepository) FindReturnsOnCall(i int, result1 *osbapi.Service, result2 error) {
+	fake.findMutex.Lock()
+	defer fake.findMutex.Unlock()
+	fake.FindStub = nil
+	if fake.findReturnsOnCall == nil {
+		fake.findReturnsOnCall = make(map[int]struct {
+			result1 *osbapi.Service
+			result2 error
+		})
+	}
+	fake.findReturnsOnCall[i] = struct {
+		result1 *osbapi.Service
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeServiceRepository) FindByBroker(arg1 string) ([]*osbapi.Service, error) {
@@ -92,6 +168,8 @@ func (fake *FakeServiceRepository) FindByBrokerReturnsOnCall(i int, result1 []*o
 func (fake *FakeServiceRepository) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.findMutex.RLock()
+	defer fake.findMutex.RUnlock()
 	fake.findByBrokerMutex.RLock()
 	defer fake.findByBrokerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
