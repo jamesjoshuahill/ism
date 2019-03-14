@@ -43,7 +43,8 @@ func TestBroker(t *testing.T) {
 
 	BeforeSuite(func() {
 		testEnv = &envtest.Environment{
-			CRDDirectoryPaths: []string{filepath.Join("..", "..", "..", "config", "crds")},
+			CRDDirectoryPaths:        []string{filepath.Join("..", "..", "..", "config", "crds")},
+			ControlPlaneStartTimeout: time.Minute,
 		}
 		apis.AddToScheme(scheme.Scheme)
 

@@ -19,6 +19,7 @@ package kube_test
 import (
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/pivotal-cf/ism/pkg/apis"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -36,7 +37,8 @@ func TestKube(t *testing.T) {
 
 	BeforeSuite(func() {
 		testEnv = &envtest.Environment{
-			CRDDirectoryPaths: []string{filepath.Join("..", "config", "crds")},
+			CRDDirectoryPaths:        []string{filepath.Join("..", "config", "crds")},
+			ControlPlaneStartTimeout: time.Minute,
 		}
 		apis.AddToScheme(scheme.Scheme)
 
