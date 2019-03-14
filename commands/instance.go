@@ -41,7 +41,7 @@ func (cmd *InstanceCreateCommand) Execute([]string) error {
 		return err
 	}
 
-	cmd.UI.DisplayText("Instance '{{.InstanceName}}' created.", map[string]interface{}{"InstanceName": cmd.Name})
+	cmd.UI.DisplayText("Instance '{{.InstanceName}}' is being created.", map[string]interface{}{"InstanceName": cmd.Name})
 
 	return nil
 }

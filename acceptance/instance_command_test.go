@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os/exec"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -95,22 +94,13 @@ var _ = Describe("CLI instance command", func() {
 				deleteServiceInstances("my-instance")
 			})
 
-			It("creates the service instance", func() {
+			It("starts creation of the service instance", func() {
 				Eventually(session).Should(Exit(0))
-				Eventually(session).Should(Say("Instance 'my-instance' created\\."))
-
-				time.Sleep(time.Second * 5)
-
-				data := getBrokerData()
-				Expect(data.ServiceInstances).To(HaveLen(1))
-
-				for _, serviceInstance := range data.ServiceInstances {
-					Expect(serviceInstance.ServiceName).To(Equal(serviceName))
-					Expect(serviceInstance.PlanName).To(Equal(planName))
-				}
-
-				//TODO Add a test to check ism instance list
+				Eventually(session).Should(Say("Instance 'my-instance' is being created\\."))
 			})
+
+			// TODO: When writing "ism instance list" test make sure to check the /data
+			// endpoint on the broker to ensure the instance has _actually_ been created.
 		})
 
 		When("required args are not passed", func() {

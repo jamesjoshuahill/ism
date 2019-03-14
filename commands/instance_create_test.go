@@ -69,9 +69,9 @@ var _ = Describe("Instance create command", func() {
 			Expect(brokerName).To(Equal("broker-1"))
 		})
 
-		It("displays that the service instance was created", func() {
+		It("displays that the service instance is being created", func() {
 			text, data := fakeUI.DisplayTextArgsForCall(0)
-			Expect(text).To(Equal("Instance '{{.InstanceName}}' created."))
+			Expect(text).To(Equal("Instance '{{.InstanceName}}' is being created."))
 			Expect(data[0]).To(HaveKeyWithValue("InstanceName", "instance-1"))
 		})
 	})
