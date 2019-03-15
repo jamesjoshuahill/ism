@@ -140,8 +140,8 @@ var _ = Describe("CLI instance command", func() {
 
 		When("1 instance is created", func() {
 			BeforeEach(func() {
-				registerBroker("test-broker-1")
-				createInstance("test-instance", "test-broker-1")
+				registerBroker("instance-list-command-broker")
+				createInstance("instance-list-test-instance", "instance-list-command-broker")
 
 				// TODO: Revisit this when it comes to implementing asynchronous provisioning
 				// Allow time for controller to set instance status to "created"
@@ -149,8 +149,8 @@ var _ = Describe("CLI instance command", func() {
 			})
 
 			AfterEach(func() {
-				deleteServiceInstances("test-instance")
-				deleteBrokers("test-broker-1")
+				deleteServiceInstances("instance-list-test-instance")
+				deleteBrokers("instance-list-command-broker")
 			})
 
 			It("displays the instance", func() {
@@ -158,7 +158,7 @@ var _ = Describe("CLI instance command", func() {
 
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("NAME\\s+SERVICE\\s+PLAN\\s+BROKER\\s+STATUS\\s+CREATED AT"))
-				Eventually(session).Should(Say("test-instance\\s+" + serviceName + "\\s+" + planName + "\\s+test-broker-1\\s+" + "created" + "\\s+" + timeRegex))
+				Eventually(session).Should(Say("instance-list-test-instance\\s+" + serviceName + "\\s+" + planName + "\\s+instance-list-command-broker\\s+" + "created" + "\\s+" + timeRegex))
 			})
 		})
 	})

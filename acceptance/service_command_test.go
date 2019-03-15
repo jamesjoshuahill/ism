@@ -87,17 +87,17 @@ var _ = Describe("CLI service command", func() {
 
 		When("1 broker is registered", func() {
 			BeforeEach(func() {
-				registerBroker("test-broker")
+				registerBroker("service-list-command-broker")
 			})
 
 			AfterEach(func() {
-				deleteBrokers("test-broker")
+				deleteBrokers("service-list-command-broker")
 			})
 
 			It("displays services and plans for the broker", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("SERVICE\\s+PLANS\\s+BROKER\\s+DESCRIPTION"))
-				Eventually(session).Should(Say("overview-service\\s+simple, complex\\s+test-broker\\s+Provides an overview of any service instances and bindings that have been created by a platform"))
+				Eventually(session).Should(Say("overview-service\\s+simple, complex\\s+service-list-command-broker\\s+Provides an overview of any service instances and bindings that have been created by a platform"))
 			})
 		})
 	})

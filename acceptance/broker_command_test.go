@@ -129,11 +129,11 @@ var _ = Describe("CLI broker command", func() {
 
 		When("1 broker is registered", func() {
 			BeforeEach(func() {
-				registerBroker("test-broker-2")
+				registerBroker("broker-list-command-broker")
 			})
 
 			AfterEach(func() {
-				deleteBrokers("test-broker-2")
+				deleteBrokers("broker-list-command-broker")
 			})
 
 			It("displays the broker", func() {
@@ -141,7 +141,7 @@ var _ = Describe("CLI broker command", func() {
 
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("NAME\\s+URL\\s+CREATED AT"))
-				Eventually(session).Should(Say("test-broker-2\\s+" + nodeBrokerURL + "\\s+" + timeRegex))
+				Eventually(session).Should(Say("broker-list-command-broker\\s+" + nodeBrokerURL + "\\s+" + timeRegex))
 			})
 		})
 	})
