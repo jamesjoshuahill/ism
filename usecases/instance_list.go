@@ -25,6 +25,7 @@ type Instance struct {
 	ServiceName string
 	PlanName    string
 	BrokerName  string
+	Status      string
 	CreatedAt   string
 }
 
@@ -75,6 +76,7 @@ func (i *InstanceListUsecase) GetInstances() ([]*Instance, error) {
 			ServiceName: service.Name,
 			PlanName:    plan.Name,
 			BrokerName:  instance.BrokerName,
+			Status:      instance.Status,
 			CreatedAt:   instance.CreatedAt,
 		})
 	}

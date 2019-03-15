@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os/exec"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -141,6 +142,10 @@ var _ = Describe("CLI instance command", func() {
 			BeforeEach(func() {
 				registerBroker("test-broker-1")
 				createInstance("test-instance", "test-broker-1")
+
+				// TODO: Revisit this when it comes to implementing asynchronous provisioning
+				// Allow time for controller to set instance status to "created"
+				time.Sleep(time.Millisecond * 500)
 			})
 
 			AfterEach(func() {
@@ -152,8 +157,8 @@ var _ = Describe("CLI instance command", func() {
 				timeRegex := `\d{4,}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}`
 
 				Eventually(session).Should(Exit(0))
-				Eventually(session).Should(Say("NAME\\s+SERVICE\\s+PLAN\\s+BROKER\\s+CREATED AT"))
-				Eventually(session).Should(Say("test-instance\\s+" + serviceName + "\\s+" + planName + "\\s+test-broker-1\\s+" + timeRegex))
+				Eventually(session).Should(Say("NAME\\s+SERVICE\\s+PLAN\\s+BROKER\\s+STATUS\\s+CREATED AT"))
+				Eventually(session).Should(Say("test-instance\\s+" + serviceName + "\\s+" + planName + "\\s+test-broker-1\\s+" + "created" + "\\s+" + timeRegex))
 			})
 		})
 	})

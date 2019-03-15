@@ -74,9 +74,19 @@ var _ = Describe("Instance List Usecase", func() {
 		BeforeEach(func() {
 			fakeInstancesFetcher.GetInstancesReturns([]*osbapi.Instance{
 				{
-					Name: "my-instance-1", ServiceID: "service-id-1", PlanID: "plan-id-1", BrokerName: "my-broker-1", CreatedAt: "time-1",
+					Name:       "my-instance-1",
+					ServiceID:  "service-id-1",
+					PlanID:     "plan-id-1",
+					BrokerName: "my-broker-1",
+					Status:     "created",
+					CreatedAt:  "time-1",
 				}, {
-					Name: "my-instance-2", ServiceID: "service-id-2", PlanID: "plan-id-2", BrokerName: "my-broker-2", CreatedAt: "time-2",
+					Name:       "my-instance-2",
+					ServiceID:  "service-id-2",
+					PlanID:     "plan-id-2",
+					BrokerName: "my-broker-2",
+					Status:     "creating",
+					CreatedAt:  "time-2",
 				},
 			}, nil)
 
@@ -98,6 +108,7 @@ var _ = Describe("Instance List Usecase", func() {
 				ServiceName: "my-service-1",
 				PlanName:    "my-plan-1",
 				BrokerName:  "my-broker-1",
+				Status:      "created",
 				CreatedAt:   "time-1",
 			}))
 
@@ -106,6 +117,7 @@ var _ = Describe("Instance List Usecase", func() {
 				ServiceName: "my-service-2",
 				PlanName:    "my-plan-2",
 				BrokerName:  "my-broker-2",
+				Status:      "creating",
 				CreatedAt:   "time-2",
 			}))
 		})
@@ -138,6 +150,8 @@ var _ = Describe("Instance List Usecase", func() {
 				ServiceID:  "service-id-1",
 				PlanID:     "plan-id-1",
 				BrokerName: "my-broker-1",
+				Status:     "creating",
+				CreatedAt:  "time-1",
 			}}, nil)
 
 			fakeServiceFetcher.GetServiceReturns(&osbapi.Service{}, errors.New("error-getting-service"))
@@ -155,6 +169,8 @@ var _ = Describe("Instance List Usecase", func() {
 				ServiceID:  "service-id-1",
 				PlanID:     "plan-id-1",
 				BrokerName: "my-broker-1",
+				Status:     "creating",
+				CreatedAt:  "time-1",
 			}}, nil)
 
 			fakeServiceFetcher.GetServiceReturns(&osbapi.Service{Name: "my-service-1"}, nil)

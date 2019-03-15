@@ -76,12 +76,14 @@ var _ = Describe("Instance List Command", func() {
 				ServiceName: "my-service-1",
 				PlanName:    "my-plan-1",
 				BrokerName:  "my-broker-1",
+				Status:      "created",
 				CreatedAt:   "2019-02-28T12:08:31Z",
 			}, {
 				Name:        "my-instance-2",
 				ServiceName: "my-service-1",
 				PlanName:    "my-plan-2",
 				BrokerName:  "my-broker-1",
+				Status:      "creating",
 				CreatedAt:   "2019-02-28T12:08:31Z",
 			}}, nil)
 		})
@@ -94,9 +96,9 @@ var _ = Describe("Instance List Command", func() {
 			Expect(fakeUI.DisplayTableCallCount()).NotTo(BeZero())
 			data := fakeUI.DisplayTableArgsForCall(0)
 
-			Expect(data[0]).To(Equal([]string{"NAME", "SERVICE", "PLAN", "BROKER", "CREATED AT"}))
-			Expect(data[1]).To(Equal([]string{"my-instance-1", "my-service-1", "my-plan-1", "my-broker-1", "2019-02-28T12:08:31Z"}))
-			Expect(data[2]).To(Equal([]string{"my-instance-2", "my-service-1", "my-plan-2", "my-broker-1", "2019-02-28T12:08:31Z"}))
+			Expect(data[0]).To(Equal([]string{"NAME", "SERVICE", "PLAN", "BROKER", "STATUS", "CREATED AT"}))
+			Expect(data[1]).To(Equal([]string{"my-instance-1", "my-service-1", "my-plan-1", "my-broker-1", "created", "2019-02-28T12:08:31Z"}))
+			Expect(data[2]).To(Equal([]string{"my-instance-2", "my-service-1", "my-plan-2", "my-broker-1", "creating", "2019-02-28T12:08:31Z"}))
 		})
 	})
 

@@ -70,6 +70,9 @@ var _ = Describe("Instance", func() {
 					ServiceID:  "service-1",
 					BrokerName: "my-broker-1",
 				},
+				Status: v1alpha1.ServiceInstanceStatus{
+					State: v1alpha1.ServiceInstanceStateProvisioned,
+				},
 			}
 
 			instanceResource2 := &v1alpha1.ServiceInstance{
@@ -86,6 +89,8 @@ var _ = Describe("Instance", func() {
 			}
 
 			Expect(kubeClient.Create(context.TODO(), instanceResource1)).To(Succeed())
+			Expect(kubeClient.Status().Update(context.TODO(), instanceResource1)).To(Succeed())
+
 			Expect(kubeClient.Create(context.TODO(), instanceResource2)).To(Succeed())
 			instanceCreatedAt1 = createdAtForInstance(kubeClient, instanceResource1)
 			instanceCreatedAt2 = createdAtForInstance(kubeClient, instanceResource2)
@@ -108,6 +113,7 @@ var _ = Describe("Instance", func() {
 					Name:       "instance-1",
 					PlanID:     "plan-1",
 					ServiceID:  "service-1",
+					Status:     "created",
 					BrokerName: "my-broker-1",
 				},
 				&osbapi.Instance{
@@ -115,6 +121,7 @@ var _ = Describe("Instance", func() {
 					Name:       "instance-2",
 					PlanID:     "plan-2",
 					ServiceID:  "service-2",
+					Status:     "creating",
 					BrokerName: "my-broker-2",
 				},
 			))

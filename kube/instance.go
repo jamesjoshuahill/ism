@@ -27,6 +27,11 @@ import (
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 )
 
+const (
+	creating = "creating"
+	created  = "created"
+)
+
 type Instance struct {
 	KubeClient client.Client
 }
@@ -61,9 +66,17 @@ func (i *Instance) FindAll() ([]*osbapi.Instance, error) {
 			PlanID:     instance.Spec.PlanID,
 			ServiceID:  instance.Spec.ServiceID,
 			BrokerName: instance.Spec.BrokerName,
+			Status:     i.setStatus(instance.Status.State),
 			CreatedAt:  instance.ObjectMeta.CreationTimestamp.String(),
 		})
 	}
 
 	return instances, nil
+}
+
+func (i *Instance) setStatus(state v1alpha1.ServiceInstanceState) string {
+	if state == v1alpha1.ServiceInstanceStateProvisioned {
+		return created
+	}
+	return creating
 }

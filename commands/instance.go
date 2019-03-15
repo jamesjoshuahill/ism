@@ -79,11 +79,11 @@ func (cmd *InstanceListCommand) Execute([]string) error {
 }
 
 func buildInstanceTableData(instances []*usecases.Instance) [][]string {
-	headers := []string{"NAME", "SERVICE", "PLAN", "BROKER", "CREATED AT"}
+	headers := []string{"NAME", "SERVICE", "PLAN", "BROKER", "STATUS", "CREATED AT"}
 	data := [][]string{headers}
 
 	for _, i := range instances {
-		row := []string{i.Name, i.ServiceName, i.PlanName, i.BrokerName, i.CreatedAt}
+		row := []string{i.Name, i.ServiceName, i.PlanName, i.BrokerName, i.Status, i.CreatedAt}
 		data = append(data, row)
 	}
 
