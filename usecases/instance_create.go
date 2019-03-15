@@ -77,8 +77,8 @@ func (u *InstanceCreateUsecase) getBroker(brokerName string) (*osbapi.Broker, er
 	return &osbapi.Broker{}, fmt.Errorf("Broker '%s' does not exist", brokerName)
 }
 
-func (u *InstanceCreateUsecase) getService(brokerID, serviceName string) (*osbapi.Service, error) {
-	services, err := u.ServicesFetcher.GetServices(brokerID)
+func (u *InstanceCreateUsecase) getService(brokerName, serviceName string) (*osbapi.Service, error) {
+	services, err := u.ServicesFetcher.GetServices(brokerName)
 	if err != nil {
 		return &osbapi.Service{}, err
 	}

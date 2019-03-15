@@ -24,7 +24,7 @@ import (
 type BrokerServiceSpec struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	BrokerID    string `json:"brokerID"`
+	BrokerName  string `json:"brokerName"`
 }
 
 // BrokerServiceStatus defines the observed state of BrokerService

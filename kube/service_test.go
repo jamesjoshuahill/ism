@@ -69,7 +69,7 @@ var _ = Describe("Service", func() {
 					Spec: v1alpha1.BrokerServiceSpec{
 						Name:        "my-service",
 						Description: "my-service-description",
-						BrokerID:    "my-broker",
+						BrokerName:  "my-broker",
 					},
 				}
 
@@ -176,7 +176,7 @@ var _ = Describe("Service", func() {
 				deleteServices(kubeClient, "service-1", "service-2")
 			})
 
-			It("returns only the services owned by the broker id", func() {
+			It("returns only the services owned by the broker", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(services).To(HaveLen(1))

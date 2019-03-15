@@ -47,7 +47,7 @@ func (s *Service) Find(serviceID string) (*osbapi.Service, error) {
 		ID:          service.ObjectMeta.Name,
 		Name:        service.Spec.Name,
 		Description: service.Spec.Description,
-		BrokerName:  service.Spec.BrokerID,
+		BrokerName:  service.Spec.BrokerName,
 	}, nil
 }
 

@@ -28,7 +28,7 @@ spec:
           type: object
         spec:
           properties:
-            brokerID:
+            brokerName:
               type: string
             description:
               type: string
@@ -37,7 +37,7 @@ spec:
           required:
           - name
           - description
-          - brokerID
+          - brokerName
           type: object
         status:
           type: object

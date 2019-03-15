@@ -97,7 +97,7 @@ var _ = Describe("Services Actor", func() {
 			services, err = servicesActor.GetServices("broker-1")
 		})
 
-		It("finds services by broker id", func() {
+		It("finds services by broker name", func() {
 			Expect(fakeServiceRepository.FindByBrokerArgsForCall(0)).To(Equal("broker-1"))
 
 			Expect(services).To(Equal([]*osbapi.Service{

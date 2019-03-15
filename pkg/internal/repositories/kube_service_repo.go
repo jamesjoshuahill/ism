@@ -47,9 +47,9 @@ func (repo *KubeServiceRepo) Create(broker *v1alpha1.Broker, catalogService osba
 			Namespace: broker.Namespace,
 		},
 		Spec: v1alpha1.BrokerServiceSpec{
-			BrokerID:    broker.Name,
 			Name:        catalogService.Name,
 			Description: catalogService.Description,
+			BrokerName:  broker.Name,
 		},
 	}
 

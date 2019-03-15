@@ -22,4 +22,4 @@ metadata:
 spec:
   name: service-2
   description: my-service-2
-  brokerID: 1fcaf078-3117-11e9-8060-42010a8401b0
+  brokerName: my-broker
