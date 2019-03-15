@@ -34,7 +34,7 @@ type BrokerFetcher interface {
 
 type BrokerCommand struct {
 	BrokerRegisterCommand BrokerRegisterCommand `command:"register" long-description:"Register a service broker into the marketplace"`
-	BrokerListCommand     BrokerListCommand     `command:"list" long-description:"Lists the service brokers in the marketplace"`
+	BrokerListCommand     BrokerListCommand     `command:"list" long-description:"List the service brokers in the marketplace"`
 }
 
 type BrokerListCommand struct {

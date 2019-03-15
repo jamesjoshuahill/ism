@@ -116,7 +116,7 @@ var _ = Describe("CLI broker command", func() {
 				Eventually(session).Should(Say("Usage:"))
 				Eventually(session).Should(Say(`ism \[OPTIONS\] broker list`))
 				Eventually(session).Should(Say("\n"))
-				Eventually(session).Should(Say("Lists the service brokers in the marketplace"))
+				Eventually(session).Should(Say("List the service brokers in the marketplace"))
 			})
 		})
 
