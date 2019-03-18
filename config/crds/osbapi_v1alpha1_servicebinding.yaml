@@ -11,6 +11,8 @@ spec:
     kind: ServiceBinding
     plural: servicebindings
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -27,8 +29,28 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            brokerName:
+              type: string
+            instanceID:
+              type: string
+            name:
+              type: string
+            planID:
+              type: string
+            serviceID:
+              type: string
+          required:
+          - name
+          - instanceID
+          - planID
+          - serviceID
+          - brokerName
           type: object
         status:
+          properties:
+            state:
+              type: string
           type: object
   version: v1alpha1
 status:

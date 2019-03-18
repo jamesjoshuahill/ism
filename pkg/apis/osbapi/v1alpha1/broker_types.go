@@ -20,6 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type BrokerState string
+
+const (
+	BrokerStateRegistered BrokerState = "registered"
+)
+
 // BrokerSpec defines the desired state of Broker
 type BrokerSpec struct {
 	Name     string `json:"name"`
@@ -27,12 +33,6 @@ type BrokerSpec struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
-
-type BrokerState string
-
-const (
-	BrokerStateRegistered BrokerState = "registered"
-)
 
 // BrokerStatus defines the observed state of Broker
 type BrokerStatus struct {

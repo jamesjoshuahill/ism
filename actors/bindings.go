@@ -14,45 +14,20 @@ CONDITIONS OF ANY KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations under the License.
 */
 
-package osbapi
+package actors
 
-type Broker struct {
-	Name      string
-	CreatedAt string
-	URL       string
-	Username  string
-	Password  string
+import "github.com/pivotal-cf/ism/osbapi"
+
+//go:generate counterfeiter . BindingRepository
+
+type BindingRepository interface {
+	Create(*osbapi.Binding) error
 }
 
-type Service struct {
-	ID          string
-	Name        string
-	Description string
-	BrokerName  string
+type BindingsActor struct {
+	Repository BindingRepository
 }
 
-type Plan struct {
-	ID        string
-	Name      string
-	ServiceID string
-}
-
-type Instance struct {
-	ID         string
-	Name       string
-	CreatedAt  string
-	Status     string
-	ServiceID  string
-	PlanID     string
-	BrokerName string
-}
-
-type Binding struct {
-	ID         string
-	Name       string
-	CreatedAt  string
-	InstanceID string
-	ServiceID  string
-	PlanID     string
-	BrokerName string
+func (a *BindingsActor) Create(binding *osbapi.Binding) error {
+	return a.Repository.Create(binding)
 }

@@ -20,16 +20,24 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type ServiceBindingState string
+
+const (
+	ServiceBindingStateProvisioned ServiceBindingState = "created"
+)
+
 // ServiceBindingSpec defines the desired state of ServiceBinding
 type ServiceBindingSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Name       string `json:"name"`
+	InstanceID string `json:"instanceID"`
+	PlanID     string `json:"planID"`
+	ServiceID  string `json:"serviceID"`
+	BrokerName string `json:"brokerName"`
 }
 
 // ServiceBindingStatus defines the observed state of ServiceBinding
 type ServiceBindingStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	State ServiceBindingState `json:"state,omitempty"`
 }
 
 // +genclient
@@ -37,6 +45,7 @@ type ServiceBindingStatus struct {
 
 // ServiceBinding is the Schema for the servicebindings API
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type ServiceBinding struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

@@ -18,8 +18,11 @@ package kube
 
 import (
 	"context"
+	"errors"
 
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -31,6 +34,8 @@ const (
 	creating = "creating"
 	created  = "created"
 )
+
+var errInstanceNotFound = errors.New("instance not found")
 
 type Instance struct {
 	KubeClient client.Client
@@ -51,6 +56,30 @@ func (i *Instance) Create(instance *osbapi.Instance) error {
 	}
 
 	return i.KubeClient.Create(context.TODO(), instanceResource)
+}
+
+func (i *Instance) FindByName(name string) (*osbapi.Instance, error) {
+	instance := &v1alpha1.ServiceInstance{}
+	err := i.KubeClient.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: "default"}, instance)
+
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return nil, errInstanceNotFound
+		}
+		return nil, err
+	}
+
+	osbapiInstance := &osbapi.Instance{
+		ID:         string(instance.ObjectMeta.UID),
+		Name:       instance.Spec.Name,
+		PlanID:     instance.Spec.PlanID,
+		ServiceID:  instance.Spec.ServiceID,
+		BrokerName: instance.Spec.BrokerName,
+		Status:     i.setStatus(instance.Status.State),
+		CreatedAt:  instance.ObjectMeta.CreationTimestamp.String(),
+	}
+
+	return osbapiInstance, nil
 }
 
 func (i *Instance) FindAll() ([]*osbapi.Instance, error) {

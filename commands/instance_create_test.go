@@ -76,7 +76,7 @@ var _ = Describe("Instance create command", func() {
 		})
 	})
 
-	When("creating an instace errors", func() {
+	When("creating an instance errors", func() {
 		BeforeEach(func() {
 			fakeInstanceCreateUsecase.CreateReturns(errors.New("error-creating-instance"))
 		})

@@ -16,7 +16,11 @@ specific language governing permissions and limitations under the License.
 
 package commands
 
-import "fmt"
+//go:generate counterfeiter . BindingCreateUsecase
+
+type BindingCreateUsecase interface {
+	Create(name, instanceName string) error
+}
 
 type BindingCommand struct {
 	BindingCreateCommand BindingCreateCommand `command:"create" long-description:"Create a service binding"`
@@ -25,9 +29,16 @@ type BindingCommand struct {
 type BindingCreateCommand struct {
 	Name         string `long:"name" description:"Name of the service binding" required:"true"`
 	InstanceName string `long:"instance-name" description:"Name of the service instance" required:"true"`
+
+	UI                   UI
+	BindingCreateUsecase BindingCreateUsecase
 }
 
 func (cmd *BindingCreateCommand) Execute([]string) error {
-	fmt.Println("Binding 'my-binding' is being created.")
+	if err := cmd.BindingCreateUsecase.Create(cmd.Name, cmd.InstanceName); err != nil {
+		return err
+	}
+
+	cmd.UI.DisplayText("Binding '{{.BindingName}}' is being created.", map[string]interface{}{"BindingName": cmd.Name})
 	return nil
 }

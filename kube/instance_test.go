@@ -37,7 +37,7 @@ var _ = Describe("Instance", func() {
 	var (
 		kubeClient client.Client
 
-		instance *Instance
+		instanceRepo *Instance
 	)
 
 	BeforeEach(func() {
@@ -45,7 +45,7 @@ var _ = Describe("Instance", func() {
 		kubeClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 		Expect(err).NotTo(HaveOccurred())
 
-		instance = &Instance{
+		instanceRepo = &Instance{
 			KubeClient: kubeClient,
 		}
 	})
@@ -101,7 +101,7 @@ var _ = Describe("Instance", func() {
 		})
 
 		JustBeforeEach(func() {
-			instances, err = instance.FindAll()
+			instances, err = instanceRepo.FindAll()
 		})
 
 		AfterEach(func() {
@@ -134,6 +134,65 @@ var _ = Describe("Instance", func() {
 		})
 	})
 
+	Describe("FindByName", func() {
+		var (
+			instance          *osbapi.Instance
+			instanceID        string
+			instanceCreatedAt string
+			err               error
+		)
+
+		JustBeforeEach(func() {
+			instance, err = instanceRepo.FindByName("instance")
+		})
+
+		When("the instance exists", func() {
+			BeforeEach(func() {
+				instanceResource1 := &v1alpha1.ServiceInstance{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "instance",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.ServiceInstanceSpec{
+						Name:       "instance",
+						PlanID:     "plan-1",
+						ServiceID:  "service-1",
+						BrokerName: "my-broker-1",
+					},
+				}
+				Expect(kubeClient.Create(context.TODO(), instanceResource1)).To(Succeed())
+				instanceCreatedAt = createdAtForInstance(kubeClient, instanceResource1)
+				instanceID = idForInstance(kubeClient, instanceResource1)
+			})
+
+			AfterEach(func() {
+				deleteInstances(kubeClient, "instance")
+			})
+
+			It("returns the instance", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(instance).To(Equal(
+					&osbapi.Instance{
+						ID:         instanceID,
+						CreatedAt:  instanceCreatedAt,
+						Name:       "instance",
+						PlanID:     "plan-1",
+						ServiceID:  "service-1",
+						Status:     "creating",
+						BrokerName: "my-broker-1",
+					},
+				))
+			})
+		})
+
+		When("the instance does not exist", func() {
+			It("returns a not found error", func() {
+				Expect(err).To(MatchError("instance not found"))
+			})
+		})
+	})
+
 	Describe("Create", func() {
 		var err error
 
@@ -145,7 +204,7 @@ var _ = Describe("Instance", func() {
 				BrokerName: "broker-1",
 			}
 
-			err = instance.Create(b)
+			err = instanceRepo.Create(b)
 		})
 
 		AfterEach(func() {
@@ -181,7 +240,7 @@ var _ = Describe("Instance", func() {
 					BrokerName: "broker-1",
 				}
 
-				Expect(instance.Create(b)).To(Succeed())
+				Expect(instanceRepo.Create(b)).To(Succeed())
 			})
 
 			It("propagates the error", func() {
@@ -211,13 +270,13 @@ func idForInstance(kubeClient client.Client, instanceResource *v1alpha1.ServiceI
 }
 
 func deleteInstances(kubeClient client.Client, instanceNames ...string) {
-	for _, b := range instanceNames {
-		bToDelete := &v1alpha1.ServiceInstance{
+	for _, name := range instanceNames {
+		iToDelete := &v1alpha1.ServiceInstance{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      b,
+				Name:      name,
 				Namespace: "default",
 			},
 		}
-		Expect(kubeClient.Delete(context.TODO(), bToDelete)).To(Succeed())
+		Expect(kubeClient.Delete(context.TODO(), iToDelete)).To(Succeed())
 	}
 }

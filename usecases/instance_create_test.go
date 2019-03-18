@@ -88,7 +88,7 @@ var _ = Describe("Instance Create Usecase", func() {
 		executeErr = instanceCreateUsecase.Create("my-instance", "my-plan", "my-service", "my-broker")
 	})
 
-	When("passed valid args", func() {
+	When("the plan, service and broker exist", func() {
 		BeforeEach(func() {
 			fakeBrokersFetcher.GetBrokersReturns(brokers, nil)
 			fakeServicesFetcher.GetServicesReturns(services, nil)

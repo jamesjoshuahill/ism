@@ -20,6 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type ServiceInstanceState string
+
+const (
+	ServiceInstanceStateProvisioned ServiceInstanceState = "provisioned"
+)
+
 // ServiceInstanceSpec defines the desired state of ServiceInstance
 type ServiceInstanceSpec struct {
 	Name       string `json:"name"`
@@ -32,12 +38,6 @@ type ServiceInstanceSpec struct {
 type ServiceInstanceStatus struct {
 	State ServiceInstanceState `json:"state,omitempty"`
 }
-
-type ServiceInstanceState string
-
-const (
-	ServiceInstanceStateProvisioned ServiceInstanceState = "provisioned"
-)
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
