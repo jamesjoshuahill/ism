@@ -227,7 +227,7 @@ func deleteBrokers(brokerNames ...string) {
 	}
 }
 
-func deleteServiceInstances(serviceInstanceNames ...string) {
+func deleteInstances(serviceInstanceNames ...string) {
 	for _, s := range serviceInstanceNames {
 		runKubectl("delete", "serviceinstance", s)
 	}

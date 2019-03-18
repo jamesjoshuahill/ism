@@ -92,7 +92,7 @@ var _ = Describe("CLI instance command", func() {
 
 			AfterEach(func() {
 				deleteBrokers("instance-creation-broker")
-				deleteServiceInstances("my-instance")
+				deleteInstances("my-instance")
 			})
 
 			It("starts creation of the service instance", func() {
@@ -149,7 +149,7 @@ var _ = Describe("CLI instance command", func() {
 			})
 
 			AfterEach(func() {
-				deleteServiceInstances("instance-list-test-instance")
+				deleteInstances("instance-list-test-instance")
 				deleteBrokers("instance-list-command-broker")
 			})
 
