@@ -90,9 +90,8 @@ var _ = Describe("Plan", func() {
 		})
 
 		When("the plan does not exist", func() {
-			It("returns nil with no error", func() {
-				Expect(err).NotTo(HaveOccurred())
-				Expect(plan).To(BeNil())
+			It("returns a not found error", func() {
+				Expect(err).To(MatchError("plan not found"))
 			})
 		})
 

@@ -93,9 +93,8 @@ var _ = Describe("Service", func() {
 		})
 
 		When("the service does not exist", func() {
-			It("returns nil with no error", func() {
-				Expect(err).NotTo(HaveOccurred())
-				Expect(service).To(BeNil())
+			It("returns error not found", func() {
+				Expect(err).To(MatchError("service not found"))
 			})
 		})
 

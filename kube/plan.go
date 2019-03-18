@@ -18,8 +18,9 @@ package kube
 
 import (
 	"context"
+	"errors"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,6 +28,8 @@ import (
 	"github.com/pivotal-cf/ism/osbapi"
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 )
+
+var errPlanNotFound = errors.New("plan not found")
 
 type Plan struct {
 	KubeClient client.Client
@@ -37,8 +40,8 @@ func (p *Plan) Find(planID string) (*osbapi.Plan, error) {
 	err := p.KubeClient.Get(context.TODO(), types.NamespacedName{Name: planID, Namespace: "default"}, plan)
 
 	if err != nil {
-		if errors.IsNotFound(err) {
-			return nil, nil
+		if kerrors.IsNotFound(err) {
+			return nil, errPlanNotFound
 		}
 		return nil, err
 	}
