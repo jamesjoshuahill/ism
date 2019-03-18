@@ -20,6 +20,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -233,6 +235,12 @@ func deleteInstances(serviceInstanceNames ...string) {
 	}
 }
 
+func deleteBinding(serviceBindingNames ...string) {
+	for _, b := range serviceBindingNames {
+		runKubectl("delete", "servicebinding", b)
+	}
+}
+
 func runMake(task string) {
 	command := exec.Command("make", task)
 	command.Dir = filepath.Join("..")
@@ -257,4 +265,51 @@ type nodeData struct {
 	BrokerURL      string
 	BrokerUsername string
 	BrokerPassword string
+}
+
+type brokerData struct {
+	ServiceInstances map[string]serviceInstance `json:"serviceInstances"`
+}
+
+type serviceInstance struct {
+	PlanName    string                    `json:"plan_name"`
+	ServiceName string                    `json:"service_name"`
+	Bindings    map[string]serviceBinding `json:"bindings"`
+}
+
+type serviceBinding struct {
+}
+
+func getBrokerData() brokerData {
+	brokerDataURL := fmt.Sprintf("http://127.0.0.1:%d/data", brokerPort)
+
+	resp, err := http.Get(brokerDataURL)
+	Expect(err).NotTo(HaveOccurred())
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	Expect(err).NotTo(HaveOccurred())
+
+	var data brokerData
+	Expect(json.Unmarshal(respBytes, &data)).To(Succeed())
+
+	return data
+}
+
+func getBrokerInstances() []serviceInstance {
+	var instances []serviceInstance
+	for _, instance := range getBrokerData().ServiceInstances {
+		instances = append(instances, instance)
+	}
+
+	return instances
+}
+
+func getBrokerBindings() []serviceBinding {
+	var bindings []serviceBinding
+	instances := getBrokerData().ServiceInstances
+	for _, instance := range instances {
+		for _, binding := range instance.Bindings {
+			bindings = append(bindings, binding)
+		}
+	}
+	return bindings
 }

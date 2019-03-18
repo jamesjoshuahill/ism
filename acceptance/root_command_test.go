@@ -35,7 +35,12 @@ var _ = Describe("CLI", func() {
 			Eventually(session).Should(Exit(0))
 
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`ism \[OPTIONS\] <broker | services>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] <command>`))
+			Eventually(session).Should(Say(`Available commands:`))
+			Eventually(session).Should(Say(`binding`))
+			Eventually(session).Should(Say(`broker`))
+			Eventually(session).Should(Say(`instance`))
+			Eventually(session).Should(Say(`service`))
 		})
 	})
 
@@ -48,7 +53,12 @@ var _ = Describe("CLI", func() {
 			Eventually(session).Should(Exit(0))
 
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`ism \[OPTIONS\] <broker | services>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] <command>`))
+			Eventually(session).Should(Say(`Available commands:`))
+			Eventually(session).Should(Say(`binding`))
+			Eventually(session).Should(Say(`broker`))
+			Eventually(session).Should(Say(`instance`))
+			Eventually(session).Should(Say(`service`))
 		})
 	})
 })

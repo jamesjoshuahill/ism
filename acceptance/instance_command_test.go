@@ -17,10 +17,6 @@ specific language governing permissions and limitations under the License.
 package acceptance
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os/exec"
 	"time"
 
@@ -87,7 +83,7 @@ var _ = Describe("CLI instance command", func() {
 				registerBroker("instance-creation-broker")
 				args = append(args, "--name", "my-instance", "--service", serviceName, "--plan", planName, "--broker", "instance-creation-broker")
 
-				Expect(getBrokerData().ServiceInstances).To(HaveLen(0))
+				Expect(getBrokerInstances()).To(HaveLen(0))
 			})
 
 			AfterEach(func() {
@@ -163,26 +159,3 @@ var _ = Describe("CLI instance command", func() {
 		})
 	})
 })
-
-type serviceInstance struct {
-	PlanName    string `json:"plan_name"`
-	ServiceName string `json:"service_name"`
-}
-
-type brokerData struct {
-	ServiceInstances map[string]serviceInstance `json:"serviceInstances"`
-}
-
-func getBrokerData() brokerData {
-	brokerDataURL := fmt.Sprintf("http://127.0.0.1:%d/data", brokerPort)
-
-	resp, err := http.Get(brokerDataURL)
-	Expect(err).NotTo(HaveOccurred())
-	respBytes, err := ioutil.ReadAll(resp.Body)
-	Expect(err).NotTo(HaveOccurred())
-
-	var data brokerData
-	Expect(json.Unmarshal(respBytes, &data)).To(Succeed())
-
-	return data
-}
