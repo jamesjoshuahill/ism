@@ -74,6 +74,7 @@ var _ = Describe("Instance List Usecase", func() {
 		BeforeEach(func() {
 			fakeInstancesFetcher.GetInstancesReturns([]*osbapi.Instance{
 				{
+					ID:         "instance-1",
 					Name:       "my-instance-1",
 					ServiceID:  "service-id-1",
 					PlanID:     "plan-id-1",
@@ -81,6 +82,7 @@ var _ = Describe("Instance List Usecase", func() {
 					Status:     "created",
 					CreatedAt:  "time-1",
 				}, {
+					ID:         "instance-2",
 					Name:       "my-instance-2",
 					ServiceID:  "service-id-2",
 					PlanID:     "plan-id-2",
@@ -146,6 +148,7 @@ var _ = Describe("Instance List Usecase", func() {
 	When("fetching the service errors", func() {
 		BeforeEach(func() {
 			fakeInstancesFetcher.GetInstancesReturns([]*osbapi.Instance{{
+				ID:         "instance-1",
 				Name:       "my-instance-1",
 				ServiceID:  "service-id-1",
 				PlanID:     "plan-id-1",
@@ -165,6 +168,7 @@ var _ = Describe("Instance List Usecase", func() {
 	When("fetching the plan errors", func() {
 		BeforeEach(func() {
 			fakeInstancesFetcher.GetInstancesReturns([]*osbapi.Instance{{
+				ID:         "instance-1",
 				Name:       "my-instance-1",
 				ServiceID:  "service-id-1",
 				PlanID:     "plan-id-1",

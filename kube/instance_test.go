@@ -53,6 +53,8 @@ var _ = Describe("Instance", func() {
 	Describe("FindAll", func() {
 		var (
 			instances          []*osbapi.Instance
+			instanceID1        string
+			instanceID2        string
 			instanceCreatedAt1 string
 			instanceCreatedAt2 string
 			err                error
@@ -94,6 +96,8 @@ var _ = Describe("Instance", func() {
 			Expect(kubeClient.Create(context.TODO(), instanceResource2)).To(Succeed())
 			instanceCreatedAt1 = createdAtForInstance(kubeClient, instanceResource1)
 			instanceCreatedAt2 = createdAtForInstance(kubeClient, instanceResource2)
+			instanceID1 = idForInstance(kubeClient, instanceResource1)
+			instanceID2 = idForInstance(kubeClient, instanceResource2)
 		})
 
 		JustBeforeEach(func() {
@@ -109,6 +113,7 @@ var _ = Describe("Instance", func() {
 
 			Expect(instances).To(ConsistOf(
 				&osbapi.Instance{
+					ID:         instanceID1,
 					CreatedAt:  instanceCreatedAt1,
 					Name:       "instance-1",
 					PlanID:     "plan-1",
@@ -117,6 +122,7 @@ var _ = Describe("Instance", func() {
 					BrokerName: "my-broker-1",
 				},
 				&osbapi.Instance{
+					ID:         instanceID2,
 					CreatedAt:  instanceCreatedAt2,
 					Name:       "instance-2",
 					PlanID:     "plan-2",
@@ -193,6 +199,15 @@ func createdAtForInstance(kubeClient client.Client, instanceResource *v1alpha1.S
 
 	time := i.ObjectMeta.CreationTimestamp.String()
 	return time
+}
+
+func idForInstance(kubeClient client.Client, instanceResource *v1alpha1.ServiceInstance) string {
+	i := &v1alpha1.ServiceInstance{}
+	namespacedName := types.NamespacedName{Name: instanceResource.Name, Namespace: instanceResource.Namespace}
+
+	Expect(kubeClient.Get(context.TODO(), namespacedName, i)).To(Succeed())
+
+	return string(i.ObjectMeta.UID)
 }
 
 func deleteInstances(kubeClient client.Client, instanceNames ...string) {

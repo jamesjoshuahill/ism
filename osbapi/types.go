@@ -38,6 +38,7 @@ type Plan struct {
 }
 
 type Instance struct {
+	ID         string
 	Name       string
 	CreatedAt  string
 	Status     string

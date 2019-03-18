@@ -62,6 +62,7 @@ func (i *Instance) FindAll() ([]*osbapi.Instance, error) {
 	instances := []*osbapi.Instance{}
 	for _, instance := range list.Items {
 		instances = append(instances, &osbapi.Instance{
+			ID:         string(instance.ObjectMeta.UID),
 			Name:       instance.Spec.Name,
 			PlanID:     instance.Spec.PlanID,
 			ServiceID:  instance.Spec.ServiceID,
