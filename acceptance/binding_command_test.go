@@ -98,7 +98,7 @@ var _ = Describe("CLI binding command", func() {
 
 			It("starts creation of the service binding", func() {
 				Eventually(session).Should(Exit(0))
-				Eventually(session).Should(Say("Binding 'my-binding' is being created\\."))
+				Eventually(session).Should(Say("Binding 'binding-creation-binding' is being created\\."))
 
 				// TODO: Revisit this when it comes to implementing asynchronous provisioning
 				// Allow time for controller to set instance status to "created"

@@ -52,6 +52,7 @@ func main() {
 	serviceRepository := &kube.Service{KubeClient: kubeClient}
 	planRepository := &kube.Plan{KubeClient: kubeClient}
 	instanceRepository := &kube.Instance{KubeClient: kubeClient}
+	bindingRepository := &kube.Binding{KubeClient: kubeClient}
 
 	brokersActor := &actors.BrokersActor{
 		Repository: brokerRepository,
@@ -64,6 +65,9 @@ func main() {
 	}
 	instancesActor := &actors.InstancesActor{
 		Repository: instanceRepository,
+	}
+	bindingsActor := &actors.BindingsActor{
+		Repository: bindingRepository,
 	}
 
 	serviceListUsecase := &usecases.ServiceListUsecase{
@@ -83,6 +87,11 @@ func main() {
 		InstancesFetcher: instancesActor,
 		ServiceFetcher:   servicesActor,
 		PlanFetcher:      plansActor,
+	}
+
+	bindingCreateUsecase := &usecases.BindingCreateUsecase{
+		BindingCreator:  bindingsActor,
+		InstanceFetcher: instancesActor,
 	}
 
 	rootCommand := commands.RootCommand{
@@ -112,7 +121,14 @@ func main() {
 				InstanceListUsecase: instanceListUsecase,
 			},
 		},
+		BindingCommand: commands.BindingCommand{
+			BindingCreateCommand: commands.BindingCreateCommand{
+				UI:                   UI,
+				BindingCreateUsecase: bindingCreateUsecase,
+			},
+		},
 	}
+
 	parser := flags.NewParser(&rootCommand, flags.HelpFlag|flags.PassDoubleDash)
 
 	if len(os.Args) < 2 {
