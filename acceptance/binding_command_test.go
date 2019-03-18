@@ -78,7 +78,7 @@ var _ = Describe("CLI binding command", func() {
 			})
 		})
 
-		PWhen("valid args are passed", func() {
+		When("valid args are passed", func() {
 			BeforeEach(func() {
 				registerBroker("binding-creation-broker")
 				createInstance("binding-creation-instance", "binding-creation-broker")
@@ -93,7 +93,7 @@ var _ = Describe("CLI binding command", func() {
 			AfterEach(func() {
 				deleteBrokers("binding-creation-broker")
 				deleteInstances("binding-creation-instance")
-				// deleteServiceBindings("binding-creation-binding")
+				deleteBindings("binding-creation-binding")
 			})
 
 			It("starts creation of the service binding", func() {

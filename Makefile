@@ -71,7 +71,7 @@ clean:
 	rm -f ${CLI_NAME}
 
 clean-crs:
-	kubectl delete brokers,brokerservices,brokerserviceplans,serviceinstances --all
+	kubectl delete brokers,brokerservices,brokerserviceplans,serviceinstances,servicebindings --all
 
 # Cannot yet -randomizeAllSpecs the acceptance tests
 acceptance-tests:

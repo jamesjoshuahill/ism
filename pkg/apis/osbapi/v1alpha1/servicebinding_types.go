@@ -23,7 +23,7 @@ import (
 type ServiceBindingState string
 
 const (
-	ServiceBindingStateProvisioned ServiceBindingState = "created"
+	ServiceBindingStateCreated ServiceBindingState = "created"
 )
 
 // ServiceBindingSpec defines the desired state of ServiceBinding

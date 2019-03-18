@@ -235,7 +235,7 @@ func deleteInstances(serviceInstanceNames ...string) {
 	}
 }
 
-func deleteBinding(serviceBindingNames ...string) {
+func deleteBindings(serviceBindingNames ...string) {
 	for _, b := range serviceBindingNames {
 		runKubectl("delete", "servicebinding", b)
 	}

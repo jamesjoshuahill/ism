@@ -18,6 +18,7 @@ package servicebinding
 
 import (
 	osbapiv1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
+	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -26,6 +27,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/pivotal-cf/ism/pkg/internal/reconcilers"
+	"github.com/pivotal-cf/ism/pkg/internal/repositories"
 )
 
 var log = logf.Log.WithName("controller")
@@ -70,5 +74,15 @@ type ReconcileServiceBinding struct {
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=servicebindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=servicebindings/status,verbs=get;update;patch
 func (r *ReconcileServiceBinding) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	return reconcile.Result{}, nil
+	kubeBrokerRepo := repositories.NewKubeBrokerRepo(r.Client)
+	kubeServiceBindingRepo := repositories.NewKubeServiceBindingRepo(r.Client)
+
+	reconciler := reconcilers.NewServiceBindingReconciler(
+		osbapi.NewClient,
+		kubeServiceBindingRepo,
+		kubeBrokerRepo,
+	)
+
+	log.Info("Reconcile called", "request", request)
+	return reconciler.Reconcile(request)
 }
