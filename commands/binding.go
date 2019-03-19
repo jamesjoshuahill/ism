@@ -27,15 +27,15 @@ type BindingCommand struct {
 }
 
 type BindingCreateCommand struct {
-	Name         string `long:"name" description:"Name of the service binding" required:"true"`
-	InstanceName string `long:"instance-name" description:"Name of the service instance" required:"true"`
+	Name     string `long:"name" description:"Name of the service binding" required:"true"`
+	Instance string `long:"instance" description:"Name of the service instance" required:"true"`
 
 	UI                   UI
 	BindingCreateUsecase BindingCreateUsecase
 }
 
 func (cmd *BindingCreateCommand) Execute([]string) error {
-	if err := cmd.BindingCreateUsecase.Create(cmd.Name, cmd.InstanceName); err != nil {
+	if err := cmd.BindingCreateUsecase.Create(cmd.Name, cmd.Instance); err != nil {
 		return err
 	}
 

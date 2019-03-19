@@ -43,7 +43,7 @@ var _ = Describe("Binding create command", func() {
 
 		createCommand = BindingCreateCommand{
 			Name:                 "my-binding-1",
-			InstanceName:         "my-instance-1",
+			Instance:             "my-instance-1",
 			BindingCreateUsecase: fakeBindingCreateUsecase,
 			UI:                   fakeUI,
 		}

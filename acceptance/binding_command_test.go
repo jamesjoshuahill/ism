@@ -82,7 +82,7 @@ var _ = Describe("CLI binding command", func() {
 			BeforeEach(func() {
 				registerBroker("binding-creation-broker")
 				createInstance("binding-creation-instance", "binding-creation-broker")
-				args = append(args, "--name", "binding-creation-binding", "--instance-name", "binding-creation-instance")
+				args = append(args, "--name", "binding-creation-binding", "--instance", "binding-creation-instance")
 
 				Expect(getBrokerBindings()).To(HaveLen(0))
 
@@ -114,7 +114,7 @@ var _ = Describe("CLI binding command", func() {
 		When("required args are not passed", func() {
 			It("displays an informative message and exits 1", func() {
 				Eventually(session).Should(Exit(1))
-				Eventually(session).Should(Say("the required flags `--instance-name' and `--name' were not specified"))
+				Eventually(session).Should(Say("the required flags `--instance' and `--name' were not specified"))
 			})
 		})
 	})
