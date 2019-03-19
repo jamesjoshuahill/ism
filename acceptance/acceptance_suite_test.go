@@ -192,11 +192,27 @@ func deployController() {
 }
 
 func deleteController() {
+	printControllerLogs()
 	runMake("delete-controller")
 }
 
 func uninstallCRDs() {
 	runMake("uninstall-crds")
+}
+
+func printControllerLogs() {
+	args := []string{"logs", "-n", "ism-system", "ism-controller-manager-0", "--all-containers"}
+
+	outBuf := NewBuffer()
+	command := exec.Command("kubectl", args...)
+	command.Dir = filepath.Join("..")
+	command.Stdout = outBuf
+	command.Stderr = outBuf
+
+	Expect(command.Run()).To(Succeed())
+
+	fmt.Printf("\n\nPrinting controller logs:\n\n")
+	fmt.Printf(string(outBuf.Contents()))
 }
 
 func registerBroker(brokerName string) {
@@ -285,6 +301,7 @@ func getBrokerData() brokerData {
 
 	resp, err := http.Get(brokerDataURL)
 	Expect(err).NotTo(HaveOccurred())
+	Expect(resp.StatusCode).To(Equal(200))
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -312,4 +329,12 @@ func getBrokerBindings() []serviceBinding {
 		}
 	}
 	return bindings
+}
+
+//TODO remove this once we have delete binding/instances.
+func cleanBrokerData() {
+	brokerDataURL := fmt.Sprintf("http://127.0.0.1:%d/admin/clean", brokerPort)
+	resp, err := http.Post(brokerDataURL, "", nil)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(resp.StatusCode).To(Equal(200))
 }

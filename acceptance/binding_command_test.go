@@ -94,6 +94,7 @@ var _ = Describe("CLI binding command", func() {
 				deleteBrokers("binding-creation-broker")
 				deleteInstances("binding-creation-instance")
 				deleteBindings("binding-creation-binding")
+				cleanBrokerData()
 			})
 
 			It("starts creation of the service binding", func() {
