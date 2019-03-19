@@ -103,7 +103,7 @@ var _ = Describe("CLI binding command", func() {
 
 				// TODO: Revisit this when it comes to implementing asynchronous provisioning
 				// Allow time for controller to set instance status to "created"
-				Eventually(getBrokerBindings()).Should(HaveLen(1))
+				Eventually(getBrokerBindings).Should(HaveLen(1))
 			})
 		})
 

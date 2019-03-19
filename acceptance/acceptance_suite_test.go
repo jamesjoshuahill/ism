@@ -167,6 +167,7 @@ func teardownProxyAccessToBroker() {
 }
 
 func deleteTestBroker() {
+	printBrokerLogs()
 	runMake("delete-test-broker")
 	teardownProxyAccessToBroker()
 }
@@ -212,6 +213,21 @@ func printControllerLogs() {
 	Expect(command.Run()).To(Succeed())
 
 	fmt.Printf("\n\nPrinting controller logs:\n\n")
+	fmt.Printf(string(outBuf.Contents()))
+}
+
+func printBrokerLogs() {
+	args := []string{"logs", "deployment/overview-broker-deployment"}
+
+	outBuf := NewBuffer()
+	command := exec.Command("kubectl", args...)
+	command.Dir = filepath.Join("..")
+	command.Stdout = outBuf
+	command.Stderr = outBuf
+
+	Expect(command.Run()).To(Succeed())
+
+	fmt.Printf("\n\nPrinting broker logs:\n\n")
 	fmt.Printf(string(outBuf.Contents()))
 }
 
