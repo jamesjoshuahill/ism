@@ -102,8 +102,8 @@ func main() {
 				BrokerRegistrar: brokersActor,
 			},
 			BrokerListCommand: commands.BrokerListCommand{
-				UI:            UI,
-				BrokerFetcher: brokersActor,
+				UI:             UI,
+				BrokersFetcher: brokersActor,
 			},
 		},
 		ServiceCommand: commands.ServiceCommand{

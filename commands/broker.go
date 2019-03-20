@@ -26,9 +26,9 @@ type BrokerRegistrar interface {
 	Register(*osbapi.Broker) error
 }
 
-//go:generate counterfeiter . BrokerFetcher
+//go:generate counterfeiter . BrokersFetcher
 
-type BrokerFetcher interface {
+type BrokersFetcher interface {
 	GetBrokers() ([]*osbapi.Broker, error)
 }
 
@@ -38,8 +38,8 @@ type BrokerCommand struct {
 }
 
 type BrokerListCommand struct {
-	UI            UI
-	BrokerFetcher BrokerFetcher
+	UI             UI
+	BrokersFetcher BrokersFetcher
 }
 
 type BrokerRegisterCommand struct {
@@ -72,7 +72,7 @@ func (cmd *BrokerRegisterCommand) Execute([]string) error {
 }
 
 func (cmd *BrokerListCommand) Execute([]string) error {
-	brokers, err := cmd.BrokerFetcher.GetBrokers()
+	brokers, err := cmd.BrokersFetcher.GetBrokers()
 	if err != nil {
 		return err
 	}

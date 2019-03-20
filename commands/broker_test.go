@@ -95,8 +95,8 @@ var _ = Describe("Broker command", func() {
 
 	Describe("List sub command", func() {
 		var (
-			fakeBrokerFetcher *commandsfakes.FakeBrokerFetcher
-			fakeUI            *commandsfakes.FakeUI
+			fakeBrokersFetcher *commandsfakes.FakeBrokersFetcher
+			fakeUI             *commandsfakes.FakeUI
 
 			listCommand BrokerListCommand
 
@@ -104,12 +104,12 @@ var _ = Describe("Broker command", func() {
 		)
 
 		BeforeEach(func() {
-			fakeBrokerFetcher = &commandsfakes.FakeBrokerFetcher{}
+			fakeBrokersFetcher = &commandsfakes.FakeBrokersFetcher{}
 			fakeUI = &commandsfakes.FakeUI{}
 
 			listCommand = BrokerListCommand{
-				BrokerFetcher: fakeBrokerFetcher,
-				UI:            fakeUI,
+				BrokersFetcher: fakeBrokersFetcher,
+				UI:             fakeUI,
 			}
 		})
 
@@ -119,7 +119,7 @@ var _ = Describe("Broker command", func() {
 
 		When("there are no brokers", func() {
 			BeforeEach(func() {
-				fakeBrokerFetcher.GetBrokersReturns([]*osbapi.Broker{}, nil)
+				fakeBrokersFetcher.GetBrokersReturns([]*osbapi.Broker{}, nil)
 			})
 
 			It("doesn't error", func() {
@@ -136,7 +136,7 @@ var _ = Describe("Broker command", func() {
 
 		When("there is 1 or more brokers", func() {
 			BeforeEach(func() {
-				fakeBrokerFetcher.GetBrokersReturns([]*osbapi.Broker{{
+				fakeBrokersFetcher.GetBrokersReturns([]*osbapi.Broker{{
 					Name:      "broker-1",
 					URL:       "https://broker-1-url.com",
 					CreatedAt: "2019-02-28T12:08:31Z",
@@ -163,7 +163,7 @@ var _ = Describe("Broker command", func() {
 
 		When("getting brokers returns an error", func() {
 			BeforeEach(func() {
-				fakeBrokerFetcher.GetBrokersReturns([]*osbapi.Broker{}, errors.New("error-getting-brokers"))
+				fakeBrokersFetcher.GetBrokersReturns([]*osbapi.Broker{}, errors.New("error-getting-brokers"))
 			})
 
 			It("propagates the error", func() {
