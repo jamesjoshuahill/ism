@@ -29,6 +29,6 @@ spec:
     spec:
       containers:
       - name: overview-broker
-        image: mattmcneeney/overview-broker:latest
+        image: ismteam/overview-broker:latest
         ports:
         - containerPort: 8080

@@ -1,7 +1,7 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= ismteam/controller:latest
-BROKERIMG ?= mattmcneeney/overview-broker:latest
+BROKERIMG ?= ismteam/overview-broker:latest
 CLI_NAME = bin/ism
 GINKGO_ARGS = -r -p -randomizeSuites -randomizeAllSpecs
 
@@ -62,7 +62,7 @@ run-test-broker:
 	docker run -d -p 127.0.0.1:8081:8080/tcp ${BROKERIMG}
 
 stop-test-broker:
-	docker ps | grep mattmcneeney/overview-broker | awk '{print $$1}' | xargs -n1 docker kill
+	docker ps | grep ${BROKERIMG} | awk '{print $$1}' | xargs -n1 docker kill
 
 cli:
 	go build -o ${CLI_NAME} cmd/ism/main.go
