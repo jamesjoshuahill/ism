@@ -22,18 +22,6 @@ import (
 	"github.com/pivotal-cf/ism/osbapi"
 )
 
-//go:generate counterfeiter . BindingCreator
-
-type BindingCreator interface {
-	Create(*osbapi.Binding) error
-}
-
-//go:generate counterfeiter . InstanceFetcher
-
-type InstanceFetcher interface {
-	GetInstanceByName(name string) (*osbapi.Instance, error)
-}
-
 type BindingCreateUsecase struct {
 	BindingCreator  BindingCreator
 	InstanceFetcher InstanceFetcher

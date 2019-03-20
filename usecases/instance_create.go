@@ -22,16 +22,10 @@ import (
 	"github.com/pivotal-cf/ism/osbapi"
 )
 
-//go:generate counterfeiter . InstanceCreator
-
-type InstanceCreator interface {
-	Create(*osbapi.Instance) error
-}
-
 type InstanceCreateUsecase struct {
-	BrokersFetcher  BrokersFetcher
-	ServicesFetcher ServicesFetcher
-	PlansFetcher    PlansFetcher
+	BrokerFetcher   BrokerFetcher
+	ServiceFetcher  ServiceFetcher
+	PlanFetcher     PlanFetcher
 	InstanceCreator InstanceCreator
 }
 
@@ -62,7 +56,7 @@ func (u *InstanceCreateUsecase) Create(name, planName, serviceName, brokerName s
 }
 
 func (u *InstanceCreateUsecase) getBroker(brokerName string) (*osbapi.Broker, error) {
-	brokers, err := u.BrokersFetcher.GetBrokers()
+	brokers, err := u.BrokerFetcher.GetBrokers()
 	if err != nil {
 		return &osbapi.Broker{}, err
 	}
@@ -78,7 +72,7 @@ func (u *InstanceCreateUsecase) getBroker(brokerName string) (*osbapi.Broker, er
 }
 
 func (u *InstanceCreateUsecase) getService(brokerName, serviceName string) (*osbapi.Service, error) {
-	services, err := u.ServicesFetcher.GetServices(brokerName)
+	services, err := u.ServiceFetcher.GetServices(brokerName)
 	if err != nil {
 		return &osbapi.Service{}, err
 	}
@@ -94,7 +88,7 @@ func (u *InstanceCreateUsecase) getService(brokerName, serviceName string) (*osb
 }
 
 func (u *InstanceCreateUsecase) getPlan(serviceID, planName string) (*osbapi.Plan, error) {
-	plans, err := u.PlansFetcher.GetPlans(serviceID)
+	plans, err := u.PlanFetcher.GetPlans(serviceID)
 	if err != nil {
 		return &osbapi.Plan{}, err
 	}

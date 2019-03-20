@@ -22,6 +22,19 @@ type FakeServiceFetcher struct {
 		result1 *osbapi.Service
 		result2 error
 	}
+	GetServicesStub        func(string) ([]*osbapi.Service, error)
+	getServicesMutex       sync.RWMutex
+	getServicesArgsForCall []struct {
+		arg1 string
+	}
+	getServicesReturns struct {
+		result1 []*osbapi.Service
+		result2 error
+	}
+	getServicesReturnsOnCall map[int]struct {
+		result1 []*osbapi.Service
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -89,11 +102,76 @@ func (fake *FakeServiceFetcher) GetServiceReturnsOnCall(i int, result1 *osbapi.S
 	}{result1, result2}
 }
 
+func (fake *FakeServiceFetcher) GetServices(arg1 string) ([]*osbapi.Service, error) {
+	fake.getServicesMutex.Lock()
+	ret, specificReturn := fake.getServicesReturnsOnCall[len(fake.getServicesArgsForCall)]
+	fake.getServicesArgsForCall = append(fake.getServicesArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetServices", []interface{}{arg1})
+	fake.getServicesMutex.Unlock()
+	if fake.GetServicesStub != nil {
+		return fake.GetServicesStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getServicesReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeServiceFetcher) GetServicesCallCount() int {
+	fake.getServicesMutex.RLock()
+	defer fake.getServicesMutex.RUnlock()
+	return len(fake.getServicesArgsForCall)
+}
+
+func (fake *FakeServiceFetcher) GetServicesCalls(stub func(string) ([]*osbapi.Service, error)) {
+	fake.getServicesMutex.Lock()
+	defer fake.getServicesMutex.Unlock()
+	fake.GetServicesStub = stub
+}
+
+func (fake *FakeServiceFetcher) GetServicesArgsForCall(i int) string {
+	fake.getServicesMutex.RLock()
+	defer fake.getServicesMutex.RUnlock()
+	argsForCall := fake.getServicesArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeServiceFetcher) GetServicesReturns(result1 []*osbapi.Service, result2 error) {
+	fake.getServicesMutex.Lock()
+	defer fake.getServicesMutex.Unlock()
+	fake.GetServicesStub = nil
+	fake.getServicesReturns = struct {
+		result1 []*osbapi.Service
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceFetcher) GetServicesReturnsOnCall(i int, result1 []*osbapi.Service, result2 error) {
+	fake.getServicesMutex.Lock()
+	defer fake.getServicesMutex.Unlock()
+	fake.GetServicesStub = nil
+	if fake.getServicesReturnsOnCall == nil {
+		fake.getServicesReturnsOnCall = make(map[int]struct {
+			result1 []*osbapi.Service
+			result2 error
+		})
+	}
+	fake.getServicesReturnsOnCall[i] = struct {
+		result1 []*osbapi.Service
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeServiceFetcher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.getServiceMutex.RLock()
 	defer fake.getServiceMutex.RUnlock()
+	fake.getServicesMutex.RLock()
+	defer fake.getServicesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

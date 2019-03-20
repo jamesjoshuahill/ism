@@ -16,10 +16,6 @@ specific language governing permissions and limitations under the License.
 
 package usecases
 
-import (
-	"github.com/pivotal-cf/ism/osbapi"
-)
-
 type Instance struct {
 	Name        string
 	ServiceName string
@@ -29,32 +25,14 @@ type Instance struct {
 	CreatedAt   string
 }
 
-//go:generate counterfeiter . InstancesFetcher
-
-type InstancesFetcher interface {
-	GetInstances() ([]*osbapi.Instance, error)
-}
-
-//go:generate counterfeiter . ServiceFetcher
-
-type ServiceFetcher interface {
-	GetService(serviceID string) (*osbapi.Service, error)
-}
-
-//go:generate counterfeiter . PlanFetcher
-
-type PlanFetcher interface {
-	GetPlan(planID string) (*osbapi.Plan, error)
-}
-
 type InstanceListUsecase struct {
-	InstancesFetcher InstancesFetcher
-	ServiceFetcher   ServiceFetcher
-	PlanFetcher      PlanFetcher
+	InstanceFetcher InstanceFetcher
+	ServiceFetcher  ServiceFetcher
+	PlanFetcher     PlanFetcher
 }
 
 func (i *InstanceListUsecase) GetInstances() ([]*Instance, error) {
-	osbapiInstances, err := i.InstancesFetcher.GetInstances()
+	osbapiInstances, err := i.InstanceFetcher.GetInstances()
 	if err != nil {
 		return []*Instance{}, err
 	}

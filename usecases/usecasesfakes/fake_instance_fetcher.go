@@ -22,6 +22,18 @@ type FakeInstanceFetcher struct {
 		result1 *osbapi.Instance
 		result2 error
 	}
+	GetInstancesStub        func() ([]*osbapi.Instance, error)
+	getInstancesMutex       sync.RWMutex
+	getInstancesArgsForCall []struct {
+	}
+	getInstancesReturns struct {
+		result1 []*osbapi.Instance
+		result2 error
+	}
+	getInstancesReturnsOnCall map[int]struct {
+		result1 []*osbapi.Instance
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -89,11 +101,68 @@ func (fake *FakeInstanceFetcher) GetInstanceByNameReturnsOnCall(i int, result1 *
 	}{result1, result2}
 }
 
+func (fake *FakeInstanceFetcher) GetInstances() ([]*osbapi.Instance, error) {
+	fake.getInstancesMutex.Lock()
+	ret, specificReturn := fake.getInstancesReturnsOnCall[len(fake.getInstancesArgsForCall)]
+	fake.getInstancesArgsForCall = append(fake.getInstancesArgsForCall, struct {
+	}{})
+	fake.recordInvocation("GetInstances", []interface{}{})
+	fake.getInstancesMutex.Unlock()
+	if fake.GetInstancesStub != nil {
+		return fake.GetInstancesStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getInstancesReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeInstanceFetcher) GetInstancesCallCount() int {
+	fake.getInstancesMutex.RLock()
+	defer fake.getInstancesMutex.RUnlock()
+	return len(fake.getInstancesArgsForCall)
+}
+
+func (fake *FakeInstanceFetcher) GetInstancesCalls(stub func() ([]*osbapi.Instance, error)) {
+	fake.getInstancesMutex.Lock()
+	defer fake.getInstancesMutex.Unlock()
+	fake.GetInstancesStub = stub
+}
+
+func (fake *FakeInstanceFetcher) GetInstancesReturns(result1 []*osbapi.Instance, result2 error) {
+	fake.getInstancesMutex.Lock()
+	defer fake.getInstancesMutex.Unlock()
+	fake.GetInstancesStub = nil
+	fake.getInstancesReturns = struct {
+		result1 []*osbapi.Instance
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeInstanceFetcher) GetInstancesReturnsOnCall(i int, result1 []*osbapi.Instance, result2 error) {
+	fake.getInstancesMutex.Lock()
+	defer fake.getInstancesMutex.Unlock()
+	fake.GetInstancesStub = nil
+	if fake.getInstancesReturnsOnCall == nil {
+		fake.getInstancesReturnsOnCall = make(map[int]struct {
+			result1 []*osbapi.Instance
+			result2 error
+		})
+	}
+	fake.getInstancesReturnsOnCall[i] = struct {
+		result1 []*osbapi.Instance
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeInstanceFetcher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.getInstanceByNameMutex.RLock()
 	defer fake.getInstanceByNameMutex.RUnlock()
+	fake.getInstancesMutex.RLock()
+	defer fake.getInstancesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -28,11 +28,10 @@ import (
 )
 
 var _ = Describe("Instance List Usecase", func() {
-
 	var (
-		fakeInstancesFetcher *usecasesfakes.FakeInstancesFetcher
-		fakeServiceFetcher   *usecasesfakes.FakeServiceFetcher
-		fakePlanFetcher      *usecasesfakes.FakePlanFetcher
+		fakeInstanceFetcher *usecasesfakes.FakeInstanceFetcher
+		fakeServiceFetcher  *usecasesfakes.FakeServiceFetcher
+		fakePlanFetcher     *usecasesfakes.FakePlanFetcher
 
 		instanceListUsecase InstanceListUsecase
 
@@ -41,14 +40,14 @@ var _ = Describe("Instance List Usecase", func() {
 	)
 
 	BeforeEach(func() {
-		fakeInstancesFetcher = &usecasesfakes.FakeInstancesFetcher{}
+		fakeInstanceFetcher = &usecasesfakes.FakeInstanceFetcher{}
 		fakeServiceFetcher = &usecasesfakes.FakeServiceFetcher{}
 		fakePlanFetcher = &usecasesfakes.FakePlanFetcher{}
 
 		instanceListUsecase = InstanceListUsecase{
-			InstancesFetcher: fakeInstancesFetcher,
-			ServiceFetcher:   fakeServiceFetcher,
-			PlanFetcher:      fakePlanFetcher,
+			InstanceFetcher: fakeInstanceFetcher,
+			ServiceFetcher:  fakeServiceFetcher,
+			PlanFetcher:     fakePlanFetcher,
 		}
 	})
 
@@ -58,7 +57,7 @@ var _ = Describe("Instance List Usecase", func() {
 
 	When("there are no instances", func() {
 		BeforeEach(func() {
-			fakeInstancesFetcher.GetInstancesReturns([]*osbapi.Instance{}, nil)
+			fakeInstanceFetcher.GetInstancesReturns([]*osbapi.Instance{}, nil)
 		})
 
 		It("doesn't error", func() {
@@ -72,7 +71,7 @@ var _ = Describe("Instance List Usecase", func() {
 
 	When("there are one or more instances", func() {
 		BeforeEach(func() {
-			fakeInstancesFetcher.GetInstancesReturns([]*osbapi.Instance{
+			fakeInstanceFetcher.GetInstancesReturns([]*osbapi.Instance{
 				{
 					ID:         "instance-1",
 					Name:       "my-instance-1",
@@ -137,7 +136,7 @@ var _ = Describe("Instance List Usecase", func() {
 
 	When("fetching instances errors", func() {
 		BeforeEach(func() {
-			fakeInstancesFetcher.GetInstancesReturns([]*osbapi.Instance{}, errors.New("error-getting-instances"))
+			fakeInstanceFetcher.GetInstancesReturns([]*osbapi.Instance{}, errors.New("error-getting-instances"))
 		})
 
 		It("propagates the error", func() {
@@ -147,7 +146,7 @@ var _ = Describe("Instance List Usecase", func() {
 
 	When("fetching the service errors", func() {
 		BeforeEach(func() {
-			fakeInstancesFetcher.GetInstancesReturns([]*osbapi.Instance{{
+			fakeInstanceFetcher.GetInstancesReturns([]*osbapi.Instance{{
 				ID:         "instance-1",
 				Name:       "my-instance-1",
 				ServiceID:  "service-id-1",
@@ -167,7 +166,7 @@ var _ = Describe("Instance List Usecase", func() {
 
 	When("fetching the plan errors", func() {
 		BeforeEach(func() {
-			fakeInstancesFetcher.GetInstancesReturns([]*osbapi.Instance{{
+			fakeInstanceFetcher.GetInstancesReturns([]*osbapi.Instance{{
 				ID:         "instance-1",
 				Name:       "my-instance-1",
 				ServiceID:  "service-id-1",

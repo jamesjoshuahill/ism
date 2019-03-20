@@ -18,45 +18,27 @@ package usecases
 
 import "github.com/pivotal-cf/ism/osbapi"
 
-//go:generate counterfeiter . BrokersFetcher
-
-type BrokersFetcher interface {
-	GetBrokers() ([]*osbapi.Broker, error)
-}
-
-//go:generate counterfeiter . ServicesFetcher
-
-type ServicesFetcher interface {
-	GetServices(brokerName string) ([]*osbapi.Service, error)
-}
-
-//go:generate counterfeiter . PlansFetcher
-
-type PlansFetcher interface {
-	GetPlans(serviceID string) ([]*osbapi.Plan, error)
-}
-
 type ServiceListUsecase struct {
-	BrokersFetcher  BrokersFetcher
-	ServicesFetcher ServicesFetcher
-	PlansFetcher    PlansFetcher
+	BrokerFetcher  BrokerFetcher
+	ServiceFetcher ServiceFetcher
+	PlanFetcher    PlanFetcher
 }
 
 func (u *ServiceListUsecase) GetServices() ([]*Service, error) {
-	brokers, err := u.BrokersFetcher.GetBrokers()
+	brokers, err := u.BrokerFetcher.GetBrokers()
 	if err != nil {
 		return []*Service{}, err
 	}
 
 	var servicesToDisplay []*Service
 	for _, b := range brokers {
-		services, err := u.ServicesFetcher.GetServices(b.Name)
+		services, err := u.ServiceFetcher.GetServices(b.Name)
 		if err != nil {
 			return []*Service{}, err
 		}
 
 		for _, s := range services {
-			plans, err := u.PlansFetcher.GetPlans(s.ID)
+			plans, err := u.PlanFetcher.GetPlans(s.ID)
 			if err != nil {
 				return []*Service{}, err
 			}

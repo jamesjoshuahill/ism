@@ -72,22 +72,22 @@ func main() {
 	}
 
 	serviceListUsecase := &usecases.ServiceListUsecase{
-		BrokersFetcher:  brokersActor,
-		ServicesFetcher: servicesActor,
-		PlansFetcher:    plansActor,
+		BrokerFetcher:  brokersActor,
+		ServiceFetcher: servicesActor,
+		PlanFetcher:    plansActor,
 	}
 
 	instanceCreateUsecase := &usecases.InstanceCreateUsecase{
-		BrokersFetcher:  brokersActor,
-		ServicesFetcher: servicesActor,
-		PlansFetcher:    plansActor,
+		BrokerFetcher:   brokersActor,
+		ServiceFetcher:  servicesActor,
+		PlanFetcher:     plansActor,
 		InstanceCreator: instancesActor,
 	}
 
 	instanceListUsecase := &usecases.InstanceListUsecase{
-		InstancesFetcher: instancesActor,
-		ServiceFetcher:   servicesActor,
-		PlanFetcher:      plansActor,
+		InstanceFetcher: instancesActor,
+		ServiceFetcher:  servicesActor,
+		PlanFetcher:     plansActor,
 	}
 
 	bindingCreateUsecase := &usecases.BindingCreateUsecase{
