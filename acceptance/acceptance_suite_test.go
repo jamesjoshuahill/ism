@@ -60,6 +60,7 @@ func TestAcceptance(t *testing.T) {
 	SynchronizedBeforeSuite(func() []byte {
 		printTestSetup()
 		cliPath := buildCLI()
+		cleanCRs()
 		installCRDs()
 
 		var brokerURL, brokerUser, brokerPass string
@@ -353,4 +354,8 @@ func cleanBrokerData() {
 	resp, err := http.Post(brokerDataURL, "", nil)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(resp.StatusCode).To(Equal(200))
+}
+
+func cleanCRs() {
+	runMake("clean-crs")
 }
