@@ -70,7 +70,7 @@ var _ = Describe("CLI broker command", func() {
 			})
 
 			AfterEach(func() {
-				deleteBrokers("my-broker")
+				deleteBroker("my-broker")
 			})
 
 			It("displays a message that the registration has been successful", func() {
@@ -133,7 +133,7 @@ var _ = Describe("CLI broker command", func() {
 			})
 
 			AfterEach(func() {
-				deleteBrokers("broker-list-command-broker")
+				deleteBroker("broker-list-command-broker")
 			})
 
 			It("displays the broker", func() {

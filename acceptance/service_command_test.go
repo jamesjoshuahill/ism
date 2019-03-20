@@ -91,7 +91,7 @@ var _ = Describe("CLI service command", func() {
 			})
 
 			AfterEach(func() {
-				deleteBrokers("service-list-command-broker")
+				deleteBroker("service-list-command-broker")
 			})
 
 			It("displays services and plans for the broker", func() {

@@ -87,7 +87,7 @@ var _ = Describe("CLI instance command", func() {
 			})
 
 			AfterEach(func() {
-				deleteBrokers("instance-creation-broker")
+				deleteBroker("instance-creation-broker")
 				deleteInstances("my-instance")
 				cleanBrokerData()
 			})
@@ -147,7 +147,7 @@ var _ = Describe("CLI instance command", func() {
 
 			AfterEach(func() {
 				deleteInstances("instance-list-test-instance")
-				deleteBrokers("instance-list-command-broker")
+				deleteBroker("instance-list-command-broker")
 				cleanBrokerData()
 			})
 

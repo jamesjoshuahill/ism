@@ -238,10 +238,13 @@ func registerBroker(brokerName string) {
 		"--url", nodeBrokerURL,
 		"--username", nodeBrokerUsername,
 		"--password", nodeBrokerPassword}
+
 	command := exec.Command(nodePathToCLI, registerArgs...)
-	registerSession, err := Start(command, GinkgoWriter, GinkgoWriter)
-	Expect(err).NotTo(HaveOccurred())
-	Eventually(registerSession).Should(Exit(0))
+	Expect(command.Run()).To(Succeed())
+}
+
+func deleteBroker(brokerName string) {
+	runKubectl("delete", "broker", brokerName)
 }
 
 func createInstance(instanceName, brokerName string) {
@@ -254,12 +257,6 @@ func createInstance(instanceName, brokerName string) {
 	createSession, err := Start(command, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 	Eventually(createSession).Should(Exit(0))
-}
-
-func deleteBrokers(brokerNames ...string) {
-	for _, b := range brokerNames {
-		runKubectl("delete", "broker", b)
-	}
 }
 
 func deleteInstances(serviceInstanceNames ...string) {
