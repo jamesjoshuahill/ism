@@ -60,11 +60,10 @@ func TestAcceptance(t *testing.T) {
 	SynchronizedBeforeSuite(func() []byte {
 		printTestSetup()
 		cliPath := buildCLI()
-		cleanCRs()
+		cleanCustomResources()
 		installCRDs()
 
 		var brokerURL, brokerUser, brokerPass string
-
 		if testingInCluster() {
 			brokerURL, brokerUser, brokerPass = deployTestBroker()
 			deployController()
@@ -253,22 +252,30 @@ func createInstance(instanceName, brokerName string) {
 		"--service", serviceName,
 		"--plan", planName,
 		"--broker", brokerName}
-	command := exec.Command(nodePathToCLI, createArgs...)
-	createSession, err := Start(command, GinkgoWriter, GinkgoWriter)
-	Expect(err).NotTo(HaveOccurred())
-	Eventually(createSession).Should(Exit(0))
+
+	// start instance creation
+	createCommand := exec.Command(nodePathToCLI, createArgs...)
+	Expect(createCommand.Run()).To(Succeed())
+
+	listArgs := []string{"instance", "list"}
+	// wait for it to be created
+	Eventually(func() bool {
+		outBuf := NewBuffer()
+		listCommand := exec.Command(nodePathToCLI, listArgs...)
+		listCommand.Stdout = outBuf
+
+		Expect(listCommand.Run()).To(Succeed())
+
+		return strings.Contains(string(outBuf.Contents()), "created")
+	}).Should(BeTrue())
 }
 
-func deleteInstances(serviceInstanceNames ...string) {
-	for _, s := range serviceInstanceNames {
-		runKubectl("delete", "serviceinstance", s)
-	}
+func deleteInstance(instanceName string) {
+	runKubectl("delete", "serviceinstance", instanceName)
 }
 
-func deleteBindings(serviceBindingNames ...string) {
-	for _, b := range serviceBindingNames {
-		runKubectl("delete", "servicebinding", b)
-	}
+func deleteBinding(serviceBindingName string) {
+	runKubectl("delete", "servicebinding", serviceBindingName)
 }
 
 func runMake(task string) {
@@ -353,6 +360,6 @@ func cleanBrokerData() {
 	Expect(resp.StatusCode).To(Equal(200))
 }
 
-func cleanCRs() {
+func cleanCustomResources() {
 	runMake("clean-crs")
 }

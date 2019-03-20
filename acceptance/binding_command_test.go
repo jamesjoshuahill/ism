@@ -92,8 +92,8 @@ var _ = Describe("CLI binding command", func() {
 
 			AfterEach(func() {
 				deleteBroker("binding-creation-broker")
-				deleteInstances("binding-creation-instance")
-				deleteBindings("binding-creation-binding")
+				deleteInstance("binding-creation-instance")
+				deleteBinding("binding-creation-binding")
 				cleanBrokerData()
 			})
 
