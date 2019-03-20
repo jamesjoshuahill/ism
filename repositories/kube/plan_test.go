@@ -24,19 +24,18 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	. "github.com/pivotal-cf/ism/kube"
 	"github.com/pivotal-cf/ism/osbapi"
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
+	. "github.com/pivotal-cf/ism/repositories/kube"
 )
 
-var _ = Describe("Service", func() {
+var _ = Describe("Plan", func() {
 	var (
-		kubeClient  client.Client
-		serviceRepo *Service
+		kubeClient client.Client
+		planRepo   *Plan
 	)
 
 	BeforeEach(func() {
@@ -44,57 +43,55 @@ var _ = Describe("Service", func() {
 		kubeClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 		Expect(err).NotTo(HaveOccurred())
 
-		serviceRepo = &Service{
+		planRepo = &Plan{
 			KubeClient: kubeClient,
 		}
 	})
 
 	Describe("Find", func() {
 		var (
-			service *osbapi.Service
-			err     error
+			plan *osbapi.Plan
+			err  error
 		)
 
 		JustBeforeEach(func() {
-			service, err = serviceRepo.Find("service-1")
+			plan, err = planRepo.Find("plan-1")
 		})
 
-		When("the service exists", func() {
+		When("the plan exists", func() {
 			BeforeEach(func() {
-				serviceResource := &v1alpha1.BrokerService{
+				planResource := &v1alpha1.BrokerServicePlan{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "service-1",
+						Name:      "plan-1",
 						Namespace: "default",
 					},
-					Spec: v1alpha1.BrokerServiceSpec{
-						Name:        "my-service",
-						Description: "my-service-description",
-						BrokerName:  "my-broker",
+					Spec: v1alpha1.BrokerServicePlanSpec{
+						Name:      "my-plan",
+						ServiceID: "service-1",
 					},
 				}
 
-				Expect(kubeClient.Create(context.TODO(), serviceResource)).To(Succeed())
+				Expect(kubeClient.Create(context.TODO(), planResource)).To(Succeed())
 			})
 
 			AfterEach(func() {
-				deleteServices(kubeClient, "service-1")
+				deletePlans(kubeClient, "plan-1")
 			})
 
-			It("returns the service", func() {
+			It("returns the plan", func() {
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(service).To(Equal(&osbapi.Service{
-					ID:          "service-1",
-					Name:        "my-service",
-					Description: "my-service-description",
-					BrokerName:  "my-broker",
+				Expect(plan).To(Equal(&osbapi.Plan{
+					ID:        "plan-1",
+					Name:      "my-plan",
+					ServiceID: "service-1",
 				}))
 			})
 		})
 
-		When("the service does not exist", func() {
-			It("returns error not found", func() {
-				Expect(err).To(MatchError("service not found"))
+		When("the plan does not exist", func() {
+			It("returns a not found error", func() {
+				Expect(err).To(MatchError("plan not found"))
 			})
 		})
 
@@ -111,7 +108,7 @@ var _ = Describe("Service", func() {
 				unreachableCfg.Host = "192.0.2.1"
 				unreachableCfg.Timeout = time.Second
 
-				serviceRepo = &Service{
+				planRepo = &Plan{
 					KubeClient: badKubeClient,
 				}
 			})
@@ -122,107 +119,102 @@ var _ = Describe("Service", func() {
 		})
 	})
 
-	Describe("FindByBroker", func() {
+	Describe("FindByService", func() {
 		var (
-			services []*osbapi.Service
-			err      error
+			plans []*osbapi.Plan
+			err   error
 		)
 
 		JustBeforeEach(func() {
-			services, err = serviceRepo.FindByBroker("my-broker-1")
+			plans, err = planRepo.FindByService("service-1")
 		})
 
-		When("services contain owner references to brokers", func() {
+		When("plans contain owner references to services", func() {
 			BeforeEach(func() {
-				serviceResource := &v1alpha1.BrokerService{
+				planResource := &v1alpha1.BrokerServicePlan{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "service-1",
+						Name:      "plan-1",
 						Namespace: "default",
 						OwnerReferences: []metav1.OwnerReference{{
-							Name:       "my-broker-1",
+							Name:       "service-1",
 							Kind:       "kind",
 							APIVersion: "version",
-							UID:        "broker-uid-1",
+							UID:        "service-uid-1",
 						}},
 					},
-					Spec: v1alpha1.BrokerServiceSpec{
-						Name:        "my-service-1",
-						Description: "service-1-desc",
+					Spec: v1alpha1.BrokerServicePlanSpec{
+						Name: "my-plan",
 					},
 				}
-				Expect(kubeClient.Create(context.TODO(), serviceResource)).To(Succeed())
+				Expect(kubeClient.Create(context.TODO(), planResource)).To(Succeed())
 
-				serviceResource2 := &v1alpha1.BrokerService{
+				planResource2 := &v1alpha1.BrokerServicePlan{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "service-2",
+						Name:      "plan-2",
 						Namespace: "default",
 						OwnerReferences: []metav1.OwnerReference{{
-							Name:       "my-broker-2",
+							Name:       "service-2",
 							Kind:       "kind",
 							APIVersion: "version",
-							UID:        "broker-uid-2",
+							UID:        "service-uid-2",
 						}},
 					},
-					Spec: v1alpha1.BrokerServiceSpec{
-						Name:        "my-service-2",
-						Description: "service-2-desc",
+					Spec: v1alpha1.BrokerServicePlanSpec{
+						Name: "my-plan-2",
 					},
 				}
-				Expect(kubeClient.Create(context.TODO(), serviceResource2)).To(Succeed())
+				Expect(kubeClient.Create(context.TODO(), planResource2)).To(Succeed())
 			})
 
 			AfterEach(func() {
-				deleteServices(kubeClient, "service-1", "service-2")
+				deletePlans(kubeClient, "plan-1", "plan-2")
 			})
 
-			It("returns only the services owned by the broker", func() {
+			It("returns plans by service id", func() {
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(services).To(HaveLen(1))
-				Expect(*services[0]).To(MatchFields(IgnoreExtras, Fields{
-					"ID":          Equal("service-1"),
-					"Name":        Equal("my-service-1"),
-					"Description": Equal("service-1-desc"),
-					"BrokerName":  Equal("my-broker-1"),
-				}))
+				Expect(plans).To(Equal([]*osbapi.Plan{{
+					Name:      "my-plan",
+					ID:        "plan-1",
+					ServiceID: "service-1",
+				}}))
 			})
 		})
 
-		When("the service owner reference is not set", func() {
+		When("the plan owner reference is not set", func() {
 			BeforeEach(func() {
-				serviceResource := &v1alpha1.BrokerService{
+				planResource := &v1alpha1.BrokerServicePlan{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "service-1",
+						Name:      "plan-1",
 						Namespace: "default",
 					},
-					Spec: v1alpha1.BrokerServiceSpec{
-						Name:        "my-service-1",
-						Description: "service-1-desc",
+					Spec: v1alpha1.BrokerServicePlanSpec{
+						Name: "my-plan",
 					},
 				}
-				Expect(kubeClient.Create(context.TODO(), serviceResource)).To(Succeed())
+				Expect(kubeClient.Create(context.TODO(), planResource)).To(Succeed())
 			})
 
 			AfterEach(func() {
-				deleteServices(kubeClient, "service-1")
+				deletePlans(kubeClient, "plan-1")
 			})
 
-			It("successfully returns no services", func() {
+			It("successfully returns no plans", func() {
 				Expect(err).NotTo(HaveOccurred())
-				Expect(services).To(HaveLen(0))
+				Expect(plans).To(HaveLen(0))
 			})
 		})
 	})
 })
 
-func deleteServices(kubeClient client.Client, serviceNames ...string) {
-	for _, s := range serviceNames {
-		sToDelete := &v1alpha1.BrokerService{
+func deletePlans(kubeClient client.Client, planNames ...string) {
+	for _, p := range planNames {
+		pToDelete := &v1alpha1.BrokerServicePlan{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      s,
+				Name:      p,
 				Namespace: "default",
 			},
 		}
-		Expect(kubeClient.Delete(context.TODO(), sToDelete)).To(Succeed())
+		Expect(kubeClient.Delete(context.TODO(), pToDelete)).To(Succeed())
 	}
 }

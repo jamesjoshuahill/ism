@@ -28,9 +28,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	. "github.com/pivotal-cf/ism/kube"
 	"github.com/pivotal-cf/ism/osbapi"
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
+	. "github.com/pivotal-cf/ism/repositories/kube"
 )
 
 var _ = Describe("Broker", func() {

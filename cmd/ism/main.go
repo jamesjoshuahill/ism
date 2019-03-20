@@ -27,8 +27,9 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"github.com/pivotal-cf/ism/actors"
 	"github.com/pivotal-cf/ism/commands"
-	"github.com/pivotal-cf/ism/kube"
+
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
+	"github.com/pivotal-cf/ism/repositories/kube"
 	"github.com/pivotal-cf/ism/ui"
 	"github.com/pivotal-cf/ism/usecases"
 	"sigs.k8s.io/controller-runtime/pkg/client"

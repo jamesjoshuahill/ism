@@ -84,7 +84,7 @@ unit-tests:
 integration-tests: cli-integration-tests kube-integration-tests
 
 cli-integration-tests:
-	ginkgo ${GINKGO_ARGS} kube
+	ginkgo ${GINKGO_ARGS} repositories
 
 kube-integration-tests:
 	ginkgo ${GINKGO_ARGS} pkg/controller pkg/api pkg/internal/repositories
