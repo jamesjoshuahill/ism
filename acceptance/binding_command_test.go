@@ -18,7 +18,6 @@ package acceptance
 
 import (
 	"os/exec"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -85,9 +84,6 @@ var _ = Describe("CLI binding command", func() {
 				args = append(args, "--name", "binding-creation-binding", "--instance", "binding-creation-instance")
 
 				Expect(getBrokerBindings()).To(HaveLen(0))
-
-				//TODO remove this
-				time.Sleep(time.Millisecond * 500)
 			})
 
 			AfterEach(func() {

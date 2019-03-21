@@ -18,7 +18,6 @@ package acceptance
 
 import (
 	"os/exec"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -139,10 +138,6 @@ var _ = Describe("CLI instance command", func() {
 			BeforeEach(func() {
 				registerBroker("instance-list-command-broker")
 				createInstance("instance-list-test-instance", "instance-list-command-broker")
-
-				// TODO: Revisit this when it comes to implementing asynchronous provisioning
-				// Allow time for controller to set instance status to "created"
-				time.Sleep(time.Millisecond * 500)
 			})
 
 			AfterEach(func() {
