@@ -53,9 +53,9 @@ var _ = Describe("CLI binding command", func() {
 		It("displays help and exits 0", func() {
 			Eventually(session).Should(Exit(0))
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`ism \[OPTIONS\] binding <create>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] binding <create | list>`))
 			Eventually(session).Should(Say("\n"))
-			Eventually(session).Should(Say("The binding command group lets you create service bindings"))
+			Eventually(session).Should(Say("The binding command group lets you create and list service bindings"))
 		})
 	})
 
@@ -118,79 +118,54 @@ var _ = Describe("CLI binding command", func() {
 			})
 		})
 	})
-	//
-	// 	Describe("list sub command", func() {
-	// 		BeforeEach(func() {
-	// 			args = append(args, "list")
-	// 		})
-	//
-	// 		When("--help is passed", func() {
-	// 			BeforeEach(func() {
-	// 				args = append(args, "--help")
-	// 			})
-	//
-	// 			It("displays help and exits 0", func() {
-	// 				Eventually(session).Should(Exit(0))
-	// 				Eventually(session).Should(Say("Usage:"))
-	// 				Eventually(session).Should(Say(`ism \[OPTIONS\] binding list`))
-	// 				Eventually(session).Should(Say("\n"))
-	// 				Eventually(session).Should(Say("List the service bindings"))
-	// 			})
-	// 		})
-	//
-	// 		When("0 service bindings are created", func() {
-	// 			It("displays 'No bindings found.' and exits 0", func() {
-	// 				Eventually(session).Should(Exit(0))
-	// 				Eventually(session).Should(Say("No bindings found\\."))
-	// 			})
-	// 		})
-	//
-	// 		When("1 binding is created", func() {
-	// 			BeforeEach(func() {
-	// 				registerBroker("binding-list-command-broker")
-	// 				createbinding("binding-list-test-binding", "binding-list-command-broker")
-	//
-	// 				// TODO: Revisit this when it comes to implementing asynchronous provisioning
-	// 				// Allow time for controller to set binding status to "created"
-	// 				time.Sleep(time.Millisecond * 500)
-	// 			})
-	//
-	// 			AfterEach(func() {
-	// 				deleteServicebindings("binding-list-test-binding")
-	// 				deleteBroker("binding-list-command-broker")
-	// 			})
-	//
-	// 			It("displays the binding", func() {
-	// 				timeRegex := `\d{4,}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}`
-	//
-	// 				Eventually(session).Should(Exit(0))
-	// 				Eventually(session).Should(Say("NAME\\s+SERVICE\\s+PLAN\\s+BROKER\\s+STATUS\\s+CREATED AT"))
-	// 				Eventually(session).Should(Say("binding-list-test-binding\\s+" + serviceName + "\\s+" + planName + "\\s+binding-list-command-broker\\s+" + "created" + "\\s+" + timeRegex))
-	// 			})
-	// 		})
-	// 	})
-	// })
-	//
-	// type servicebinding struct {
-	// 	PlanName    string `json:"plan_name"`
-	// 	ServiceName string `json:"service_name"`
-	// }
-	//
-	// type brokerData struct {
-	// 	Servicebindings map[string]servicebinding `json:"servicebindings"`
-	// }
-	//
-	// func getBrokerData() brokerData {
-	// 	brokerDataURL := fmt.Sprintf("http://127.0.0.1:%d/data", brokerPort)
-	//
-	// 	resp, err := http.Get(brokerDataURL)
-	// 	Expect(err).NotTo(HaveOccurred())
-	// 	respBytes, err := ioutil.ReadAll(resp.Body)
-	// 	Expect(err).NotTo(HaveOccurred())
-	//
-	// 	var data brokerData
-	// 	Expect(json.Unmarshal(respBytes, &data)).To(Succeed())
-	//
-	// 	return data
 
+	Describe("list sub command", func() {
+		BeforeEach(func() {
+			args = append(args, "list")
+		})
+
+		When("--help is passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--help")
+			})
+
+			It("displays help and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Usage:"))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] binding list`))
+				Eventually(session).Should(Say("\n"))
+				Eventually(session).Should(Say("List the service bindings"))
+			})
+		})
+
+		When("0 service bindings are created", func() {
+			It("displays 'No bindings found.' and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("No bindings found\\."))
+			})
+		})
+
+		When("1 binding is created", func() {
+			BeforeEach(func() {
+				registerBroker("binding-list-broker")
+				createInstance("binding-list-instance", "binding-list-broker")
+				createBinding("binding-list-binding", "binding-list-instance")
+			})
+
+			AfterEach(func() {
+				deleteBinding("binding-list-binding")
+				deleteInstance("binding-list-instance")
+				deleteBroker("binding-list-broker")
+				cleanBrokerData()
+			})
+
+			It("displays the binding", func() {
+				timeRegex := `\d{4,}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}`
+
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("NAME\\s+INSTANCE\\s+STATUS\\s+CREATED AT"))
+				Eventually(session).Should(Say("binding-list-binding\\s+binding-list-instance\\s+created\\s+" + timeRegex))
+			})
+		})
+	})
 })

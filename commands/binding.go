@@ -16,14 +16,23 @@ specific language governing permissions and limitations under the License.
 
 package commands
 
+import "github.com/pivotal-cf/ism/usecases"
+
 //go:generate counterfeiter . BindingCreateUsecase
 
 type BindingCreateUsecase interface {
 	Create(name, instanceName string) error
 }
 
+//go:generate counterfeiter . BindingListUsecase
+
+type BindingListUsecase interface {
+	GetBindings() ([]*usecases.Binding, error)
+}
+
 type BindingCommand struct {
 	BindingCreateCommand BindingCreateCommand `command:"create" long-description:"Create a service binding"`
+	BindingListCommand   BindingListCommand   `command:"list" long-description:"List the service bindings"`
 }
 
 type BindingCreateCommand struct {
@@ -34,6 +43,11 @@ type BindingCreateCommand struct {
 	BindingCreateUsecase BindingCreateUsecase
 }
 
+type BindingListCommand struct {
+	UI                 UI
+	BindingListUsecase BindingListUsecase
+}
+
 func (cmd *BindingCreateCommand) Execute([]string) error {
 	if err := cmd.BindingCreateUsecase.Create(cmd.Name, cmd.Instance); err != nil {
 		return err
@@ -41,4 +55,31 @@ func (cmd *BindingCreateCommand) Execute([]string) error {
 
 	cmd.UI.DisplayText("Binding '{{.BindingName}}' is being created.", map[string]interface{}{"BindingName": cmd.Name})
 	return nil
+}
+
+func (cmd *BindingListCommand) Execute([]string) error {
+	bindings, err := cmd.BindingListUsecase.GetBindings()
+	if err != nil {
+		return err
+	}
+
+	if len(bindings) == 0 {
+		cmd.UI.DisplayText("No bindings found.")
+		return nil
+	}
+
+	bindingsTable := buildBindingTableData(bindings)
+	cmd.UI.DisplayTable(bindingsTable)
+	return nil
+}
+
+func buildBindingTableData(bindings []*usecases.Binding) [][]string {
+	headers := []string{"NAME", "INSTANCE", "STATUS", "CREATED AT"}
+	data := [][]string{headers}
+
+	for _, b := range bindings {
+		row := []string{b.Name, b.InstanceName, b.Status, b.CreatedAt}
+		data = append(data, row)
+	}
+	return data
 }

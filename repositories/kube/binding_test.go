@@ -109,7 +109,113 @@ var _ = Describe("Binding", func() {
 			})
 		})
 	})
+
+	Describe("FindAll", func() {
+		var (
+			bindings          []*osbapi.Binding
+			bindingCreatedAt1 string
+			bindingCreatedAt2 string
+			bindingID1        string
+			bindingID2        string
+			err               error
+		)
+
+		BeforeEach(func() {
+			bindingResource1 := &v1alpha1.ServiceBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-binding-1",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceBindingSpec{
+					Name:       "my-binding-1",
+					InstanceID: "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "my-broker",
+				},
+				Status: v1alpha1.ServiceBindingStatus{
+					State: v1alpha1.ServiceBindingStateCreated,
+				},
+			}
+
+			bindingResource2 := &v1alpha1.ServiceBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-binding-2",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceBindingSpec{
+					Name:       "my-binding-2",
+					InstanceID: "instance-2",
+					PlanID:     "plan-2",
+					ServiceID:  "service-2",
+					BrokerName: "my-broker-2",
+				},
+			}
+
+			Expect(kubeClient.Create(context.TODO(), bindingResource1)).To(Succeed())
+			Expect(kubeClient.Status().Update(context.TODO(), bindingResource1)).To(Succeed())
+			Expect(kubeClient.Create(context.TODO(), bindingResource2)).To(Succeed())
+			bindingCreatedAt1 = createdAtForBinding(kubeClient, bindingResource1)
+			bindingCreatedAt2 = createdAtForBinding(kubeClient, bindingResource2)
+			bindingID1 = idForBinding(kubeClient, bindingResource1)
+			bindingID2 = idForBinding(kubeClient, bindingResource2)
+		})
+
+		JustBeforeEach(func() {
+			bindings, err = bindingRepo.FindAll()
+		})
+
+		AfterEach(func() {
+			deleteBindings(kubeClient, "my-binding-1", "my-binding-2")
+		})
+
+		It("returns all bindings", func() {
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(bindings).To(ConsistOf(
+				&osbapi.Binding{
+					ID:         bindingID1,
+					CreatedAt:  bindingCreatedAt1,
+					Name:       "my-binding-1",
+					InstanceID: "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "my-broker",
+					Status:     "created",
+				},
+				&osbapi.Binding{
+					ID:         bindingID2,
+					CreatedAt:  bindingCreatedAt2,
+					Name:       "my-binding-2",
+					InstanceID: "instance-2",
+					PlanID:     "plan-2",
+					ServiceID:  "service-2",
+					BrokerName: "my-broker-2",
+					Status:     "creating",
+				},
+			))
+		})
+	})
 })
+
+func createdAtForBinding(kubeClient client.Client, instanceResource *v1alpha1.ServiceBinding) string {
+	i := &v1alpha1.ServiceBinding{}
+	namespacedName := types.NamespacedName{Name: instanceResource.Name, Namespace: instanceResource.Namespace}
+
+	Expect(kubeClient.Get(context.TODO(), namespacedName, i)).To(Succeed())
+
+	time := i.ObjectMeta.CreationTimestamp.String()
+	return time
+}
+
+func idForBinding(kubeClient client.Client, instanceResource *v1alpha1.ServiceBinding) string {
+	i := &v1alpha1.ServiceBinding{}
+	namespacedName := types.NamespacedName{Name: instanceResource.Name, Namespace: instanceResource.Namespace}
+
+	Expect(kubeClient.Get(context.TODO(), namespacedName, i)).To(Succeed())
+
+	return string(i.ObjectMeta.UID)
+}
 
 func deleteBindings(kubeClient client.Client, bindingNames ...string) {
 	for _, b := range bindingNames {

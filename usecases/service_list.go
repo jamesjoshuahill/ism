@@ -18,6 +18,13 @@ package usecases
 
 import "github.com/pivotal-cf/ism/osbapi"
 
+type Service struct {
+	Name        string
+	Description string
+	PlanNames   []string
+	BrokerName  string
+}
+
 type ServiceListUsecase struct {
 	BrokerFetcher  BrokerFetcher
 	ServiceFetcher ServiceFetcher
@@ -30,37 +37,30 @@ func (u *ServiceListUsecase) GetServices() ([]*Service, error) {
 		return []*Service{}, err
 	}
 
-	var servicesToDisplay []*Service
+	var services []*Service
 	for _, b := range brokers {
-		services, err := u.ServiceFetcher.GetServices(b.Name)
+		osbapiServices, err := u.ServiceFetcher.GetServices(b.Name)
 		if err != nil {
 			return []*Service{}, err
 		}
 
-		for _, s := range services {
-			plans, err := u.PlanFetcher.GetPlans(s.ID)
+		for _, osbapiService := range osbapiServices {
+			plans, err := u.PlanFetcher.GetPlans(osbapiService.ID)
 			if err != nil {
 				return []*Service{}, err
 			}
 
-			serviceToDisplay := &Service{
-				Name:        s.Name,
-				Description: s.Description,
+			service := &Service{
+				Name:        osbapiService.Name,
+				Description: osbapiService.Description,
 				PlanNames:   plansToNames(plans),
 				BrokerName:  b.Name,
 			}
-			servicesToDisplay = append(servicesToDisplay, serviceToDisplay)
+			services = append(services, service)
 		}
 	}
 
-	return servicesToDisplay, nil
-}
-
-type Service struct {
-	Name        string
-	Description string
-	PlanNames   []string
-	BrokerName  string
+	return services, nil
 }
 
 func plansToNames(plans []*osbapi.Plan) []string {

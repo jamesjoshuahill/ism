@@ -82,6 +82,21 @@ func (i *Instance) FindByName(name string) (*osbapi.Instance, error) {
 	return osbapiInstance, nil
 }
 
+func (i *Instance) FindByID(id string) (*osbapi.Instance, error) {
+	instances, err := i.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, instance := range instances {
+		if instance.ID == id {
+			return instance, nil
+		}
+	}
+
+	return nil, errInstanceNotFound
+}
+
 func (i *Instance) FindAll() ([]*osbapi.Instance, error) {
 	list := &v1alpha1.ServiceInstanceList{}
 	if err := i.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {

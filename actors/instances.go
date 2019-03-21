@@ -24,6 +24,7 @@ type InstanceRepository interface {
 	Create(*osbapi.Instance) error
 	FindAll() ([]*osbapi.Instance, error)
 	FindByName(name string) (*osbapi.Instance, error)
+	FindByID(id string) (*osbapi.Instance, error)
 }
 
 type InstancesActor struct {
@@ -40,4 +41,8 @@ func (a *InstancesActor) GetInstances() ([]*osbapi.Instance, error) {
 
 func (a *InstancesActor) GetInstanceByName(name string) (*osbapi.Instance, error) {
 	return a.Repository.FindByName(name)
+}
+
+func (a *InstancesActor) GetInstanceByID(id string) (*osbapi.Instance, error) {
+	return a.Repository.FindByID(id)
 }

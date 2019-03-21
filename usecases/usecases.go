@@ -19,6 +19,7 @@ package usecases
 import "github.com/pivotal-cf/ism/osbapi"
 
 //go:generate counterfeiter . BindingCreator
+//go:generate counterfeiter . BindingFetcher
 //go:generate counterfeiter . BrokerFetcher
 //go:generate counterfeiter . InstanceFetcher
 //go:generate counterfeiter . InstanceCreator
@@ -29,11 +30,16 @@ type BindingCreator interface {
 	Create(*osbapi.Binding) error
 }
 
+type BindingFetcher interface {
+	GetBindings() ([]*osbapi.Binding, error)
+}
+
 type BrokerFetcher interface {
 	GetBrokers() ([]*osbapi.Broker, error)
 }
 
 type InstanceFetcher interface {
+	GetInstanceByID(id string) (*osbapi.Instance, error)
 	GetInstanceByName(name string) (*osbapi.Instance, error)
 	GetInstances() ([]*osbapi.Instance, error)
 }

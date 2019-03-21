@@ -27,8 +27,8 @@ import (
 	"github.com/pivotal-cf/ism/usecases"
 )
 
-var _ = Describe("Service Command", func() {
-	Describe("list sub command", func() {
+var _ = Describe("Service command", func() {
+	Describe("List sub command", func() {
 		var (
 			fakeUsecase *commandsfakes.FakeServiceListUsecase
 			fakeUI      *commandsfakes.FakeUI
@@ -69,7 +69,7 @@ var _ = Describe("Service Command", func() {
 			})
 		})
 
-		When("there is 1 or more services", func() {
+		When("there are 1 or more services", func() {
 			BeforeEach(func() {
 				fakeUsecase.GetServicesReturns([]*usecases.Service{
 					{

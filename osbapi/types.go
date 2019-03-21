@@ -51,6 +51,7 @@ type Binding struct {
 	ID         string
 	Name       string
 	CreatedAt  string
+	Status     string
 	InstanceID string
 	ServiceID  string
 	PlanID     string

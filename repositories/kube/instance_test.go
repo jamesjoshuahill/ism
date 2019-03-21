@@ -193,6 +193,66 @@ var _ = Describe("Instance", func() {
 		})
 	})
 
+	Describe("FindByID", func() {
+		var (
+			instance          *osbapi.Instance
+			instanceCreatedAt string
+			err               error
+			instanceID        string
+		)
+
+		JustBeforeEach(func() {
+			instance, err = instanceRepo.FindByID(instanceID)
+		})
+
+		When("the instance exists", func() {
+			BeforeEach(func() {
+				instanceResource := &v1alpha1.ServiceInstance{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "instance",
+						Namespace: "default",
+						UID:       "instance-1",
+					},
+					Spec: v1alpha1.ServiceInstanceSpec{
+						Name:       "instance",
+						PlanID:     "plan-1",
+						ServiceID:  "service-1",
+						BrokerName: "my-broker-1",
+					},
+				}
+				Expect(kubeClient.Create(context.TODO(), instanceResource)).To(Succeed())
+				instanceCreatedAt = createdAtForInstance(kubeClient, instanceResource)
+				instanceID = idForInstance(kubeClient, instanceResource)
+			})
+
+			AfterEach(func() {
+				deleteInstances(kubeClient, "instance")
+			})
+
+			It("returns the instance", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(instance).To(Equal(
+					&osbapi.Instance{
+						ID:         instanceID,
+						Name:       "instance",
+						PlanID:     "plan-1",
+						ServiceID:  "service-1",
+						Status:     "creating",
+						BrokerName: "my-broker-1",
+						CreatedAt:  instanceCreatedAt,
+					},
+				))
+			})
+		})
+
+		When("the instance does not exist", func() {
+			It("returns a not found error", func() {
+				Expect(err).To(MatchError("instance not found"))
+			})
+		})
+	})
+
 	Describe("Create", func() {
 		var err error
 

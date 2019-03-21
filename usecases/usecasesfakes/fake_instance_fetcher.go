@@ -9,6 +9,19 @@ import (
 )
 
 type FakeInstanceFetcher struct {
+	GetInstanceByIDStub        func(string) (*osbapi.Instance, error)
+	getInstanceByIDMutex       sync.RWMutex
+	getInstanceByIDArgsForCall []struct {
+		arg1 string
+	}
+	getInstanceByIDReturns struct {
+		result1 *osbapi.Instance
+		result2 error
+	}
+	getInstanceByIDReturnsOnCall map[int]struct {
+		result1 *osbapi.Instance
+		result2 error
+	}
 	GetInstanceByNameStub        func(string) (*osbapi.Instance, error)
 	getInstanceByNameMutex       sync.RWMutex
 	getInstanceByNameArgsForCall []struct {
@@ -36,6 +49,69 @@ type FakeInstanceFetcher struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeInstanceFetcher) GetInstanceByID(arg1 string) (*osbapi.Instance, error) {
+	fake.getInstanceByIDMutex.Lock()
+	ret, specificReturn := fake.getInstanceByIDReturnsOnCall[len(fake.getInstanceByIDArgsForCall)]
+	fake.getInstanceByIDArgsForCall = append(fake.getInstanceByIDArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetInstanceByID", []interface{}{arg1})
+	fake.getInstanceByIDMutex.Unlock()
+	if fake.GetInstanceByIDStub != nil {
+		return fake.GetInstanceByIDStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getInstanceByIDReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeInstanceFetcher) GetInstanceByIDCallCount() int {
+	fake.getInstanceByIDMutex.RLock()
+	defer fake.getInstanceByIDMutex.RUnlock()
+	return len(fake.getInstanceByIDArgsForCall)
+}
+
+func (fake *FakeInstanceFetcher) GetInstanceByIDCalls(stub func(string) (*osbapi.Instance, error)) {
+	fake.getInstanceByIDMutex.Lock()
+	defer fake.getInstanceByIDMutex.Unlock()
+	fake.GetInstanceByIDStub = stub
+}
+
+func (fake *FakeInstanceFetcher) GetInstanceByIDArgsForCall(i int) string {
+	fake.getInstanceByIDMutex.RLock()
+	defer fake.getInstanceByIDMutex.RUnlock()
+	argsForCall := fake.getInstanceByIDArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeInstanceFetcher) GetInstanceByIDReturns(result1 *osbapi.Instance, result2 error) {
+	fake.getInstanceByIDMutex.Lock()
+	defer fake.getInstanceByIDMutex.Unlock()
+	fake.GetInstanceByIDStub = nil
+	fake.getInstanceByIDReturns = struct {
+		result1 *osbapi.Instance
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeInstanceFetcher) GetInstanceByIDReturnsOnCall(i int, result1 *osbapi.Instance, result2 error) {
+	fake.getInstanceByIDMutex.Lock()
+	defer fake.getInstanceByIDMutex.Unlock()
+	fake.GetInstanceByIDStub = nil
+	if fake.getInstanceByIDReturnsOnCall == nil {
+		fake.getInstanceByIDReturnsOnCall = make(map[int]struct {
+			result1 *osbapi.Instance
+			result2 error
+		})
+	}
+	fake.getInstanceByIDReturnsOnCall[i] = struct {
+		result1 *osbapi.Instance
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeInstanceFetcher) GetInstanceByName(arg1 string) (*osbapi.Instance, error) {
@@ -159,6 +235,8 @@ func (fake *FakeInstanceFetcher) GetInstancesReturnsOnCall(i int, result1 []*osb
 func (fake *FakeInstanceFetcher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.getInstanceByIDMutex.RLock()
+	defer fake.getInstanceByIDMutex.RUnlock()
 	fake.getInstanceByNameMutex.RLock()
 	defer fake.getInstanceByNameMutex.RUnlock()
 	fake.getInstancesMutex.RLock()

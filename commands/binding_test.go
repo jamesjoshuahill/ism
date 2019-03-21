@@ -24,6 +24,7 @@ import (
 
 	. "github.com/pivotal-cf/ism/commands"
 	"github.com/pivotal-cf/ism/commands/commandsfakes"
+	"github.com/pivotal-cf/ism/usecases"
 )
 
 var _ = Describe("Binding command", func() {
@@ -79,6 +80,89 @@ var _ = Describe("Binding command", func() {
 
 			It("returns the error", func() {
 				Expect(executeErr).To(MatchError("error-creating-binding"))
+			})
+		})
+	})
+
+	Describe("List sub command", func() {
+		var (
+			fakeBindingListUsecase *commandsfakes.FakeBindingListUsecase
+			fakeUI                 *commandsfakes.FakeUI
+
+			listCommand BindingListCommand
+
+			executeErr error
+		)
+
+		BeforeEach(func() {
+			fakeBindingListUsecase = &commandsfakes.FakeBindingListUsecase{}
+			fakeUI = &commandsfakes.FakeUI{}
+
+			listCommand = BindingListCommand{
+				BindingListUsecase: fakeBindingListUsecase,
+				UI:                 fakeUI,
+			}
+		})
+
+		JustBeforeEach(func() {
+			executeErr = listCommand.Execute(nil)
+		})
+
+		When("there are no bindings", func() {
+			BeforeEach(func() {
+				fakeBindingListUsecase.GetBindingsReturns([]*usecases.Binding{}, nil)
+			})
+
+			It("doesn't error", func() {
+				Expect(executeErr).NotTo(HaveOccurred())
+			})
+
+			It("displays that no bindings were found", func() {
+				Expect(fakeUI.DisplayTextCallCount()).NotTo(BeZero())
+				text, _ := fakeUI.DisplayTextArgsForCall(0)
+
+				Expect(text).To(Equal("No bindings found."))
+			})
+		})
+
+		When("there are 1 or more bindings", func() {
+			BeforeEach(func() {
+				fakeBindingListUsecase.GetBindingsReturns([]*usecases.Binding{
+					{
+						Name:         "my-binding-1",
+						InstanceName: "my-instance-1",
+						CreatedAt:    "some-time-1",
+						Status:       "created",
+					},
+					{
+						Name:         "my-binding-2",
+						InstanceName: "my-instance-2",
+						CreatedAt:    "some-time-2",
+						Status:       "creating",
+					}}, nil)
+			})
+
+			It("doesn't error", func() {
+				Expect(executeErr).NotTo(HaveOccurred())
+			})
+
+			It("displays the bindings in a table", func() {
+				Expect(fakeUI.DisplayTableCallCount()).NotTo(BeZero())
+				data := fakeUI.DisplayTableArgsForCall(0)
+
+				Expect(data[0]).To(Equal([]string{"NAME", "INSTANCE", "STATUS", "CREATED AT"}))
+				Expect(data[1]).To(Equal([]string{"my-binding-1", "my-instance-1", "created", "some-time-1"}))
+				Expect(data[2]).To(Equal([]string{"my-binding-2", "my-instance-2", "creating", "some-time-2"}))
+			})
+		})
+
+		When("getting services returns an error", func() {
+			BeforeEach(func() {
+				fakeBindingListUsecase.GetBindingsReturns([]*usecases.Binding{}, errors.New("error-getting-bindings"))
+			})
+
+			It("propagates the error", func() {
+				Expect(executeErr).To(MatchError("error-getting-bindings"))
 			})
 		})
 	})

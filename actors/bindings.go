@@ -21,6 +21,7 @@ import "github.com/pivotal-cf/ism/osbapi"
 //go:generate counterfeiter . BindingRepository
 
 type BindingRepository interface {
+	FindAll() ([]*osbapi.Binding, error)
 	Create(*osbapi.Binding) error
 }
 
@@ -30,4 +31,8 @@ type BindingsActor struct {
 
 func (a *BindingsActor) Create(binding *osbapi.Binding) error {
 	return a.Repository.Create(binding)
+}
+
+func (a *BindingsActor) GetBindings() ([]*osbapi.Binding, error) {
+	return a.Repository.FindAll()
 }

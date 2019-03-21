@@ -270,6 +270,29 @@ func createInstance(instanceName, brokerName string) {
 	}).Should(BeTrue())
 }
 
+func createBinding(bindingName, instanceName string) {
+	createArgs := []string{"binding", "create",
+		"--name", bindingName,
+		"--instance", instanceName,
+	}
+
+	// start binding creation
+	createCommand := exec.Command(nodePathToCLI, createArgs...)
+	Expect(createCommand.Run()).To(Succeed())
+
+	listArgs := []string{"binding", "list"}
+	// wait for it to be created
+	Eventually(func() bool {
+		outBuf := NewBuffer()
+		listCommand := exec.Command(nodePathToCLI, listArgs...)
+		listCommand.Stdout = outBuf
+
+		Expect(listCommand.Run()).To(Succeed())
+
+		return strings.Contains(string(outBuf.Contents()), "created")
+	}).Should(BeTrue())
+}
+
 func deleteInstance(instanceName string) {
 	runKubectl("delete", "serviceinstance", instanceName)
 }

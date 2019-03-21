@@ -95,6 +95,11 @@ func main() {
 		InstanceFetcher: instancesActor,
 	}
 
+	bindingListUsecase := &usecases.BindingListUsecase{
+		BindingFetcher:  bindingsActor,
+		InstanceFetcher: instancesActor,
+	}
+
 	rootCommand := commands.RootCommand{
 		BrokerCommand: commands.BrokerCommand{
 			BrokerRegisterCommand: commands.BrokerRegisterCommand{
@@ -126,6 +131,10 @@ func main() {
 			BindingCreateCommand: commands.BindingCreateCommand{
 				UI:                   UI,
 				BindingCreateUsecase: bindingCreateUsecase,
+			},
+			BindingListCommand: commands.BindingListCommand{
+				UI:                 UI,
+				BindingListUsecase: bindingListUsecase,
 			},
 		},
 	}

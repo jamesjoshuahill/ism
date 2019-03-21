@@ -28,7 +28,7 @@ import (
 )
 
 var _ = Describe("Instance Command", func() {
-	Describe("create sub command", func() {
+	Describe("Create sub command", func() {
 		var (
 			fakeInstanceCreateUsecase *commandsfakes.FakeInstanceCreateUsecase
 			fakeUI                    *commandsfakes.FakeUI
@@ -88,7 +88,7 @@ var _ = Describe("Instance Command", func() {
 		})
 	})
 
-	Describe("list sub command", func() {
+	Describe("List sub command", func() {
 		var (
 			fakeUI                  *commandsfakes.FakeUI
 			fakeInstanceListUsecase *commandsfakes.FakeInstanceListUsecase
@@ -129,7 +129,7 @@ var _ = Describe("Instance Command", func() {
 			})
 		})
 
-		When("there is 1 or more instance", func() {
+		When("there are 1 or more instance", func() {
 			BeforeEach(func() {
 				fakeInstanceListUsecase.GetInstancesReturns([]*usecases.Instance{{
 					Name:        "my-instance-1",

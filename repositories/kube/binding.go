@@ -31,7 +31,7 @@ type Binding struct {
 	KubeClient client.Client
 }
 
-func (i *Binding) Create(binding *osbapi.Binding) error {
+func (b *Binding) Create(binding *osbapi.Binding) error {
 	bindingResource := &v1alpha1.ServiceBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      binding.Name,
@@ -46,5 +46,35 @@ func (i *Binding) Create(binding *osbapi.Binding) error {
 		},
 	}
 
-	return i.KubeClient.Create(context.TODO(), bindingResource)
+	return b.KubeClient.Create(context.TODO(), bindingResource)
+}
+
+func (b *Binding) FindAll() ([]*osbapi.Binding, error) {
+	list := &v1alpha1.ServiceBindingList{}
+	if err := b.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
+		return []*osbapi.Binding{}, err
+	}
+
+	bindings := []*osbapi.Binding{}
+	for _, binding := range list.Items {
+		bindings = append(bindings, &osbapi.Binding{
+			ID:         string(binding.ObjectMeta.UID),
+			Name:       binding.Spec.Name,
+			InstanceID: binding.Spec.InstanceID,
+			PlanID:     binding.Spec.PlanID,
+			ServiceID:  binding.Spec.ServiceID,
+			BrokerName: binding.Spec.BrokerName,
+			Status:     b.setStatus(binding.Status.State),
+			CreatedAt:  binding.ObjectMeta.CreationTimestamp.String(),
+		})
+	}
+
+	return bindings, nil
+}
+
+func (b *Binding) setStatus(state v1alpha1.ServiceBindingState) string {
+	if state == v1alpha1.ServiceBindingStateCreated {
+		return created
+	}
+	return creating
 }

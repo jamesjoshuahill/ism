@@ -100,6 +100,38 @@ var _ = Describe("Instance Actor", func() {
 		})
 	})
 
+	Describe("GetInstanceByID", func() {
+		var (
+			err              error
+			returnedInstance *osbapi.Instance
+		)
+
+		BeforeEach(func() {
+			fakeInstanceRepository.FindByIDReturns(&osbapi.Instance{ID: "instance-1"}, nil)
+		})
+
+		JustBeforeEach(func() {
+			returnedInstance, err = instancesActor.GetInstanceByID("instance-1")
+		})
+
+		It("returns the instance", func() {
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fakeInstanceRepository.FindByIDArgsForCall(0)).To(Equal("instance-1"))
+
+			Expect(*returnedInstance).To(Equal(osbapi.Instance{ID: "instance-1"}))
+		})
+
+		When("finding the instance fails", func() {
+			BeforeEach(func() {
+				fakeInstanceRepository.FindByIDReturns(nil, errors.New("error-finding-instance"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-finding-instance"))
+			})
+		})
+	})
+
 	Describe("FindAll", func() {
 		var (
 			err       error
