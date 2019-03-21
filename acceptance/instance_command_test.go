@@ -100,7 +100,7 @@ var _ = Describe("CLI instance command", func() {
 		When("required args are not passed", func() {
 			It("displays an informative message and exits 1", func() {
 				Eventually(session).Should(Exit(1))
-				Eventually(session).Should(Say("the required flags `--broker', `--name', `--plan' and `--service' were not specified"))
+				Eventually(session.Err).Should(Say("the required flags `--broker', `--name', `--plan' and `--service' were not specified"))
 			})
 		})
 	})

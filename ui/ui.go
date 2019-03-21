@@ -44,6 +44,10 @@ func (ui *UI) DisplayText(text string, data ...map[string]interface{}) {
 	formattedTemplate.Execute(ui.Out, keys)
 }
 
+func (ui *UI) DisplayError(err error) {
+	fmt.Fprintln(ui.Err, err.Error())
+}
+
 func (ui *UI) DisplayTable(table [][]string) {
 	if len(table) == 0 {
 		return

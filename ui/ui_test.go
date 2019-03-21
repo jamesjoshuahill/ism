@@ -17,6 +17,8 @@ specific language governing permissions and limitations under the License.
 package ui_test
 
 import (
+	"errors"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -38,6 +40,13 @@ var _ = Describe("UI", func() {
 		It("prints text with templated values to the out buffer", func() {
 			testUI.DisplayText("This is a test for the {{.Struct}} struct", map[string]interface{}{"Struct": "UI"})
 			Expect(testUI.Out).To(Say("This is a test for the UI struct\n"))
+		})
+	})
+
+	Describe("DisplayError", func() {
+		It("prints error text", func() {
+			testUI.DisplayError(errors.New("This is an error"))
+			Expect(testUI.Err).To(Say("This is an error\n"))
 		})
 	})
 

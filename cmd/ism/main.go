@@ -45,7 +45,7 @@ func main() {
 
 	kubeClient, err := buildKubeClient()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		UI.DisplayError(err)
 		os.Exit(1)
 	}
 
@@ -148,11 +148,11 @@ func main() {
 	_, err = parser.Parse()
 
 	if err != nil {
-		fmt.Println(err)
-
 		if outErr, ok := err.(*flags.Error); ok && outErr.Type == flags.ErrHelp {
+			UI.DisplayText(err.Error())
 			os.Exit(0)
 		} else {
+			UI.DisplayError(err)
 			os.Exit(1)
 		}
 	}
