@@ -81,8 +81,6 @@ var _ = Describe("CLI instance command", func() {
 			BeforeEach(func() {
 				registerBroker("instance-creation-broker")
 				args = append(args, "--name", "my-instance", "--service", serviceName, "--plan", planName, "--broker", "instance-creation-broker")
-
-				Expect(getBrokerInstances()).To(HaveLen(0))
 			})
 
 			AfterEach(func() {
@@ -94,10 +92,9 @@ var _ = Describe("CLI instance command", func() {
 			It("starts creation of the service instance", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("Instance 'my-instance' is being created\\."))
-			})
 
-			// TODO: When writing "ism instance list" test make sure to check the /data
-			// endpoint on the broker to ensure the instance has _actually_ been created.
+				Eventually(getBrokerInstances).Should(HaveLen(1))
+			})
 		})
 
 		When("required args are not passed", func() {

@@ -16,8 +16,6 @@ specific language governing permissions and limitations under the License.
 
 package commands
 
-//TODO: Where should this be defined?
-
 //go:generate counterfeiter . UI
 
 type UI interface {

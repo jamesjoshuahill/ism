@@ -97,15 +97,9 @@ var _ = Describe("CLI binding command", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("Binding 'binding-creation-binding' is being created\\."))
 
-				// TODO: Revisit this when it comes to implementing asynchronous provisioning
-				// Allow time for controller to set instance status to "created"
 				Eventually(getBrokerBindings).Should(HaveLen(1))
 			})
 		})
-
-		// 	// TODO: When writing "ism binding list" test make sure to check the /data
-		// 	// endpoint on the broker to ensure the binding has _actually_ been created.
-		// })
 
 		When("required args are not passed", func() {
 			It("displays an informative message and exits 1", func() {
