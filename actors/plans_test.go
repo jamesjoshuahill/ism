@@ -43,7 +43,7 @@ var _ = Describe("Plans Actor", func() {
 		}
 	})
 
-	Describe("GetPlan", func() {
+	Describe("GetPlanByID", func() {
 		var (
 			plan *osbapi.Plan
 			err  error
@@ -54,7 +54,7 @@ var _ = Describe("Plans Actor", func() {
 		})
 
 		JustBeforeEach(func() {
-			plan, err = plansActor.GetPlan("plan-1")
+			plan, err = plansActor.GetPlanByID("plan-1")
 		})
 
 		It("finds the plan by plan id", func() {

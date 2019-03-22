@@ -46,12 +46,12 @@ func (b *BindingGetUsecase) GetBindingDetailsByName(name string) (*BindingDetail
 		return &BindingDetails{}, err
 	}
 
-	osbapiService, err := b.ServiceFetcher.GetService(osbapiBinding.ServiceID)
+	osbapiService, err := b.ServiceFetcher.GetServiceByID(osbapiBinding.ServiceID)
 	if err != nil {
 		return &BindingDetails{}, err
 	}
 
-	osbapiPlan, err := b.PlanFetcher.GetPlan(osbapiBinding.PlanID)
+	osbapiPlan, err := b.PlanFetcher.GetPlanByID(osbapiBinding.PlanID)
 	if err != nil {
 		return &BindingDetails{}, err
 	}

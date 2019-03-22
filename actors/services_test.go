@@ -43,7 +43,7 @@ var _ = Describe("Services Actor", func() {
 		}
 	})
 
-	Describe("GetService", func() {
+	Describe("GetServiceByID", func() {
 		var (
 			service *osbapi.Service
 			err     error
@@ -57,7 +57,7 @@ var _ = Describe("Services Actor", func() {
 		})
 
 		JustBeforeEach(func() {
-			service, err = servicesActor.GetService("service-id-1")
+			service, err = servicesActor.GetServiceByID("service-id-1")
 		})
 
 		It("finds the service by service id", func() {

@@ -51,11 +51,11 @@ type InstanceCreator interface {
 }
 
 type PlanFetcher interface {
-	GetPlan(planID string) (*osbapi.Plan, error)
+	GetPlanByID(id string) (*osbapi.Plan, error)
 	GetPlans(serviceID string) ([]*osbapi.Plan, error)
 }
 
 type ServiceFetcher interface {
-	GetService(serviceID string) (*osbapi.Service, error)
+	GetServiceByID(id string) (*osbapi.Service, error)
 	GetServices(brokerName string) ([]*osbapi.Service, error)
 }

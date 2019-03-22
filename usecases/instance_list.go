@@ -39,12 +39,12 @@ func (i *InstanceListUsecase) GetInstances() ([]*Instance, error) {
 
 	var instances []*Instance
 	for _, instance := range osbapiInstances {
-		service, err := i.ServiceFetcher.GetService(instance.ServiceID)
+		service, err := i.ServiceFetcher.GetServiceByID(instance.ServiceID)
 		if err != nil {
 			return []*Instance{}, err
 		}
 
-		plan, err := i.PlanFetcher.GetPlan(instance.PlanID)
+		plan, err := i.PlanFetcher.GetPlanByID(instance.PlanID)
 		if err != nil {
 			return []*Instance{}, err
 		}

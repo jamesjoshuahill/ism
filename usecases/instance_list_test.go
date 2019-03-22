@@ -91,10 +91,10 @@ var _ = Describe("Instance List Usecase", func() {
 				},
 			}, nil)
 
-			fakeServiceFetcher.GetServiceReturnsOnCall(0, &osbapi.Service{Name: "my-service-1"}, nil)
-			fakeServiceFetcher.GetServiceReturnsOnCall(1, &osbapi.Service{Name: "my-service-2"}, nil)
-			fakePlanFetcher.GetPlanReturnsOnCall(0, &osbapi.Plan{Name: "my-plan-1"}, nil)
-			fakePlanFetcher.GetPlanReturnsOnCall(1, &osbapi.Plan{Name: "my-plan-2"}, nil)
+			fakeServiceFetcher.GetServiceByIDReturnsOnCall(0, &osbapi.Service{Name: "my-service-1"}, nil)
+			fakeServiceFetcher.GetServiceByIDReturnsOnCall(1, &osbapi.Service{Name: "my-service-2"}, nil)
+			fakePlanFetcher.GetPlanByIDReturnsOnCall(0, &osbapi.Plan{Name: "my-plan-1"}, nil)
+			fakePlanFetcher.GetPlanByIDReturnsOnCall(1, &osbapi.Plan{Name: "my-plan-2"}, nil)
 		})
 
 		It("doesn't error", func() {
@@ -124,12 +124,12 @@ var _ = Describe("Instance List Usecase", func() {
 		})
 
 		It("fetches the service using the service id", func() {
-			serviceID := fakeServiceFetcher.GetServiceArgsForCall(0)
+			serviceID := fakeServiceFetcher.GetServiceByIDArgsForCall(0)
 			Expect(serviceID).To(Equal("service-id-1"))
 		})
 
 		It("fetches the plan using the plan id", func() {
-			planID := fakePlanFetcher.GetPlanArgsForCall(0)
+			planID := fakePlanFetcher.GetPlanByIDArgsForCall(0)
 			Expect(planID).To(Equal("plan-id-1"))
 		})
 	})
@@ -156,7 +156,7 @@ var _ = Describe("Instance List Usecase", func() {
 				CreatedAt:  "time-1",
 			}}, nil)
 
-			fakeServiceFetcher.GetServiceReturns(&osbapi.Service{}, errors.New("error-getting-service"))
+			fakeServiceFetcher.GetServiceByIDReturns(&osbapi.Service{}, errors.New("error-getting-service"))
 		})
 
 		It("propagates the error", func() {
@@ -176,8 +176,8 @@ var _ = Describe("Instance List Usecase", func() {
 				CreatedAt:  "time-1",
 			}}, nil)
 
-			fakeServiceFetcher.GetServiceReturns(&osbapi.Service{Name: "my-service-1"}, nil)
-			fakePlanFetcher.GetPlanReturns(&osbapi.Plan{}, errors.New("error-getting-plan"))
+			fakeServiceFetcher.GetServiceByIDReturns(&osbapi.Service{Name: "my-service-1"}, nil)
+			fakePlanFetcher.GetPlanByIDReturns(&osbapi.Plan{}, errors.New("error-getting-plan"))
 		})
 
 		It("propagates the error", func() {

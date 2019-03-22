@@ -29,8 +29,8 @@ type ServicesActor struct {
 	Repository ServiceRepository
 }
 
-func (a *ServicesActor) GetService(serviceID string) (*osbapi.Service, error) {
-	return a.Repository.Find(serviceID)
+func (a *ServicesActor) GetServiceByID(id string) (*osbapi.Service, error) {
+	return a.Repository.Find(id)
 }
 
 func (a *ServicesActor) GetServices(brokerName string) ([]*osbapi.Service, error) {

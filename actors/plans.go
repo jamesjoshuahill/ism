@@ -29,8 +29,8 @@ type PlansActor struct {
 	Repository PlanRepository
 }
 
-func (a *PlansActor) GetPlan(planID string) (*osbapi.Plan, error) {
-	return a.Repository.Find(planID)
+func (a *PlansActor) GetPlanByID(id string) (*osbapi.Plan, error) {
+	return a.Repository.Find(id)
 }
 
 func (a *PlansActor) GetPlans(serviceID string) ([]*osbapi.Plan, error) {

@@ -76,11 +76,11 @@ var _ = Describe("Binding Get Usecase", func() {
 				ID:   "instance-1",
 				Name: "my-instance",
 			}, nil)
-			fakeServiceFetcher.GetServiceReturns(&osbapi.Service{
+			fakeServiceFetcher.GetServiceByIDReturns(&osbapi.Service{
 				ID:   "service-1",
 				Name: "my-service",
 			}, nil)
-			fakePlanFetcher.GetPlanReturns(&osbapi.Plan{
+			fakePlanFetcher.GetPlanByIDReturns(&osbapi.Plan{
 				ID:   "plan-1",
 				Name: "my-plan",
 			}, nil)
@@ -96,8 +96,8 @@ var _ = Describe("Binding Get Usecase", func() {
 		It("calls fetchers correctly", func() {
 			Expect(fakeBindingFetcher.GetBindingByNameArgsForCall(0)).To(Equal("my-binding"))
 			Expect(fakeInstanceFetcher.GetInstanceByIDArgsForCall(0)).To(Equal("instance-1"))
-			Expect(fakeServiceFetcher.GetServiceArgsForCall(0)).To(Equal("service-1"))
-			Expect(fakePlanFetcher.GetPlanArgsForCall(0)).To(Equal("plan-1"))
+			Expect(fakeServiceFetcher.GetServiceByIDArgsForCall(0)).To(Equal("service-1"))
+			Expect(fakePlanFetcher.GetPlanByIDArgsForCall(0)).To(Equal("plan-1"))
 		})
 
 		It("returns the binding details", func() {
@@ -128,11 +128,11 @@ var _ = Describe("Binding Get Usecase", func() {
 				ID:   "instance-1",
 				Name: "my-instance",
 			}, nil)
-			fakeServiceFetcher.GetServiceReturns(&osbapi.Service{
+			fakeServiceFetcher.GetServiceByIDReturns(&osbapi.Service{
 				ID:   "service-1",
 				Name: "my-service",
 			}, nil)
-			fakePlanFetcher.GetPlanReturns(&osbapi.Plan{
+			fakePlanFetcher.GetPlanByIDReturns(&osbapi.Plan{
 				ID:   "plan-1",
 				Name: "my-plan",
 			}, nil)
@@ -163,7 +163,7 @@ var _ = Describe("Binding Get Usecase", func() {
 
 		When("fetching the service fails", func() {
 			BeforeEach(func() {
-				fakeServiceFetcher.GetServiceReturns(nil, errors.New("error-fetching-service"))
+				fakeServiceFetcher.GetServiceByIDReturns(nil, errors.New("error-fetching-service"))
 			})
 
 			It("propagates the error", func() {
@@ -173,7 +173,7 @@ var _ = Describe("Binding Get Usecase", func() {
 
 		When("fetching the plan fails", func() {
 			BeforeEach(func() {
-				fakePlanFetcher.GetPlanReturns(nil, errors.New("error-fetching-plan"))
+				fakePlanFetcher.GetPlanByIDReturns(nil, errors.New("error-fetching-plan"))
 			})
 
 			It("propagates the error", func() {
