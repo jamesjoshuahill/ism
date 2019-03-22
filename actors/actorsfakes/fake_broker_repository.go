@@ -21,6 +21,19 @@ type FakeBrokerRepository struct {
 		result1 []*osbapi.Broker
 		result2 error
 	}
+	FindByNameStub        func(string) (*osbapi.Broker, error)
+	findByNameMutex       sync.RWMutex
+	findByNameArgsForCall []struct {
+		arg1 string
+	}
+	findByNameReturns struct {
+		result1 *osbapi.Broker
+		result2 error
+	}
+	findByNameReturnsOnCall map[int]struct {
+		result1 *osbapi.Broker
+		result2 error
+	}
 	RegisterStub        func(*osbapi.Broker) error
 	registerMutex       sync.RWMutex
 	registerArgsForCall []struct {
@@ -91,6 +104,69 @@ func (fake *FakeBrokerRepository) FindAllReturnsOnCall(i int, result1 []*osbapi.
 	}{result1, result2}
 }
 
+func (fake *FakeBrokerRepository) FindByName(arg1 string) (*osbapi.Broker, error) {
+	fake.findByNameMutex.Lock()
+	ret, specificReturn := fake.findByNameReturnsOnCall[len(fake.findByNameArgsForCall)]
+	fake.findByNameArgsForCall = append(fake.findByNameArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("FindByName", []interface{}{arg1})
+	fake.findByNameMutex.Unlock()
+	if fake.FindByNameStub != nil {
+		return fake.FindByNameStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.findByNameReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeBrokerRepository) FindByNameCallCount() int {
+	fake.findByNameMutex.RLock()
+	defer fake.findByNameMutex.RUnlock()
+	return len(fake.findByNameArgsForCall)
+}
+
+func (fake *FakeBrokerRepository) FindByNameCalls(stub func(string) (*osbapi.Broker, error)) {
+	fake.findByNameMutex.Lock()
+	defer fake.findByNameMutex.Unlock()
+	fake.FindByNameStub = stub
+}
+
+func (fake *FakeBrokerRepository) FindByNameArgsForCall(i int) string {
+	fake.findByNameMutex.RLock()
+	defer fake.findByNameMutex.RUnlock()
+	argsForCall := fake.findByNameArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeBrokerRepository) FindByNameReturns(result1 *osbapi.Broker, result2 error) {
+	fake.findByNameMutex.Lock()
+	defer fake.findByNameMutex.Unlock()
+	fake.FindByNameStub = nil
+	fake.findByNameReturns = struct {
+		result1 *osbapi.Broker
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeBrokerRepository) FindByNameReturnsOnCall(i int, result1 *osbapi.Broker, result2 error) {
+	fake.findByNameMutex.Lock()
+	defer fake.findByNameMutex.Unlock()
+	fake.FindByNameStub = nil
+	if fake.findByNameReturnsOnCall == nil {
+		fake.findByNameReturnsOnCall = make(map[int]struct {
+			result1 *osbapi.Broker
+			result2 error
+		})
+	}
+	fake.findByNameReturnsOnCall[i] = struct {
+		result1 *osbapi.Broker
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeBrokerRepository) Register(arg1 *osbapi.Broker) error {
 	fake.registerMutex.Lock()
 	ret, specificReturn := fake.registerReturnsOnCall[len(fake.registerArgsForCall)]
@@ -156,6 +232,8 @@ func (fake *FakeBrokerRepository) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.findAllMutex.RLock()
 	defer fake.findAllMutex.RUnlock()
+	fake.findByNameMutex.RLock()
+	defer fake.findByNameMutex.RUnlock()
 	fake.registerMutex.RLock()
 	defer fake.registerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

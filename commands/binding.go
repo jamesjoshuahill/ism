@@ -30,9 +30,16 @@ type BindingListUsecase interface {
 	GetBindings() ([]*usecases.Binding, error)
 }
 
+//go:generate counterfeiter . BindingGetUsecase
+
+type BindingGetUsecase interface {
+	GetBindingDetailsByName(name string) (*usecases.BindingDetails, error)
+}
+
 type BindingCommand struct {
 	BindingCreateCommand BindingCreateCommand `command:"create" long-description:"Create a service binding"`
 	BindingListCommand   BindingListCommand   `command:"list" long-description:"List the service bindings"`
+	BindingGetCommand    BindingGetCommand    `command:"get" long-description:"Get a service binding"`
 }
 
 type BindingCreateCommand struct {
@@ -46,6 +53,13 @@ type BindingCreateCommand struct {
 type BindingListCommand struct {
 	UI                 UI
 	BindingListUsecase BindingListUsecase
+}
+
+type BindingGetCommand struct {
+	Name string `long:"name" description:"Name of the service binding" required:"true"`
+
+	UI                UI
+	BindingGetUsecase BindingGetUsecase
 }
 
 func (cmd *BindingCreateCommand) Execute([]string) error {
@@ -71,6 +85,15 @@ func (cmd *BindingListCommand) Execute([]string) error {
 	bindingsTable := buildBindingTableData(bindings)
 	cmd.UI.DisplayTable(bindingsTable)
 	return nil
+}
+
+func (cmd *BindingGetCommand) Execute([]string) error {
+	binding, err := cmd.BindingGetUsecase.GetBindingDetailsByName(cmd.Name)
+	if err != nil {
+		return err
+	}
+
+	return cmd.UI.DisplayYAML(binding)
 }
 
 func buildBindingTableData(bindings []*usecases.Binding) [][]string {

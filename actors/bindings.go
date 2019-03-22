@@ -22,6 +22,7 @@ import "github.com/pivotal-cf/ism/osbapi"
 
 type BindingRepository interface {
 	FindAll() ([]*osbapi.Binding, error)
+	FindByName(name string) (*osbapi.Binding, error)
 	Create(*osbapi.Binding) error
 }
 
@@ -31,6 +32,10 @@ type BindingsActor struct {
 
 func (a *BindingsActor) Create(binding *osbapi.Binding) error {
 	return a.Repository.Create(binding)
+}
+
+func (a *BindingsActor) GetBindingByName(name string) (*osbapi.Binding, error) {
+	return a.Repository.FindByName(name)
 }
 
 func (a *BindingsActor) GetBindings() ([]*osbapi.Binding, error) {

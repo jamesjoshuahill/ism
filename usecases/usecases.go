@@ -31,11 +31,13 @@ type BindingCreator interface {
 }
 
 type BindingFetcher interface {
+	GetBindingByName(name string) (*osbapi.Binding, error)
 	GetBindings() ([]*osbapi.Binding, error)
 }
 
 type BrokerFetcher interface {
 	GetBrokers() ([]*osbapi.Broker, error)
+	GetBrokerByName(name string) (*osbapi.Broker, error)
 }
 
 type InstanceFetcher interface {

@@ -52,9 +52,9 @@ var _ = Describe("CLI binding command", func() {
 		It("displays help and exits 0", func() {
 			Eventually(session).Should(Exit(0))
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`ism \[OPTIONS\] binding <create | list>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] binding <create | get | list>`))
 			Eventually(session).Should(Say("\n"))
-			Eventually(session).Should(Say("The binding command group lets you create and list service bindings"))
+			Eventually(session).Should(Say("The binding command group lets you create, get and list service bindings"))
 		})
 	})
 
@@ -155,6 +155,74 @@ var _ = Describe("CLI binding command", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("NAME\\s+INSTANCE\\s+STATUS\\s+CREATED AT"))
 				Eventually(session).Should(Say("binding-list-binding\\s+binding-list-instance\\s+created\\s+" + timeRegex))
+			})
+		})
+	})
+
+	Describe("get sub command", func() {
+		BeforeEach(func() {
+			args = append(args, "get")
+		})
+
+		When("--help is passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--help")
+			})
+
+			It("displays help and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Usage:"))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] binding get`))
+				Eventually(session).Should(Say("\n"))
+				Eventually(session).Should(Say("Get a service binding"))
+			})
+		})
+
+		When("the binding exists", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "binding-get-binding")
+				registerBroker("binding-get-broker")
+				createInstance("binding-get-instance", "binding-get-broker")
+				createBinding("binding-get-binding", "binding-get-instance")
+			})
+
+			AfterEach(func() {
+				deleteBinding("binding-get-binding")
+				deleteInstance("binding-get-instance")
+				deleteBroker("binding-get-broker")
+				cleanBrokerData()
+			})
+
+			It("displays the binding and exits 0", func() {
+				timeRegex := `\d{4,}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}.+`
+
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("broker: binding-get-broker\n" +
+					"createdAt:\\s+" + timeRegex + "\n" +
+					"credentials: null\n" +
+					"instance: binding-get-instance\n" +
+					"name: binding-get-binding\n" +
+					"plan: simple\n" +
+					"service: overview-service\n" +
+					"status: created"))
+			})
+		})
+
+		When("the binding does not exist", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "binding-get-non-existant-binding")
+			})
+
+			It("displays 'Binding not found' and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("binding not found"))
+			})
+		})
+
+		When("required args are not passed", func() {
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("the required flag `--name' was not specified"))
 			})
 		})
 	})

@@ -22,6 +22,7 @@ import "github.com/pivotal-cf/ism/osbapi"
 
 type BrokerRepository interface {
 	FindAll() ([]*osbapi.Broker, error)
+	FindByName(name string) (*osbapi.Broker, error)
 	Register(*osbapi.Broker) error
 }
 
@@ -36,4 +37,8 @@ func (a *BrokersActor) GetBrokers() ([]*osbapi.Broker, error) {
 //TODO: Make names consistent
 func (a *BrokersActor) Register(broker *osbapi.Broker) error {
 	return a.Repository.Register(broker)
+}
+
+func (a *BrokersActor) GetBrokerByName(name string) (*osbapi.Broker, error) {
+	return a.Repository.FindByName(name)
 }

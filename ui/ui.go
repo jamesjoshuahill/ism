@@ -23,6 +23,7 @@ import (
 	"text/template"
 
 	"github.com/fatih/color"
+	"github.com/ghodss/yaml"
 	"github.com/lunixbochs/vtclean"
 	runewidth "github.com/mattn/go-runewidth"
 )
@@ -42,6 +43,16 @@ func (ui *UI) DisplayText(text string, data ...map[string]interface{}) {
 
 	formattedTemplate := template.Must(template.New("Display Text").Parse(text + "\n"))
 	formattedTemplate.Execute(ui.Out, keys)
+}
+
+func (ui *UI) DisplayYAML(data interface{}) error {
+	bytes, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(ui.Out, string(bytes))
+	return nil
 }
 
 func (ui *UI) DisplayError(err error) {

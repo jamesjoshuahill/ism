@@ -43,6 +43,38 @@ var _ = Describe("UI", func() {
 		})
 	})
 
+	Describe("DisplayYAML", func() {
+		When("passsed something that can be marshaled to yaml", func() {
+			It("prints the passed struct as yaml", func() {
+				data := map[string]map[string]string{
+					"key1": map[string]string{
+						"nested-key1": "nested-value1",
+						"nested-key2": "nested-value2",
+					},
+					"key2": map[string]string{
+						"nested-key3": "nested-value3",
+						"nested-key4": "nested-value4",
+					},
+				}
+
+				Expect(testUI.DisplayYAML(data)).To(Succeed())
+				Expect(testUI.Out).To(Say(`key1:
+  nested-key1: nested-value1
+  nested-key2: nested-value2
+key2:
+  nested-key3: nested-value3
+  nested-key4: nested-value4\n`))
+			})
+		})
+
+		When("passsed something that can't be marshaled to yaml", func() {
+			It("errors", func() {
+				data := make(chan int)
+				Expect(testUI.DisplayYAML(data)).NotTo(Succeed())
+			})
+		})
+	})
+
 	Describe("DisplayError", func() {
 		It("prints error text", func() {
 			testUI.DisplayError(errors.New("This is an error"))

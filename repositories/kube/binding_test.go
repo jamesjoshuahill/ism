@@ -110,6 +110,66 @@ var _ = Describe("Binding", func() {
 		})
 	})
 
+	Describe("FindByName", func() {
+		var (
+			binding          *osbapi.Binding
+			bindingCreatedAt string
+			bindingID        string
+			err              error
+		)
+
+		JustBeforeEach(func() {
+			binding, err = bindingRepo.FindByName("my-binding")
+		})
+
+		When("the binding exists", func() {
+			BeforeEach(func() {
+				bindingResource := &v1alpha1.ServiceBinding{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-binding",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.ServiceBindingSpec{
+						Name:       "my-binding",
+						InstanceID: "instance-1",
+						PlanID:     "plan-1",
+						ServiceID:  "service-1",
+						BrokerName: "my-broker",
+					},
+				}
+
+				Expect(kubeClient.Create(context.TODO(), bindingResource)).To(Succeed())
+				bindingCreatedAt = createdAtForBinding(kubeClient, bindingResource)
+				bindingID = idForBinding(kubeClient, bindingResource)
+			})
+
+			AfterEach(func() {
+				deleteBindings(kubeClient, "my-binding")
+			})
+
+			It("returns the binding", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(*binding).To(Equal(osbapi.Binding{
+					ID:         bindingID,
+					Name:       "my-binding",
+					InstanceID: "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "my-broker",
+					CreatedAt:  bindingCreatedAt,
+					Status:     "creating",
+				}))
+			})
+		})
+
+		When("the binding cannot be found", func() {
+			It("returns an error", func() {
+				Expect(err).To(MatchError("binding not found"))
+			})
+		})
+	})
+
 	Describe("FindAll", func() {
 		var (
 			bindings          []*osbapi.Binding

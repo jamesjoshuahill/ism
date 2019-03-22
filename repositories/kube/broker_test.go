@@ -38,7 +38,7 @@ var _ = Describe("Broker", func() {
 	var (
 		kubeClient client.Client
 
-		broker              *Broker
+		brokerRepo          *Broker
 		registrationTimeout time.Duration
 	)
 
@@ -49,7 +49,7 @@ var _ = Describe("Broker", func() {
 
 		registrationTimeout = time.Second
 
-		broker = &Broker{
+		brokerRepo = &Broker{
 			KubeClient:          kubeClient,
 			RegistrationTimeout: registrationTimeout,
 		}
@@ -70,7 +70,7 @@ var _ = Describe("Broker", func() {
 			}
 
 			before := time.Now()
-			err = broker.Register(b)
+			err = brokerRepo.Register(b)
 			registrationDuration = time.Since(before)
 		})
 
@@ -119,7 +119,7 @@ var _ = Describe("Broker", func() {
 						Password: "broker-1-password",
 					}
 
-					Expect(broker.Register(b)).To(Succeed())
+					Expect(brokerRepo.Register(b)).To(Succeed())
 				})
 
 				It("propagates the error", func() {
@@ -138,6 +138,60 @@ var _ = Describe("Broker", func() {
 
 				Expect(registrationDuration).To(BeNumerically(">", registrationTimeout))
 				Expect(registrationDuration).To(BeNumerically("<", registrationTimeout+estimatedExecutionTime))
+			})
+		})
+	})
+
+	Describe("FindByName", func() {
+		var (
+			broker          *osbapi.Broker
+			brokerCreatedAt string
+			err             error
+		)
+
+		JustBeforeEach(func() {
+			broker, err = brokerRepo.FindByName("my-broker")
+		})
+
+		When("the broker exists", func() {
+			BeforeEach(func() {
+				brokerResource := &v1alpha1.Broker{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-broker",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.BrokerSpec{
+						Name:     "my-broker",
+						URL:      "broker-1-url",
+						Username: "broker-1-username",
+						Password: "broker-1-password",
+					},
+				}
+
+				Expect(kubeClient.Create(context.TODO(), brokerResource)).To(Succeed())
+				brokerCreatedAt = createdAtForBroker(kubeClient, brokerResource)
+			})
+
+			AfterEach(func() {
+				deleteBrokers(kubeClient, "my-broker")
+			})
+
+			It("returns the broker", func() {
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(*broker).To(Equal(osbapi.Broker{
+					Name:      "my-broker",
+					URL:       "broker-1-url",
+					Username:  "broker-1-username",
+					Password:  "broker-1-password",
+					CreatedAt: brokerCreatedAt,
+				}))
+			})
+		})
+
+		When("the broker does not exist", func() {
+			It("returns an error", func() {
+				Expect(err).To(MatchError("broker not found"))
 			})
 		})
 	})
@@ -184,7 +238,7 @@ var _ = Describe("Broker", func() {
 		})
 
 		JustBeforeEach(func() {
-			brokers, err = broker.FindAll()
+			brokers, err = brokerRepo.FindAll()
 		})
 
 		AfterEach(func() {

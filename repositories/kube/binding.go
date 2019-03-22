@@ -18,14 +18,19 @@ package kube
 
 import (
 	"context"
+	"errors"
 
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/pivotal-cf/ism/osbapi"
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 )
+
+var errBindingNotFound = errors.New("binding not found")
 
 type Binding struct {
 	KubeClient client.Client
@@ -47,6 +52,31 @@ func (b *Binding) Create(binding *osbapi.Binding) error {
 	}
 
 	return b.KubeClient.Create(context.TODO(), bindingResource)
+}
+
+func (b *Binding) FindByName(name string) (*osbapi.Binding, error) {
+	binding := &v1alpha1.ServiceBinding{}
+	err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: "default"}, binding)
+
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return nil, errBindingNotFound
+		}
+		return nil, err
+	}
+
+	osbapiBinding := &osbapi.Binding{
+		ID:         string(binding.ObjectMeta.UID),
+		Name:       binding.Spec.Name,
+		InstanceID: binding.Spec.InstanceID,
+		PlanID:     binding.Spec.PlanID,
+		ServiceID:  binding.Spec.ServiceID,
+		BrokerName: binding.Spec.BrokerName,
+		Status:     b.setStatus(binding.Status.State),
+		CreatedAt:  binding.ObjectMeta.CreationTimestamp.String(),
+	}
+
+	return osbapiBinding, nil
 }
 
 func (b *Binding) FindAll() ([]*osbapi.Binding, error) {

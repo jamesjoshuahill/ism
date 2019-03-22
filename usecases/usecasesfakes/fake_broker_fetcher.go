@@ -9,6 +9,19 @@ import (
 )
 
 type FakeBrokerFetcher struct {
+	GetBrokerByNameStub        func(string) (*osbapi.Broker, error)
+	getBrokerByNameMutex       sync.RWMutex
+	getBrokerByNameArgsForCall []struct {
+		arg1 string
+	}
+	getBrokerByNameReturns struct {
+		result1 *osbapi.Broker
+		result2 error
+	}
+	getBrokerByNameReturnsOnCall map[int]struct {
+		result1 *osbapi.Broker
+		result2 error
+	}
 	GetBrokersStub        func() ([]*osbapi.Broker, error)
 	getBrokersMutex       sync.RWMutex
 	getBrokersArgsForCall []struct {
@@ -23,6 +36,69 @@ type FakeBrokerFetcher struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeBrokerFetcher) GetBrokerByName(arg1 string) (*osbapi.Broker, error) {
+	fake.getBrokerByNameMutex.Lock()
+	ret, specificReturn := fake.getBrokerByNameReturnsOnCall[len(fake.getBrokerByNameArgsForCall)]
+	fake.getBrokerByNameArgsForCall = append(fake.getBrokerByNameArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetBrokerByName", []interface{}{arg1})
+	fake.getBrokerByNameMutex.Unlock()
+	if fake.GetBrokerByNameStub != nil {
+		return fake.GetBrokerByNameStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getBrokerByNameReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeBrokerFetcher) GetBrokerByNameCallCount() int {
+	fake.getBrokerByNameMutex.RLock()
+	defer fake.getBrokerByNameMutex.RUnlock()
+	return len(fake.getBrokerByNameArgsForCall)
+}
+
+func (fake *FakeBrokerFetcher) GetBrokerByNameCalls(stub func(string) (*osbapi.Broker, error)) {
+	fake.getBrokerByNameMutex.Lock()
+	defer fake.getBrokerByNameMutex.Unlock()
+	fake.GetBrokerByNameStub = stub
+}
+
+func (fake *FakeBrokerFetcher) GetBrokerByNameArgsForCall(i int) string {
+	fake.getBrokerByNameMutex.RLock()
+	defer fake.getBrokerByNameMutex.RUnlock()
+	argsForCall := fake.getBrokerByNameArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeBrokerFetcher) GetBrokerByNameReturns(result1 *osbapi.Broker, result2 error) {
+	fake.getBrokerByNameMutex.Lock()
+	defer fake.getBrokerByNameMutex.Unlock()
+	fake.GetBrokerByNameStub = nil
+	fake.getBrokerByNameReturns = struct {
+		result1 *osbapi.Broker
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeBrokerFetcher) GetBrokerByNameReturnsOnCall(i int, result1 *osbapi.Broker, result2 error) {
+	fake.getBrokerByNameMutex.Lock()
+	defer fake.getBrokerByNameMutex.Unlock()
+	fake.GetBrokerByNameStub = nil
+	if fake.getBrokerByNameReturnsOnCall == nil {
+		fake.getBrokerByNameReturnsOnCall = make(map[int]struct {
+			result1 *osbapi.Broker
+			result2 error
+		})
+	}
+	fake.getBrokerByNameReturnsOnCall[i] = struct {
+		result1 *osbapi.Broker
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeBrokerFetcher) GetBrokers() ([]*osbapi.Broker, error) {
@@ -83,6 +159,8 @@ func (fake *FakeBrokerFetcher) GetBrokersReturnsOnCall(i int, result1 []*osbapi.
 func (fake *FakeBrokerFetcher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.getBrokerByNameMutex.RLock()
+	defer fake.getBrokerByNameMutex.RUnlock()
 	fake.getBrokersMutex.RLock()
 	defer fake.getBrokersMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

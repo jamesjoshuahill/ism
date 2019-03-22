@@ -84,6 +84,75 @@ var _ = Describe("Binding command", func() {
 		})
 	})
 
+	Describe("Get sub command", func() {
+		var (
+			fakeBindingGetUsecase *commandsfakes.FakeBindingGetUsecase
+			fakeUI                *commandsfakes.FakeUI
+
+			getCommand BindingGetCommand
+
+			executeErr error
+		)
+
+		BeforeEach(func() {
+			fakeBindingGetUsecase = &commandsfakes.FakeBindingGetUsecase{}
+			fakeUI = &commandsfakes.FakeUI{}
+
+			getCommand = BindingGetCommand{
+				Name:              "my-binding",
+				BindingGetUsecase: fakeBindingGetUsecase,
+				UI:                fakeUI,
+			}
+		})
+
+		JustBeforeEach(func() {
+			executeErr = getCommand.Execute(nil)
+		})
+
+		It("calls to get the binding", func() {
+			bindingName := fakeBindingGetUsecase.GetBindingDetailsByNameArgsForCall(0)
+			Expect(bindingName).To(Equal("my-binding"))
+		})
+
+		When("the binding exists", func() {
+			BeforeEach(func() {
+				fakeBindingGetUsecase.GetBindingDetailsByNameReturns(&usecases.BindingDetails{Name: "my-binding"}, nil)
+			})
+
+			It("doesn't error", func() {
+				Expect(executeErr).NotTo(HaveOccurred())
+			})
+
+			It("passes the binding details for display", func() {
+				Expect(fakeUI.DisplayYAMLCallCount()).To(Equal(1))
+
+				bindingDetailsArg := fakeUI.DisplayYAMLArgsForCall(0)
+
+				Expect(bindingDetailsArg).To(Equal(&usecases.BindingDetails{Name: "my-binding"}))
+			})
+		})
+
+		When("get binding by name fails", func() {
+			BeforeEach(func() {
+				fakeBindingGetUsecase.GetBindingDetailsByNameReturns(&usecases.BindingDetails{}, errors.New("error-binding-not-found"))
+			})
+
+			It("returns an error", func() {
+				Expect(executeErr).To(MatchError("error-binding-not-found"))
+			})
+		})
+
+		When("displaying the binding errors", func() {
+			BeforeEach(func() {
+				fakeUI.DisplayYAMLReturns(errors.New("error-displaying-yaml"))
+			})
+
+			It("returns an error", func() {
+				Expect(executeErr).To(MatchError("error-displaying-yaml"))
+			})
+		})
+	})
+
 	Describe("List sub command", func() {
 		var (
 			fakeBindingListUsecase *commandsfakes.FakeBindingListUsecase

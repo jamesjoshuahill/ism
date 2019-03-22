@@ -78,6 +78,36 @@ var _ = Describe("Binding Actor", func() {
 		})
 	})
 
+	Describe("GetBindingByName", func() {
+		var (
+			binding *osbapi.Binding
+			err     error
+		)
+
+		BeforeEach(func() {
+			fakeBindingRepository.FindByNameReturns(&osbapi.Binding{Name: "my-binding"}, nil)
+		})
+
+		JustBeforeEach(func() {
+			binding, err = bindingsActor.GetBindingByName("my-binding")
+		})
+
+		It("finds the binding from the repository", func() {
+			Expect(fakeBindingRepository.FindByNameCallCount()).To(Equal(1))
+			Expect(*binding).To(Equal(osbapi.Binding{Name: "my-binding"}))
+		})
+
+		When("find a binding returns an error", func() {
+			BeforeEach(func() {
+				fakeBindingRepository.FindByNameReturns(&osbapi.Binding{}, errors.New("error-finding-binding"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-finding-binding"))
+			})
+		})
+	})
+
 	Describe("Create", func() {
 		var err error
 

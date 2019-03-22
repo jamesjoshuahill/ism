@@ -79,6 +79,36 @@ var _ = Describe("Brokers Actor", func() {
 		})
 	})
 
+	Describe("GetBrokerByName", func() {
+		var (
+			broker *osbapi.Broker
+			err    error
+		)
+
+		BeforeEach(func() {
+			fakeBrokerRepository.FindByNameReturns(&osbapi.Broker{Name: "my-broker"}, nil)
+		})
+
+		JustBeforeEach(func() {
+			broker, err = brokersActor.GetBrokerByName("my-broker")
+		})
+
+		It("finds the binding from the repository", func() {
+			Expect(fakeBrokerRepository.FindByNameCallCount()).To(Equal(1))
+			Expect(*broker).To(Equal(osbapi.Broker{Name: "my-broker"}))
+		})
+
+		When("finding the broker returns an error", func() {
+			BeforeEach(func() {
+				fakeBrokerRepository.FindByNameReturns(&osbapi.Broker{}, errors.New("error-finding-broker"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-finding-broker"))
+			})
+		})
+	})
+
 	Describe("Register", func() {
 		var err error
 

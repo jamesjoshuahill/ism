@@ -19,6 +19,17 @@ type FakeUI struct {
 		arg1 string
 		arg2 []map[string]interface{}
 	}
+	DisplayYAMLStub        func(interface{}) error
+	displayYAMLMutex       sync.RWMutex
+	displayYAMLArgsForCall []struct {
+		arg1 interface{}
+	}
+	displayYAMLReturns struct {
+		result1 error
+	}
+	displayYAMLReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -91,6 +102,66 @@ func (fake *FakeUI) DisplayTextArgsForCall(i int) (string, []map[string]interfac
 	return argsForCall.arg1, argsForCall.arg2
 }
 
+func (fake *FakeUI) DisplayYAML(arg1 interface{}) error {
+	fake.displayYAMLMutex.Lock()
+	ret, specificReturn := fake.displayYAMLReturnsOnCall[len(fake.displayYAMLArgsForCall)]
+	fake.displayYAMLArgsForCall = append(fake.displayYAMLArgsForCall, struct {
+		arg1 interface{}
+	}{arg1})
+	fake.recordInvocation("DisplayYAML", []interface{}{arg1})
+	fake.displayYAMLMutex.Unlock()
+	if fake.DisplayYAMLStub != nil {
+		return fake.DisplayYAMLStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.displayYAMLReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeUI) DisplayYAMLCallCount() int {
+	fake.displayYAMLMutex.RLock()
+	defer fake.displayYAMLMutex.RUnlock()
+	return len(fake.displayYAMLArgsForCall)
+}
+
+func (fake *FakeUI) DisplayYAMLCalls(stub func(interface{}) error) {
+	fake.displayYAMLMutex.Lock()
+	defer fake.displayYAMLMutex.Unlock()
+	fake.DisplayYAMLStub = stub
+}
+
+func (fake *FakeUI) DisplayYAMLArgsForCall(i int) interface{} {
+	fake.displayYAMLMutex.RLock()
+	defer fake.displayYAMLMutex.RUnlock()
+	argsForCall := fake.displayYAMLArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeUI) DisplayYAMLReturns(result1 error) {
+	fake.displayYAMLMutex.Lock()
+	defer fake.displayYAMLMutex.Unlock()
+	fake.DisplayYAMLStub = nil
+	fake.displayYAMLReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUI) DisplayYAMLReturnsOnCall(i int, result1 error) {
+	fake.displayYAMLMutex.Lock()
+	defer fake.displayYAMLMutex.Unlock()
+	fake.DisplayYAMLStub = nil
+	if fake.displayYAMLReturnsOnCall == nil {
+		fake.displayYAMLReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.displayYAMLReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeUI) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -98,6 +169,8 @@ func (fake *FakeUI) Invocations() map[string][][]interface{} {
 	defer fake.displayTableMutex.RUnlock()
 	fake.displayTextMutex.RLock()
 	defer fake.displayTextMutex.RUnlock()
+	fake.displayYAMLMutex.RLock()
+	defer fake.displayYAMLMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

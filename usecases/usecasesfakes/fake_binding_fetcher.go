@@ -9,6 +9,19 @@ import (
 )
 
 type FakeBindingFetcher struct {
+	GetBindingByNameStub        func(string) (*osbapi.Binding, error)
+	getBindingByNameMutex       sync.RWMutex
+	getBindingByNameArgsForCall []struct {
+		arg1 string
+	}
+	getBindingByNameReturns struct {
+		result1 *osbapi.Binding
+		result2 error
+	}
+	getBindingByNameReturnsOnCall map[int]struct {
+		result1 *osbapi.Binding
+		result2 error
+	}
 	GetBindingsStub        func() ([]*osbapi.Binding, error)
 	getBindingsMutex       sync.RWMutex
 	getBindingsArgsForCall []struct {
@@ -23,6 +36,69 @@ type FakeBindingFetcher struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeBindingFetcher) GetBindingByName(arg1 string) (*osbapi.Binding, error) {
+	fake.getBindingByNameMutex.Lock()
+	ret, specificReturn := fake.getBindingByNameReturnsOnCall[len(fake.getBindingByNameArgsForCall)]
+	fake.getBindingByNameArgsForCall = append(fake.getBindingByNameArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetBindingByName", []interface{}{arg1})
+	fake.getBindingByNameMutex.Unlock()
+	if fake.GetBindingByNameStub != nil {
+		return fake.GetBindingByNameStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getBindingByNameReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeBindingFetcher) GetBindingByNameCallCount() int {
+	fake.getBindingByNameMutex.RLock()
+	defer fake.getBindingByNameMutex.RUnlock()
+	return len(fake.getBindingByNameArgsForCall)
+}
+
+func (fake *FakeBindingFetcher) GetBindingByNameCalls(stub func(string) (*osbapi.Binding, error)) {
+	fake.getBindingByNameMutex.Lock()
+	defer fake.getBindingByNameMutex.Unlock()
+	fake.GetBindingByNameStub = stub
+}
+
+func (fake *FakeBindingFetcher) GetBindingByNameArgsForCall(i int) string {
+	fake.getBindingByNameMutex.RLock()
+	defer fake.getBindingByNameMutex.RUnlock()
+	argsForCall := fake.getBindingByNameArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeBindingFetcher) GetBindingByNameReturns(result1 *osbapi.Binding, result2 error) {
+	fake.getBindingByNameMutex.Lock()
+	defer fake.getBindingByNameMutex.Unlock()
+	fake.GetBindingByNameStub = nil
+	fake.getBindingByNameReturns = struct {
+		result1 *osbapi.Binding
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeBindingFetcher) GetBindingByNameReturnsOnCall(i int, result1 *osbapi.Binding, result2 error) {
+	fake.getBindingByNameMutex.Lock()
+	defer fake.getBindingByNameMutex.Unlock()
+	fake.GetBindingByNameStub = nil
+	if fake.getBindingByNameReturnsOnCall == nil {
+		fake.getBindingByNameReturnsOnCall = make(map[int]struct {
+			result1 *osbapi.Binding
+			result2 error
+		})
+	}
+	fake.getBindingByNameReturnsOnCall[i] = struct {
+		result1 *osbapi.Binding
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeBindingFetcher) GetBindings() ([]*osbapi.Binding, error) {
@@ -83,6 +159,8 @@ func (fake *FakeBindingFetcher) GetBindingsReturnsOnCall(i int, result1 []*osbap
 func (fake *FakeBindingFetcher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.getBindingByNameMutex.RLock()
+	defer fake.getBindingByNameMutex.RUnlock()
 	fake.getBindingsMutex.RLock()
 	defer fake.getBindingsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

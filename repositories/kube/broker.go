@@ -18,9 +18,11 @@ package kube
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -30,6 +32,8 @@ import (
 	"github.com/pivotal-cf/ism/osbapi"
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 )
+
+var errBrokerNotFound = errors.New("broker not found")
 
 type BrokerRegisterTimeoutErr struct {
 	brokerName string
@@ -42,6 +46,27 @@ func (e BrokerRegisterTimeoutErr) Error() string {
 type Broker struct {
 	KubeClient          client.Client
 	RegistrationTimeout time.Duration
+}
+
+func (b *Broker) FindByName(name string) (*osbapi.Broker, error) {
+	broker := &v1alpha1.Broker{}
+	err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: "default"}, broker)
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			return nil, errBrokerNotFound
+		}
+		return nil, err
+	}
+
+	osbapiBroker := &osbapi.Broker{
+		Name:      broker.Spec.Name,
+		URL:       broker.Spec.URL,
+		Username:  broker.Spec.Username,
+		Password:  broker.Spec.Password,
+		CreatedAt: broker.ObjectMeta.CreationTimestamp.String(),
+	}
+
+	return osbapiBroker, nil
 }
 
 func (b *Broker) FindAll() ([]*osbapi.Broker, error) {
