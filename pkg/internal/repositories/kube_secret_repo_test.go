@@ -52,6 +52,10 @@ var _ = Describe("KubeSecretRepo", func() {
 		repo = NewKubeSecretRepo(kubeClient)
 	})
 
+	AfterEach(func() {
+		Expect(kubeClient.Delete(context.Background(), binding)).To(Succeed())
+	})
+
 	Describe("Create", func() {
 		When("the credential can be serialized", func() {
 			BeforeEach(func() {
@@ -61,7 +65,6 @@ var _ = Describe("KubeSecretRepo", func() {
 			})
 
 			AfterEach(func() {
-				Expect(kubeClient.Delete(context.Background(), binding)).To(Succeed())
 				Expect(kubeClient.Delete(context.Background(), returnedSecret)).To(Succeed())
 			})
 
