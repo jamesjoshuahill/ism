@@ -338,6 +338,7 @@ type serviceInstance struct {
 }
 
 type serviceBinding struct {
+	Data map[string]map[string]interface{} `json:"data"`
 }
 
 func getBrokerData() brokerData {

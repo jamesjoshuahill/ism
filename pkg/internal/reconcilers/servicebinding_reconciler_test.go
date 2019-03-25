@@ -29,6 +29,7 @@ import (
 	. "github.com/pivotal-cf/ism/pkg/internal/reconcilers"
 	"github.com/pivotal-cf/ism/pkg/internal/reconcilers/reconcilersfakes"
 	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
+	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -47,12 +48,14 @@ var _ = Describe("ServiceBindingReconciler", func() {
 		fakeBrokerClient           *reconcilersfakes.FakeBrokerClient
 		fakeKubeServiceBindingRepo *reconcilersfakes.FakeKubeServiceBindingRepo
 		fakeKubeBrokerRepo         *reconcilersfakes.FakeKubeBrokerRepo
+		fakeKubeSecretRepo         *reconcilersfakes.FakeKubeSecretRepo
 	)
 
 	BeforeEach(func() {
 		fakeBrokerClient = &reconcilersfakes.FakeBrokerClient{}
 		fakeKubeServiceBindingRepo = &reconcilersfakes.FakeKubeServiceBindingRepo{}
 		fakeKubeBrokerRepo = &reconcilersfakes.FakeKubeBrokerRepo{}
+		fakeKubeSecretRepo = &reconcilersfakes.FakeKubeSecretRepo{}
 
 		createBrokerClient = func(config *osbapi.ClientConfiguration) (osbapi.Client, error) {
 			brokerClientConfiguredWith = config
@@ -86,8 +89,10 @@ var _ = Describe("ServiceBindingReconciler", func() {
 			},
 		}
 
+		fakeBrokerClient.BindReturns(&osbapi.BindResponse{Credentials: map[string]interface{}{"password": "my-secret"}}, nil)
 		fakeKubeServiceBindingRepo.GetReturns(returnedServiceBinding, nil)
 		fakeKubeBrokerRepo.GetReturns(returnedBroker, nil)
+		fakeKubeSecretRepo.CreateReturns(&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "some-secret"}}, nil)
 	})
 
 	JustBeforeEach(func() {
@@ -95,6 +100,7 @@ var _ = Describe("ServiceBindingReconciler", func() {
 			createBrokerClient,
 			fakeKubeServiceBindingRepo,
 			fakeKubeBrokerRepo,
+			fakeKubeSecretRepo,
 		)
 
 		_, err = reconciler.Reconcile(reconcile.Request{
@@ -139,11 +145,25 @@ var _ = Describe("ServiceBindingReconciler", func() {
 		}))
 	})
 
-	It("updates the service binding status to created", func() {
+	It("creates a secret with the broker returned credentials", func() {
+		Expect(fakeKubeSecretRepo.CreateCallCount()).To(Equal(1))
+		bindingArg, credArg := fakeKubeSecretRepo.CreateArgsForCall(0)
+
+		Expect(bindingArg).To(Equal(returnedServiceBinding))
+		Expect(credArg).To(Equal(map[string]interface{}{"password": "my-secret"}))
+	})
+
+	It("updates the service binding status secretRef to the secret created", func() {
 		Expect(fakeKubeServiceBindingRepo.UpdateStateCallCount()).To(Equal(1))
-		service, newState := fakeKubeServiceBindingRepo.UpdateStateArgsForCall(0)
+		binding, _ := fakeKubeServiceBindingRepo.UpdateStateArgsForCall(0)
+		Expect(binding.Status.SecretRef.Name).To(Equal("some-secret"))
+	})
+
+	It("updates the service binding status state to created", func() {
+		Expect(fakeKubeServiceBindingRepo.UpdateStateCallCount()).To(Equal(1))
+		binding, newState := fakeKubeServiceBindingRepo.UpdateStateArgsForCall(0)
 		Expect(newState).To(Equal(v1alpha1.ServiceBindingStateCreated))
-		Expect(*service).To(Equal(*returnedServiceBinding))
+		Expect(*binding).To(Equal(*returnedServiceBinding))
 	})
 
 	When("fetching the service binding resource using the kube repo fails", func() {
@@ -214,6 +234,16 @@ var _ = Describe("ServiceBindingReconciler", func() {
 
 		It("still reconciles successfully ", func() {
 			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	When("creating the secret using the kube secret repo fails", func() {
+		BeforeEach(func() {
+			fakeKubeSecretRepo.CreateReturns(nil, errors.New("error-creating-secret"))
+		})
+
+		It("returns the error", func() {
+			Expect(err).To(MatchError("error-creating-secret"))
 		})
 	})
 

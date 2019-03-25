@@ -17,6 +17,7 @@ specific language governing permissions and limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -37,7 +38,8 @@ type ServiceBindingSpec struct {
 
 // ServiceBindingStatus defines the observed state of ServiceBinding
 type ServiceBindingStatus struct {
-	State ServiceBindingState `json:"state,omitempty"`
+	State     ServiceBindingState         `json:"state,omitempty"`
+	SecretRef corev1.LocalObjectReference `json:"secretRef,omitempty"`
 }
 
 // +genclient

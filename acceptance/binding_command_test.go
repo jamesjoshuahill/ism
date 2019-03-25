@@ -193,13 +193,21 @@ var _ = Describe("CLI binding command", func() {
 				cleanBrokerData()
 			})
 
-			It("displays the binding and exits 0", func() {
+			PIt("displays the binding and exits 0", func() {
 				timeRegex := `\d{4,}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}.+`
+
+				bindings := getBrokerBindings()
+				Expect(bindings).To(HaveLen(1))
+				creds := bindings[0].Data["credentials"]
+				username := creds["username"].(string)
+				password := creds["password"].(string)
 
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("broker: binding-get-broker\n" +
 					"createdAt:\\s+" + timeRegex + "\n" +
-					"credentials: null\n" +
+					"credentials:\n" +
+					"\\s+password: " + password + "\n" +
+					"\\s+username: " + username + "\n" +
 					"instance: binding-get-instance\n" +
 					"name: binding-get-binding\n" +
 					"plan: simple\n" +

@@ -22,6 +22,7 @@ import (
 
 	v1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -32,21 +33,30 @@ type KubeServiceBindingRepo interface {
 	UpdateState(servicebinding *v1alpha1.ServiceBinding, newState v1alpha1.ServiceBindingState) error
 }
 
+//go:generate counterfeiter . KubeSecretRepo
+
+type KubeSecretRepo interface {
+	Create(binding *v1alpha1.ServiceBinding, creds map[string]interface{}) (*corev1.Secret, error)
+}
+
 type ServiceBindingReconciler struct {
 	createBrokerClient     osbapi.CreateFunc
 	kubeServiceBindingRepo KubeServiceBindingRepo
 	kubeBrokerRepo         KubeBrokerRepo
+	kubeSecretRepo         KubeSecretRepo
 }
 
 func NewServiceBindingReconciler(
 	createBrokerClient osbapi.CreateFunc,
 	kubeServiceBindingRepo KubeServiceBindingRepo,
 	kubeBrokerRepo KubeBrokerRepo,
+	kubeSecretRepo KubeSecretRepo,
 ) *ServiceBindingReconciler {
 	return &ServiceBindingReconciler{
 		createBrokerClient:     createBrokerClient,
 		kubeServiceBindingRepo: kubeServiceBindingRepo,
 		kubeBrokerRepo:         kubeBrokerRepo,
+		kubeSecretRepo:         kubeSecretRepo,
 	}
 }
 
@@ -77,7 +87,7 @@ func (r *ServiceBindingReconciler) Reconcile(request reconcile.Request) (reconci
 		return reconcile.Result{}, err
 	}
 
-	_, err = osbapiClient.Bind(&osbapi.BindRequest{
+	osbapiBinding, err := osbapiClient.Bind(&osbapi.BindRequest{
 		BindingID:         string(binding.ObjectMeta.UID),
 		AcceptsIncomplete: false,
 		InstanceID:        binding.Spec.InstanceID,
@@ -87,6 +97,14 @@ func (r *ServiceBindingReconciler) Reconcile(request reconcile.Request) (reconci
 	if err != nil {
 		return reconcile.Result{}, err
 	}
+
+	secret, err := r.kubeSecretRepo.Create(binding, osbapiBinding.Credentials)
+	if err != nil {
+		//TODO How to handle this?
+		return reconcile.Result{}, err
+	}
+
+	binding.Status.SecretRef = corev1.LocalObjectReference{Name: secret.Name}
 
 	if err := r.kubeServiceBindingRepo.UpdateState(binding, v1alpha1.ServiceBindingStateCreated); err != nil {
 		return reconcile.Result{}, err

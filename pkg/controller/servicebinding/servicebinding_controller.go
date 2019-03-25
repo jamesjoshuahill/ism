@@ -76,11 +76,13 @@ type ReconcileServiceBinding struct {
 func (r *ReconcileServiceBinding) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	kubeBrokerRepo := repositories.NewKubeBrokerRepo(r.Client)
 	kubeServiceBindingRepo := repositories.NewKubeServiceBindingRepo(r.Client)
+	kubeSecretRepo := repositories.NewKubeSecretRepo(r.Client)
 
 	reconciler := reconcilers.NewServiceBindingReconciler(
 		osbapi.NewClient,
 		kubeServiceBindingRepo,
 		kubeBrokerRepo,
+		kubeSecretRepo,
 	)
 
 	log.Info("Reconcile called", "request", request)
