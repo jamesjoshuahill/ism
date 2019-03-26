@@ -68,18 +68,18 @@ var _ = Describe("KubeSecretRepo", func() {
 				Expect(kubeClient.Delete(context.Background(), returnedSecret)).To(Succeed())
 			})
 
-			It("creates the secret", func() {
+			It("creates the secret with a 'ism-cred-' prefix", func() {
 				createdSecret := corev1.Secret{}
 
-				Expect(kubeClient.Get(context.TODO(), types.NamespacedName{Name: "my-binding", Namespace: binding.Namespace}, &createdSecret)).To(Succeed())
-				Expect(createdSecret.Name).To(Equal("my-binding"))
+				Expect(kubeClient.Get(context.TODO(), types.NamespacedName{Name: "ism-cred-my-binding", Namespace: binding.Namespace}, &createdSecret)).To(Succeed())
+				Expect(createdSecret.Name).To(Equal("ism-cred-my-binding"))
 				Expect(createdSecret.Namespace).To(Equal(binding.Namespace))
 
 				rawCreds, err := json.Marshal(map[string]string{"username": "admin"})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(createdSecret.Data["credentials"]).To(Equal(rawCreds))
 
-				Expect(returnedSecret.Name).To(Equal("my-binding"))
+				Expect(returnedSecret.Name).To(Equal("ism-cred-my-binding"))
 			})
 
 			It("sets the owner references on the binding", func() {

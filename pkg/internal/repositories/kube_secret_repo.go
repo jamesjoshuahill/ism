@@ -30,6 +30,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+const secretPrefix = "ism-cred-"
+
 type KubeSecretRepo struct {
 	client client.Client
 	scheme *runtime.Scheme
@@ -50,7 +52,7 @@ func (repo *KubeSecretRepo) Create(binding *v1alpha1.ServiceBinding, creds map[s
 
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      binding.Name,
+			Name:      secretPrefix + binding.Name,
 			Namespace: binding.Namespace,
 		},
 		Data: map[string][]byte{"credentials": encodedCreds},

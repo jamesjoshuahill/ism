@@ -69,7 +69,7 @@ func (b *Binding) FindByName(name string) (*osbapi.Binding, error) {
 
 	var decodedCreds map[string]interface{}
 	if binding.Status.State == v1alpha1.ServiceBindingStateCreated {
-		decodedCreds, err = b.getCredentials(name)
+		decodedCreds, err = b.getCredentials(binding.Status.SecretRef.Name)
 		if err != nil {
 			return nil, err
 		}

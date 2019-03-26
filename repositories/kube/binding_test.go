@@ -162,7 +162,7 @@ var _ = Describe("Binding", func() {
 
 					secret = &corev1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      "my-binding",
+							Name:      "secret",
 							Namespace: "default",
 						},
 						Data: map[string][]byte{
@@ -197,7 +197,7 @@ var _ = Describe("Binding", func() {
 				BeforeEach(func() {
 					secret = &corev1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      "my-binding",
+							Name:      "secret",
 							Namespace: "default",
 						},
 						Data: map[string][]byte{},
