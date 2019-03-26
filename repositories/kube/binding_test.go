@@ -18,12 +18,14 @@ package kube_test
 
 import (
 	"context"
+	"encoding/json"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -33,10 +35,8 @@ import (
 )
 
 var _ = Describe("Binding", func() {
-
 	var (
-		kubeClient client.Client
-
+		kubeClient  client.Client
 		bindingRepo *Binding
 	)
 
@@ -116,13 +116,107 @@ var _ = Describe("Binding", func() {
 			bindingCreatedAt string
 			bindingID        string
 			err              error
+
+			secret *corev1.Secret
 		)
 
 		JustBeforeEach(func() {
 			binding, err = bindingRepo.FindByName("my-binding")
 		})
 
-		When("the binding exists", func() {
+		When("the binding resource exists and has status created", func() {
+			BeforeEach(func() {
+				bindingResource := &v1alpha1.ServiceBinding{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-binding",
+						Namespace: "default",
+					},
+					Spec: v1alpha1.ServiceBindingSpec{
+						Name:       "my-binding",
+						InstanceID: "instance-1",
+						PlanID:     "plan-1",
+						ServiceID:  "service-1",
+						BrokerName: "my-broker",
+					},
+					Status: v1alpha1.ServiceBindingStatus{
+						SecretRef: corev1.LocalObjectReference{Name: "secret"},
+						State:     v1alpha1.ServiceBindingStateCreated,
+					},
+				}
+
+				Expect(kubeClient.Create(context.TODO(), bindingResource)).To(Succeed())
+				Expect(kubeClient.Status().Update(context.TODO(), bindingResource)).To(Succeed())
+
+				bindingCreatedAt = createdAtForBinding(kubeClient, bindingResource)
+				bindingID = idForBinding(kubeClient, bindingResource)
+			})
+
+			AfterEach(func() {
+				deleteBindings(kubeClient, "my-binding")
+			})
+
+			When("the secret has a credential in the secret data", func() {
+				BeforeEach(func() {
+					creds, err := json.Marshal(map[string]string{"username": "admin"})
+					Expect(err).NotTo(HaveOccurred())
+
+					secret = &corev1.Secret{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "my-binding",
+							Namespace: "default",
+						},
+						Data: map[string][]byte{
+							"credentials": creds,
+						},
+					}
+					Expect(kubeClient.Create(context.TODO(), secret)).To(Succeed())
+				})
+
+				AfterEach(func() {
+					Expect(kubeClient.Delete(context.TODO(), secret)).To(Succeed())
+				})
+
+				It("returns the binding and credentials from the secret", func() {
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(*binding).To(Equal(osbapi.Binding{
+						ID:          bindingID,
+						Name:        "my-binding",
+						InstanceID:  "instance-1",
+						PlanID:      "plan-1",
+						ServiceID:   "service-1",
+						BrokerName:  "my-broker",
+						CreatedAt:   bindingCreatedAt,
+						Status:      "created",
+						Credentials: map[string]interface{}{"username": "admin"},
+					}))
+				})
+			})
+
+			When("the secret has no credential in the secret data", func() {
+				BeforeEach(func() {
+					secret = &corev1.Secret{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      "my-binding",
+							Namespace: "default",
+						},
+						Data: map[string][]byte{},
+					}
+
+					Expect(kubeClient.Create(context.TODO(), secret)).To(Succeed())
+				})
+
+				AfterEach(func() {
+					Expect(kubeClient.Delete(context.TODO(), secret)).To(Succeed())
+				})
+
+				It("returns an error", func() {
+					Expect(err).To(MatchError("error fetching credentials for binding"))
+				})
+			})
+		})
+
+		When("the binding resource exists but the status is not yet set to created", func() {
 			BeforeEach(func() {
 				bindingResource := &v1alpha1.ServiceBinding{
 					ObjectMeta: metav1.ObjectMeta{
@@ -139,6 +233,7 @@ var _ = Describe("Binding", func() {
 				}
 
 				Expect(kubeClient.Create(context.TODO(), bindingResource)).To(Succeed())
+
 				bindingCreatedAt = createdAtForBinding(kubeClient, bindingResource)
 				bindingID = idForBinding(kubeClient, bindingResource)
 			})
@@ -147,18 +242,19 @@ var _ = Describe("Binding", func() {
 				deleteBindings(kubeClient, "my-binding")
 			})
 
-			It("returns the binding", func() {
+			It("returns the binding and no credentials", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(*binding).To(Equal(osbapi.Binding{
-					ID:         bindingID,
-					Name:       "my-binding",
-					InstanceID: "instance-1",
-					PlanID:     "plan-1",
-					ServiceID:  "service-1",
-					BrokerName: "my-broker",
-					CreatedAt:  bindingCreatedAt,
-					Status:     "creating",
+					ID:          bindingID,
+					Name:        "my-binding",
+					InstanceID:  "instance-1",
+					PlanID:      "plan-1",
+					ServiceID:   "service-1",
+					BrokerName:  "my-broker",
+					CreatedAt:   bindingCreatedAt,
+					Status:      "creating",
+					Credentials: nil,
 				}))
 			})
 		})

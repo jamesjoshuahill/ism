@@ -48,12 +48,13 @@ type Instance struct {
 }
 
 type Binding struct {
-	ID         string
-	Name       string
-	CreatedAt  string
-	Status     string
-	InstanceID string
-	ServiceID  string
-	PlanID     string
-	BrokerName string
+	ID          string
+	Name        string
+	CreatedAt   string
+	Status      string
+	InstanceID  string
+	ServiceID   string
+	PlanID      string
+	BrokerName  string
+	Credentials map[string]interface{}
 }

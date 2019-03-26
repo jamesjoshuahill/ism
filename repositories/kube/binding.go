@@ -18,8 +18,10 @@ package kube
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
+	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -65,15 +67,24 @@ func (b *Binding) FindByName(name string) (*osbapi.Binding, error) {
 		return nil, err
 	}
 
+	var decodedCreds map[string]interface{}
+	if binding.Status.State == v1alpha1.ServiceBindingStateCreated {
+		decodedCreds, err = b.getCredentials(name)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	osbapiBinding := &osbapi.Binding{
-		ID:         string(binding.ObjectMeta.UID),
-		Name:       binding.Spec.Name,
-		InstanceID: binding.Spec.InstanceID,
-		PlanID:     binding.Spec.PlanID,
-		ServiceID:  binding.Spec.ServiceID,
-		BrokerName: binding.Spec.BrokerName,
-		Status:     b.setStatus(binding.Status.State),
-		CreatedAt:  binding.ObjectMeta.CreationTimestamp.String(),
+		ID:          string(binding.ObjectMeta.UID),
+		Name:        binding.Spec.Name,
+		InstanceID:  binding.Spec.InstanceID,
+		PlanID:      binding.Spec.PlanID,
+		ServiceID:   binding.Spec.ServiceID,
+		BrokerName:  binding.Spec.BrokerName,
+		Status:      b.setStatus(binding.Status.State),
+		CreatedAt:   binding.ObjectMeta.CreationTimestamp.String(),
+		Credentials: decodedCreds,
 	}
 
 	return osbapiBinding, nil
@@ -96,6 +107,7 @@ func (b *Binding) FindAll() ([]*osbapi.Binding, error) {
 			BrokerName: binding.Spec.BrokerName,
 			Status:     b.setStatus(binding.Status.State),
 			CreatedAt:  binding.ObjectMeta.CreationTimestamp.String(),
+			//TODO: Should we add credentials?
 		})
 	}
 
@@ -107,4 +119,23 @@ func (b *Binding) setStatus(state v1alpha1.ServiceBindingState) string {
 		return created
 	}
 	return creating
+}
+
+func (b *Binding) getCredentials(name string) (map[string]interface{}, error) {
+	secret := &corev1.Secret{}
+	if err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: "default"}, secret); err != nil {
+		return nil, err
+	}
+
+	encodedCreds, ok := secret.Data["credentials"]
+	if !ok {
+		return nil, errors.New("error fetching credentials for binding")
+	}
+
+	var decodedCreds map[string]interface{}
+	if err := json.Unmarshal(encodedCreds, &decodedCreds); err != nil {
+		return nil, err
+	}
+
+	return decodedCreds, nil
 }

@@ -193,7 +193,7 @@ var _ = Describe("CLI binding command", func() {
 				cleanBrokerData()
 			})
 
-			PIt("displays the binding and exits 0", func() {
+			It("displays the binding and exits 0", func() {
 				timeRegex := `\d{4,}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}.+`
 
 				bindings := getBrokerBindings()

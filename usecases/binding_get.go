@@ -69,5 +69,6 @@ func (b *BindingGetUsecase) GetBindingDetailsByName(name string) (*BindingDetail
 		BrokerName:   osbapiBroker.Name,
 		Status:       osbapiBinding.Status,
 		CreatedAt:    osbapiBinding.CreatedAt,
+		Credentials:  osbapiBinding.Credentials,
 	}, err
 }

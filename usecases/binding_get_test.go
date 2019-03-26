@@ -64,13 +64,14 @@ var _ = Describe("Binding Get Usecase", func() {
 	When("the binding exists", func() {
 		BeforeEach(func() {
 			fakeBindingFetcher.GetBindingByNameReturns(&osbapi.Binding{
-				Name:       "my-binding",
-				InstanceID: "instance-1",
-				ServiceID:  "service-1",
-				PlanID:     "plan-1",
-				BrokerName: "my-broker",
-				Status:     "creating",
-				CreatedAt:  "time-1",
+				Name:        "my-binding",
+				InstanceID:  "instance-1",
+				ServiceID:   "service-1",
+				PlanID:      "plan-1",
+				BrokerName:  "my-broker",
+				Status:      "creating",
+				CreatedAt:   "time-1",
+				Credentials: map[string]interface{}{"username": "admin"},
 			}, nil)
 			fakeInstanceFetcher.GetInstanceByIDReturns(&osbapi.Instance{
 				ID:   "instance-1",
@@ -109,6 +110,7 @@ var _ = Describe("Binding Get Usecase", func() {
 				BrokerName:   "my-broker",
 				Status:       "creating",
 				CreatedAt:    "time-1",
+				Credentials:  map[string]interface{}{"username": "admin"},
 			}))
 		})
 	})
