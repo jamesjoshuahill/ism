@@ -18,7 +18,9 @@ package broker
 
 import (
 	"context"
+	"fmt"
 	"sync"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -32,23 +34,27 @@ import (
 
 var _ = Describe("Broker Controller", func() {
 	var (
+		mgr         manager.Manager
 		mgrClient   client.Client
 		mgrStopChan chan struct{}
 		mgrStopWg   *sync.WaitGroup
 
+		reconciler        reconcile.Reconciler
 		reconcileRequests chan reconcile.Request
 	)
 
 	BeforeEach(func() {
 		var err error
-		var reconcileFunc reconcile.Reconciler
-
-		mgr, err := manager.New(cfg, manager.Options{})
+		mgr, err = manager.New(cfg, manager.Options{})
 		Expect(err).NotTo(HaveOccurred())
 
+		reconciler = newReconciler(mgr)
 		mgrClient = mgr.GetClient()
+	})
 
-		reconcileFunc, reconcileRequests = SetupTestReconcile(newReconciler(mgr))
+	JustBeforeEach(func() {
+		var reconcileFunc reconcile.Reconciler
+		reconcileFunc, reconcileRequests = SetupTestReconcile(reconciler)
 		Expect(add(mgr, reconcileFunc)).To(Succeed())
 
 		mgrStopChan, mgrStopWg = StartTestManager(mgr)
@@ -61,12 +67,35 @@ var _ = Describe("Broker Controller", func() {
 
 	When("a broker resource is created", func() {
 		It("calls the reconcile function", func() {
-			instance := &osbapiv1alpha1.Broker{ObjectMeta: metav1.ObjectMeta{Name: "broker-1", Namespace: "default"}}
-			Expect(mgrClient.Create(context.TODO(), instance)).To(Succeed())
+			broker := &osbapiv1alpha1.Broker{ObjectMeta: metav1.ObjectMeta{Name: "broker-1", Namespace: "default"}}
+			Expect(mgrClient.Create(context.TODO(), broker)).To(Succeed())
 
 			Eventually(reconcileRequests).Should(Receive(Equal(
 				reconcile.Request{NamespacedName: types.NamespacedName{Name: "broker-1", Namespace: "default"}},
 			)))
+		})
+	})
+
+	Describe("controller runs concurrently", func() {
+		BeforeEach(func() {
+			reconciler = reconcile.Func(func(r reconcile.Request) (reconcile.Result, error) {
+				if r.Namespace == "concurrent" {
+					time.Sleep(time.Hour * 24)
+				}
+				return reconcile.Result{}, nil
+			})
+		})
+
+		It("can run at least max concurrent reconciles", func() {
+			for i := 0; i < MaxConcurrentReconciles; i++ {
+				name := fmt.Sprintf("concurrent-broker-%d", i)
+				broker := &osbapiv1alpha1.Broker{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "concurrent"}}
+				Expect(mgrClient.Create(context.TODO(), broker)).To(Succeed())
+
+				Eventually(reconcileRequests).Should(Receive(Equal(
+					reconcile.Request{NamespacedName: types.NamespacedName{Name: name, Namespace: "concurrent"}},
+				)))
+			}
 		})
 	})
 

@@ -32,6 +32,8 @@ import (
 	"github.com/pivotal-cf/ism/pkg/internal/repositories"
 )
 
+const MaxConcurrentReconciles = 10
+
 var log = logf.Log.WithName("controller")
 
 // Add creates a new ServiceBinding Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
@@ -48,7 +50,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("servicebinding-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("servicebinding-controller", mgr, controller.Options{Reconciler: r, MaxConcurrentReconciles: MaxConcurrentReconciles})
 	if err != nil {
 		return err
 	}

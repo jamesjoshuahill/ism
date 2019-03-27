@@ -18,7 +18,9 @@ package serviceinstance
 
 import (
 	"context"
+	"fmt"
 	"sync"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -32,23 +34,27 @@ import (
 
 var _ = Describe("ServiceInstance Controller", func() {
 	var (
+		mgr         manager.Manager
 		mgrClient   client.Client
 		mgrStopChan chan struct{}
 		mgrStopWg   *sync.WaitGroup
 
+		reconciler        reconcile.Reconciler
 		reconcileRequests chan reconcile.Request
 	)
 
 	BeforeEach(func() {
 		var err error
-		var reconcileFunc reconcile.Reconciler
-
-		mgr, err := manager.New(cfg, manager.Options{})
+		mgr, err = manager.New(cfg, manager.Options{})
 		Expect(err).NotTo(HaveOccurred())
 
+		reconciler = newReconciler(mgr)
 		mgrClient = mgr.GetClient()
+	})
 
-		reconcileFunc, reconcileRequests = SetupTestReconcile(newReconciler(mgr))
+	JustBeforeEach(func() {
+		var reconcileFunc reconcile.Reconciler
+		reconcileFunc, reconcileRequests = SetupTestReconcile(reconciler)
 		Expect(add(mgr, reconcileFunc)).To(Succeed())
 
 		mgrStopChan, mgrStopWg = StartTestManager(mgr)
@@ -67,6 +73,29 @@ var _ = Describe("ServiceInstance Controller", func() {
 			Eventually(reconcileRequests).Should(Receive(Equal(
 				reconcile.Request{NamespacedName: types.NamespacedName{Name: "serviceinstance-1", Namespace: "default"}},
 			)))
+		})
+	})
+
+	Describe("controller runs concurrently", func() {
+		BeforeEach(func() {
+			reconciler = reconcile.Func(func(r reconcile.Request) (reconcile.Result, error) {
+				if r.Namespace == "concurrent" {
+					time.Sleep(time.Hour * 24)
+				}
+				return reconcile.Result{}, nil
+			})
+		})
+
+		It("can run at least max concurrent reconciles", func() {
+			for i := 0; i < MaxConcurrentReconciles; i++ {
+				name := fmt.Sprintf("concurrent-serviceinstance-%d", i)
+				instance := &osbapiv1alpha1.ServiceInstance{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "concurrent"}}
+				Expect(mgrClient.Create(context.TODO(), instance)).To(Succeed())
+
+				Eventually(reconcileRequests).Should(Receive(Equal(
+					reconcile.Request{NamespacedName: types.NamespacedName{Name: name, Namespace: "concurrent"}},
+				)))
+			}
 		})
 	})
 
