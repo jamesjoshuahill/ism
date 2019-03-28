@@ -33,7 +33,7 @@ import (
 
 const MaxConcurrentReconciles = 10
 
-var log = logf.Log.WithName("controller")
+var log = logf.Log.WithName("broker-controller")
 
 // Add creates a new Broker Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -77,17 +77,20 @@ type ReconcileBroker struct {
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=brokers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=brokers/status,verbs=get;update;patch
 func (r *ReconcileBroker) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	requestLogger := log.WithValues("request", request)
+	requestLogger.Info("Reconcile called")
+
 	kubeBrokerRepo := repositories.NewKubeBrokerRepo(r.Client)
 	kubeServiceRepo := repositories.NewKubeServiceRepo(r.Client)
 	kubePlanRepo := repositories.NewKubePlanRepo(r.Client)
 
 	reconciler := reconcilers.NewBrokerReconciler(
+		requestLogger,
 		osbapi.NewClient,
 		kubeBrokerRepo,
 		kubeServiceRepo,
 		kubePlanRepo,
 	)
 
-	log.Info("Reconcile called", "request", request)
 	return reconciler.Reconcile(request)
 }

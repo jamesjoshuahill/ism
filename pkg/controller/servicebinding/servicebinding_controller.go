@@ -34,7 +34,7 @@ import (
 
 const MaxConcurrentReconciles = 10
 
-var log = logf.Log.WithName("controller")
+var log = logf.Log.WithName("servicebinding-controller")
 
 // Add creates a new ServiceBinding Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -76,17 +76,20 @@ type ReconcileServiceBinding struct {
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=servicebindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=osbapi.ism.io,resources=servicebindings/status,verbs=get;update;patch
 func (r *ReconcileServiceBinding) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	requestLogger := log.WithValues("request", request)
+	requestLogger.Info("Reconcile called")
+
 	kubeBrokerRepo := repositories.NewKubeBrokerRepo(r.Client)
 	kubeServiceBindingRepo := repositories.NewKubeServiceBindingRepo(r.Client)
 	kubeSecretRepo := repositories.NewKubeSecretRepo(r.Client)
 
 	reconciler := reconcilers.NewServiceBindingReconciler(
+		requestLogger,
 		osbapi.NewClient,
 		kubeServiceBindingRepo,
 		kubeBrokerRepo,
 		kubeSecretRepo,
 	)
 
-	log.Info("Reconcile called", "request", request)
 	return reconciler.Reconcile(request)
 }

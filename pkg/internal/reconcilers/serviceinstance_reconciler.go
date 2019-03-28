@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/go-logr/logr"
 	v1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -34,24 +35,21 @@ type KubeServiceInstanceRepo interface {
 	UpdateState(serviceinstance *v1alpha1.ServiceInstance, newState v1alpha1.ServiceInstanceState) error
 }
 
-// //go:generate counterfeiter . BrokerClient
-//
-// type BrokerClient interface {
-// 	osbapi.Client
-// }
-
 type ServiceInstanceReconciler struct {
+	log                     logr.Logger
 	createBrokerClient      osbapi.CreateFunc
 	kubeServiceInstanceRepo KubeServiceInstanceRepo
 	kubeBrokerRepo          KubeBrokerRepo
 }
 
 func NewServiceInstanceReconciler(
+	log logr.Logger,
 	createBrokerClient osbapi.CreateFunc,
 	kubeServiceInstanceRepo KubeServiceInstanceRepo,
 	kubeBrokerRepo KubeBrokerRepo,
 ) *ServiceInstanceReconciler {
 	return &ServiceInstanceReconciler{
+		log:                     log,
 		createBrokerClient:      createBrokerClient,
 		kubeServiceInstanceRepo: kubeServiceInstanceRepo,
 		kubeBrokerRepo:          kubeBrokerRepo,
@@ -96,6 +94,8 @@ func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconc
 	if err != nil {
 		return reconcile.Result{}, err
 	}
+
+	r.log.Info("Instance Provisioned")
 
 	if err := r.kubeServiceInstanceRepo.UpdateState(instance, v1alpha1.ServiceInstanceStateProvisioned); err != nil {
 		return reconcile.Result{}, err

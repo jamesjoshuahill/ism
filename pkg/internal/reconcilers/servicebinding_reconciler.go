@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/go-logr/logr"
 	v1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
 	corev1 "k8s.io/api/core/v1"
@@ -40,6 +41,7 @@ type KubeSecretRepo interface {
 }
 
 type ServiceBindingReconciler struct {
+	log                    logr.Logger
 	createBrokerClient     osbapi.CreateFunc
 	kubeServiceBindingRepo KubeServiceBindingRepo
 	kubeBrokerRepo         KubeBrokerRepo
@@ -47,12 +49,14 @@ type ServiceBindingReconciler struct {
 }
 
 func NewServiceBindingReconciler(
+	log logr.Logger,
 	createBrokerClient osbapi.CreateFunc,
 	kubeServiceBindingRepo KubeServiceBindingRepo,
 	kubeBrokerRepo KubeBrokerRepo,
 	kubeSecretRepo KubeSecretRepo,
 ) *ServiceBindingReconciler {
 	return &ServiceBindingReconciler{
+		log:                    log,
 		createBrokerClient:     createBrokerClient,
 		kubeServiceBindingRepo: kubeServiceBindingRepo,
 		kubeBrokerRepo:         kubeBrokerRepo,
@@ -109,6 +113,8 @@ func (r *ServiceBindingReconciler) Reconcile(request reconcile.Request) (reconci
 	if err := r.kubeServiceBindingRepo.UpdateState(binding, v1alpha1.ServiceBindingStateCreated); err != nil {
 		return reconcile.Result{}, err
 	}
+
+	r.log.Info("Binding created")
 
 	return reconcile.Result{}, nil
 }

@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/go-logr/logr"
 	v1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -55,6 +56,7 @@ type BrokerClient interface {
 }
 
 type BrokerReconciler struct {
+	log                logr.Logger
 	kubeBrokerRepo     KubeBrokerRepo
 	kubeServiceRepo    KubeServiceRepo
 	kubePlanRepo       KubePlanRepo
@@ -62,12 +64,14 @@ type BrokerReconciler struct {
 }
 
 func NewBrokerReconciler(
+	log logr.Logger,
 	createBrokerClient osbapi.CreateFunc,
 	kubeBrokerRepo KubeBrokerRepo,
 	kubeServiceRepo KubeServiceRepo,
 	kubePlanRepo KubePlanRepo,
 ) *BrokerReconciler {
 	return &BrokerReconciler{
+		log:                log,
 		createBrokerClient: createBrokerClient,
 		kubeBrokerRepo:     kubeBrokerRepo,
 		kubeServiceRepo:    kubeServiceRepo,
@@ -116,6 +120,8 @@ func (r *BrokerReconciler) Reconcile(request reconcile.Request) (reconcile.Resul
 	if err := r.kubeBrokerRepo.UpdateState(broker, v1alpha1.BrokerStateRegistered); err != nil {
 		return reconcile.Result{}, err
 	}
+
+	r.log.Info("Broker registered")
 
 	return reconcile.Result{}, nil
 }

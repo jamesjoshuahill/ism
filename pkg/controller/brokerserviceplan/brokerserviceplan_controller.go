@@ -28,7 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var log = logf.Log.WithName("controller")
+var log = logf.Log.WithName("brokerserviceplan-controller")
 
 // Add creates a new BrokerServicePlan Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.

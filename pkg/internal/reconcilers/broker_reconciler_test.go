@@ -19,6 +19,7 @@ package reconcilers_test
 import (
 	"errors"
 
+	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,12 +32,14 @@ import (
 	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var _ = Describe("BrokerReconciler", func() {
 	var (
 		reconciler *BrokerReconciler
 		err        error
+		log        logr.Logger
 
 		createBrokerClient         osbapi.CreateFunc
 		brokerClientConfiguredWith *osbapi.ClientConfiguration
@@ -72,6 +75,8 @@ var _ = Describe("BrokerReconciler", func() {
 		fakeKubeServiceRepo = &reconcilersfakes.FakeKubeServiceRepo{}
 		fakeKubePlanRepo = &reconcilersfakes.FakeKubePlanRepo{}
 
+		log = logf.Log.WithName("test-logger")
+
 		createBrokerClient = func(config *osbapi.ClientConfiguration) (osbapi.Client, error) {
 			brokerClientConfiguredWith = config
 			return fakeBrokerClient, nil
@@ -103,6 +108,7 @@ var _ = Describe("BrokerReconciler", func() {
 
 	JustBeforeEach(func() {
 		reconciler = NewBrokerReconciler(
+			log,
 			createBrokerClient,
 			fakeKubeBrokerRepo,
 			fakeKubeServiceRepo,
