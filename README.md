@@ -51,6 +51,11 @@ ism instance create \
 ism binding create \
   --name example-binding \
   --instance example-instance
+  
+  
+# get a binding (including credentials)
+ism binding get \
+  --name example-binding
 ```
 
 ### Development
