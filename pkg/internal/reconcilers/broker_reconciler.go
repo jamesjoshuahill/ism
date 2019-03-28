@@ -93,13 +93,7 @@ func (r *BrokerReconciler) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, nil
 	}
 
-	osbapiConfig := brokerClientConfig(broker)
-	osbapiClient, err := r.createBrokerClient(osbapiConfig)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
-	catalog, err := osbapiClient.GetCatalog()
+	catalog, err := r.catalog(broker)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -124,6 +118,16 @@ func (r *BrokerReconciler) Reconcile(request reconcile.Request) (reconcile.Resul
 	r.log.Info("Broker registered")
 
 	return reconcile.Result{}, nil
+}
+
+func (r *BrokerReconciler) catalog(broker *v1alpha1.Broker) (*osbapi.CatalogResponse, error) {
+	osbapiConfig := brokerClientConfig(broker)
+	osbapiClient, err := r.createBrokerClient(osbapiConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return osbapiClient.GetCatalog()
 }
 
 func brokerClientConfig(broker *v1alpha1.Broker) *osbapi.ClientConfiguration {

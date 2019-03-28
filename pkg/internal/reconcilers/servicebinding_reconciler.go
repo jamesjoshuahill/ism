@@ -84,25 +84,12 @@ func (r *ServiceBindingReconciler) Reconcile(request reconcile.Request) (reconci
 		return reconcile.Result{}, nil
 	}
 
-	osbapiConfig := brokerClientConfig(broker)
-
-	osbapiClient, err := r.createBrokerClient(osbapiConfig)
+	credentials, err := r.bind(broker, binding)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	osbapiBinding, err := osbapiClient.Bind(&osbapi.BindRequest{
-		BindingID:         string(binding.ObjectMeta.UID),
-		AcceptsIncomplete: false,
-		InstanceID:        binding.Spec.InstanceID,
-		ServiceID:         binding.Spec.ServiceID,
-		PlanID:            binding.Spec.PlanID,
-	})
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
-	secret, err := r.kubeSecretRepo.Create(binding, osbapiBinding.Credentials)
+	secret, err := r.kubeSecretRepo.Create(binding, credentials)
 	if err != nil {
 		//TODO How to handle this?
 		return reconcile.Result{}, err
@@ -117,4 +104,26 @@ func (r *ServiceBindingReconciler) Reconcile(request reconcile.Request) (reconci
 	r.log.Info("Binding created")
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ServiceBindingReconciler) bind(broker *v1alpha1.Broker, binding *v1alpha1.ServiceBinding) (map[string]interface{}, error) {
+	osbapiConfig := brokerClientConfig(broker)
+
+	osbapiClient, err := r.createBrokerClient(osbapiConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	osbapiBinding, err := osbapiClient.Bind(&osbapi.BindRequest{
+		BindingID:         string(binding.ObjectMeta.UID),
+		AcceptsIncomplete: false,
+		InstanceID:        binding.Spec.InstanceID,
+		ServiceID:         binding.Spec.ServiceID,
+		PlanID:            binding.Spec.PlanID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return osbapiBinding.Credentials, nil
 }

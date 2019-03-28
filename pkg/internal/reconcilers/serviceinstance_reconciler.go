@@ -76,21 +76,7 @@ func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, nil
 	}
 
-	osbapiConfig := brokerClientConfig(broker)
-
-	osbapiClient, err := r.createBrokerClient(osbapiConfig)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
-	_, err = osbapiClient.ProvisionInstance(&osbapi.ProvisionRequest{
-		InstanceID:        string(instance.ObjectMeta.UID),
-		AcceptsIncomplete: false,
-		ServiceID:         instance.Spec.ServiceID,
-		PlanID:            instance.Spec.PlanID,
-		OrganizationGUID:  instance.ObjectMeta.Namespace,
-		SpaceGUID:         instance.ObjectMeta.Namespace,
-	})
+	err = r.provision(broker, instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -102,4 +88,22 @@ func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconc
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ServiceInstanceReconciler) provision(broker *v1alpha1.Broker, instance *v1alpha1.ServiceInstance) error {
+	osbapiConfig := brokerClientConfig(broker)
+	osbapiClient, err := r.createBrokerClient(osbapiConfig)
+	if err != nil {
+		return err
+	}
+
+	_, err = osbapiClient.ProvisionInstance(&osbapi.ProvisionRequest{
+		InstanceID:        string(instance.ObjectMeta.UID),
+		AcceptsIncomplete: false,
+		ServiceID:         instance.Spec.ServiceID,
+		PlanID:            instance.Spec.PlanID,
+		OrganizationGUID:  instance.ObjectMeta.Namespace,
+		SpaceGUID:         instance.ObjectMeta.Namespace,
+	})
+	return err
 }
