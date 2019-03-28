@@ -28,27 +28,27 @@ make run             # run the custom controllers on your local machine
 
 ```
 # display help
-./bin/ism --help
+ism --help
 
 # register a broker with ism
-./bin/ism broker register \
+ism broker register \
   --name example-broker \
   --url http://example.broker.com \
   --username x \
   --password y
 
 # list available services and plans
-./bin/ism service list
+ism service list
 
 # create an instance of a service
-./bin/ism instance create \
+ism instance create \
   --name example-instance \
   --broker example-broker \
   --service mysql \
   --plan small
 
 # create a binding
-./bin/ism binding create \
+ism binding create \
   --name example-binding \
   --instance example-instance
 ```
