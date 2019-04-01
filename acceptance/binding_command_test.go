@@ -89,9 +89,9 @@ var _ = Describe("CLI binding command", func() {
 			})
 
 			AfterEach(func() {
-				deleteBroker("binding-creation-broker")
-				deleteInstance("binding-creation-instance")
 				deleteBinding("binding-creation-binding")
+				deleteInstance("binding-creation-instance")
+				deleteBroker("binding-creation-broker")
 				cleanBrokerData()
 			})
 
@@ -256,7 +256,7 @@ var _ = Describe("CLI binding command", func() {
 			})
 		})
 
-		PWhen("valid args are passed", func() {
+		When("valid args are passed", func() {
 			BeforeEach(func() {
 				args = append(args, "--name", "binding-deletion-binding")
 
@@ -268,9 +268,8 @@ var _ = Describe("CLI binding command", func() {
 			})
 
 			AfterEach(func() {
-				deleteBroker("binding-deletion-broker")
 				deleteInstance("binding-deletion-instance")
-				deleteBinding("binding-deletion-binding")
+				deleteBroker("binding-deletion-broker")
 				cleanBrokerData()
 			})
 

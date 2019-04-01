@@ -82,6 +82,39 @@ var _ = Describe("KubeServiceBindingRepo", func() {
 		})
 	})
 
+	Describe("Update", func() {
+		When("the servicebinding exists", func() {
+			BeforeEach(func() {
+				err := kubeClient.Create(context.Background(), existingServiceBinding)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("updates the servicebinding", func() {
+				existingServiceBinding.ObjectMeta.SetLabels(map[string]string{"label": "one"})
+
+				Expect(repo.Update(existingServiceBinding)).To(Succeed())
+
+				remoteModifiedBinding := &v1alpha1.ServiceBinding{}
+
+				Expect(kubeClient.Get(
+					context.TODO(),
+					types.NamespacedName{
+						Name:      existingServiceBinding.Name,
+						Namespace: existingServiceBinding.Namespace},
+					remoteModifiedBinding)).To(Succeed())
+
+				Expect(remoteModifiedBinding.ObjectMeta.GetLabels()).To(Equal(map[string]string{"label": "one"}))
+			})
+		})
+
+		When("the servicebinding doesn't exist", func() {
+			It("returns an error", func() {
+				err := repo.Update(existingServiceBinding)
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("UpdateStatus", func() {
 		When("the servicebinding exists", func() {
 			BeforeEach(func() {
@@ -108,8 +141,7 @@ var _ = Describe("KubeServiceBindingRepo", func() {
 			It("returns an error", func() {
 				newState := v1alpha1.ServiceBindingStateCreated
 				err := repo.UpdateState(existingServiceBinding, newState)
-
-				Expect(err).To(MatchError("servicebindings.osbapi.ism.io \"my-servicebinding-1\" not found"))
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})

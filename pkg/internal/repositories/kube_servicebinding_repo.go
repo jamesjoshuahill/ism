@@ -50,3 +50,7 @@ func (repo *KubeServiceBindingRepo) UpdateState(servicebinding *v1alpha1.Service
 
 	return repo.client.Status().Update(ctx, servicebinding)
 }
+
+func (repo *KubeServiceBindingRepo) Update(servicebinding *v1alpha1.ServiceBinding) error {
+	return repo.client.Update(ctx, servicebinding)
+}

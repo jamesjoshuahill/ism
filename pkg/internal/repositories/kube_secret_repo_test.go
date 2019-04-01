@@ -23,6 +23,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -92,6 +93,36 @@ var _ = Describe("KubeSecretRepo", func() {
 			It("returns an error", func() {
 				_, err := repo.Create(binding, map[string]interface{}{"username": make(chan int)})
 				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("Delete", func() {
+		When("the credential can be serialized", func() {
+			BeforeEach(func() {
+				secret := &corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-secret",
+						Namespace: "my-namespace",
+					},
+				}
+
+				Expect(kubeClient.Create(context.Background(), secret)).To(Succeed())
+			})
+
+			It("deletes the secret", func() {
+				secret := &corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "my-secret",
+						Namespace: "my-namespace",
+					},
+				}
+				Expect(repo.Delete(secret)).To(Succeed())
+
+				notfoundSecret := &corev1.Secret{}
+
+				err := kubeClient.Get(context.Background(), types.NamespacedName{Name: "secret", Namespace: "my-namespace"}, notfoundSecret)
+				Expect(errors.IsNotFound(err)).To(BeTrue())
 			})
 		})
 	})

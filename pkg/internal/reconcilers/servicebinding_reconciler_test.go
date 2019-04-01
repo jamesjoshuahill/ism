@@ -137,47 +137,154 @@ var _ = Describe("ServiceBindingReconciler", func() {
 		}))
 	})
 
-	It("creates the service binding using the broker client", func() {
-		Expect(fakeBrokerClient.BindCallCount()).To(Equal(1))
-		bindRequest := fakeBrokerClient.BindArgsForCall(0)
-
-		Expect(*bindRequest).To(Equal(osbapi.BindRequest{
-			BindingID:         string(returnedServiceBinding.ObjectMeta.UID),
-			InstanceID:        returnedServiceBinding.Spec.InstanceID,
-			ServiceID:         returnedServiceBinding.Spec.ServiceID,
-			PlanID:            returnedServiceBinding.Spec.PlanID,
-			AcceptsIncomplete: false,
-		}))
-	})
-
-	It("creates a secret with the broker returned credentials", func() {
-		Expect(fakeKubeSecretRepo.CreateCallCount()).To(Equal(1))
-		bindingArg, credArg := fakeKubeSecretRepo.CreateArgsForCall(0)
-
-		Expect(bindingArg).To(Equal(returnedServiceBinding))
-		Expect(credArg).To(Equal(map[string]interface{}{"password": "my-secret"}))
-	})
-
-	It("updates the service binding status secretRef to the secret created", func() {
-		Expect(fakeKubeServiceBindingRepo.UpdateStateCallCount()).To(Equal(1))
-		binding, _ := fakeKubeServiceBindingRepo.UpdateStateArgsForCall(0)
-		Expect(binding.Status.SecretRef.Name).To(Equal("some-secret"))
-	})
-
-	It("updates the service binding status state to created", func() {
-		Expect(fakeKubeServiceBindingRepo.UpdateStateCallCount()).To(Equal(1))
-		binding, newState := fakeKubeServiceBindingRepo.UpdateStateArgsForCall(0)
-		Expect(newState).To(Equal(v1alpha1.ServiceBindingStateCreated))
-		Expect(*binding).To(Equal(*returnedServiceBinding))
-	})
-
-	When("fetching the service binding resource using the kube repo fails", func() {
-		BeforeEach(func() {
-			fakeKubeServiceBindingRepo.GetReturns(nil, errors.New("error-getting-servicebinding"))
+	When("creating the service binding", func() {
+		It("updates the status to creating", func() {
+			binding, newState := fakeKubeServiceBindingRepo.UpdateStateArgsForCall(0)
+			Expect(newState).To(Equal(v1alpha1.ServiceBindingStateCreating))
+			Expect(*binding).To(Equal(*returnedServiceBinding))
 		})
 
-		It("returns the error", func() {
-			Expect(err).To(MatchError("error-getting-servicebinding"))
+		It("creates the service binding using the broker client", func() {
+			Expect(fakeBrokerClient.BindCallCount()).To(Equal(1))
+			bindRequest := fakeBrokerClient.BindArgsForCall(0)
+
+			Expect(*bindRequest).To(Equal(osbapi.BindRequest{
+				BindingID:         string(returnedServiceBinding.ObjectMeta.UID),
+				InstanceID:        returnedServiceBinding.Spec.InstanceID,
+				ServiceID:         returnedServiceBinding.Spec.ServiceID,
+				PlanID:            returnedServiceBinding.Spec.PlanID,
+				AcceptsIncomplete: false,
+			}))
+		})
+
+		It("creates a secret with the broker returned credentials", func() {
+			Expect(fakeKubeSecretRepo.CreateCallCount()).To(Equal(1))
+			bindingArg, credArg := fakeKubeSecretRepo.CreateArgsForCall(0)
+
+			Expect(bindingArg).To(Equal(returnedServiceBinding))
+			Expect(credArg).To(Equal(map[string]interface{}{"password": "my-secret"}))
+		})
+
+		It("updates the service binding status secretRef to the secret created", func() {
+			binding, _ := fakeKubeServiceBindingRepo.UpdateStateArgsForCall(1)
+			Expect(binding.Status.SecretRef.Name).To(Equal("some-secret"))
+		})
+
+		It("updates the service binding status state to created", func() {
+			binding, newState := fakeKubeServiceBindingRepo.UpdateStateArgsForCall(1)
+			Expect(newState).To(Equal(v1alpha1.ServiceBindingStateCreated))
+			Expect(*binding).To(Equal(*returnedServiceBinding))
+		})
+
+		It("adds a finalizer", func() {
+			Expect(fakeKubeServiceBindingRepo.UpdateCallCount()).To(Equal(1))
+			binding := fakeKubeServiceBindingRepo.UpdateArgsForCall(0)
+			Expect(binding.ObjectMeta.Finalizers).To(HaveLen(1))
+			Expect(binding.ObjectMeta.Finalizers[0]).To(Equal("finalizer.servicebinding.osbapi.ism.io"))
+		})
+
+		When("creating the servicebinding using the broker client fails ", func() {
+			BeforeEach(func() {
+				fakeBrokerClient.BindReturns(nil, errors.New("error-creating-binding"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-creating-binding"))
+			})
+		})
+
+		When("creating the secret using the kube secret repo fails", func() {
+			BeforeEach(func() {
+				fakeKubeSecretRepo.CreateReturns(nil, errors.New("error-creating-secret"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-creating-secret"))
+			})
+		})
+
+		When("updating the servicebinding status errors", func() {
+			BeforeEach(func() {
+				fakeKubeServiceBindingRepo.UpdateStateReturns(errors.New("error-updating-status"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-updating-status"))
+			})
+		})
+	})
+
+	When("the service binding has been marked for deletion", func() {
+		BeforeEach(func() {
+			time := metav1.Now()
+			returnedServiceBinding.ObjectMeta.DeletionTimestamp = &time
+
+			returnedServiceBinding.Status.SecretRef = corev1.LocalObjectReference{Name: "my-secret"}
+			returnedServiceBinding.Status.State = v1alpha1.ServiceBindingStateCreated
+		})
+
+		It("updates the status to deleting", func() {
+			Expect(fakeKubeServiceBindingRepo.UpdateStateCallCount()).To(Equal(1))
+			binding, newState := fakeKubeServiceBindingRepo.UpdateStateArgsForCall(0)
+			Expect(newState).To(Equal(v1alpha1.ServiceBindingStateDeleting))
+			Expect(*binding).To(Equal(*returnedServiceBinding))
+		})
+
+		It("deletes the service binding using the broker client", func() {
+			Expect(fakeBrokerClient.UnbindCallCount()).To(Equal(1))
+			unbindRequest := fakeBrokerClient.UnbindArgsForCall(0)
+
+			Expect(*unbindRequest).To(Equal(osbapi.UnbindRequest{
+				BindingID:         string(returnedServiceBinding.ObjectMeta.UID),
+				InstanceID:        returnedServiceBinding.Spec.InstanceID,
+				ServiceID:         returnedServiceBinding.Spec.ServiceID,
+				PlanID:            returnedServiceBinding.Spec.PlanID,
+				AcceptsIncomplete: false,
+			}))
+		})
+
+		It("deletes the secret associated with the service binding", func() {
+			Expect(fakeKubeSecretRepo.DeleteCallCount()).To(Equal(1))
+			deleteReq := fakeKubeSecretRepo.DeleteArgsForCall(0)
+
+			Expect(deleteReq.Name).To(Equal(returnedServiceBinding.Status.SecretRef.Name))
+			Expect(deleteReq.Namespace).To(Equal(returnedServiceBinding.Namespace))
+		})
+
+		It("removes the finalizer", func() {
+			Expect(fakeKubeServiceBindingRepo.UpdateCallCount()).To(Equal(1))
+			binding := fakeKubeServiceBindingRepo.UpdateArgsForCall(0)
+			Expect(binding.ObjectMeta.Finalizers).To(HaveLen(0))
+		})
+
+		When("deleting the servicebinding using the broker client fails ", func() {
+			BeforeEach(func() {
+				fakeBrokerClient.UnbindReturns(nil, errors.New("error-deleting-binding"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-deleting-binding"))
+			})
+		})
+
+		When("deleting the secret using the kube secret repo fails", func() {
+			BeforeEach(func() {
+				fakeKubeSecretRepo.DeleteReturns(errors.New("error-deleting-secret"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-deleting-secret"))
+			})
+		})
+
+		When("removing the finalizers errors when updating the servicebinding", func() {
+			BeforeEach(func() {
+				fakeKubeServiceBindingRepo.UpdateReturns(errors.New("error-updating"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-updating"))
+			})
 		})
 	})
 
@@ -189,6 +296,16 @@ var _ = Describe("ServiceBindingReconciler", func() {
 
 		It("does not error", func() {
 			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
+	When("fetching the service binding resource using the kube repo fails", func() {
+		BeforeEach(func() {
+			fakeKubeServiceBindingRepo.GetReturns(nil, errors.New("error-getting-servicebinding"))
+		})
+
+		It("returns the error", func() {
+			Expect(err).To(MatchError("error-getting-servicebinding"))
 		})
 	})
 
@@ -214,16 +331,6 @@ var _ = Describe("ServiceBindingReconciler", func() {
 		})
 	})
 
-	When("creating the servicebinding using the broker client fails ", func() {
-		BeforeEach(func() {
-			fakeBrokerClient.BindReturns(nil, errors.New("error-creating-binding"))
-		})
-
-		It("returns the error", func() {
-			Expect(err).To(MatchError("error-creating-binding"))
-		})
-	})
-
 	When("the servicebinding state reports it is already created ", func() {
 		BeforeEach(func() {
 			returnedServiceBinding.Status.State = v1alpha1.ServiceBindingStateCreated
@@ -242,23 +349,4 @@ var _ = Describe("ServiceBindingReconciler", func() {
 		})
 	})
 
-	When("creating the secret using the kube secret repo fails", func() {
-		BeforeEach(func() {
-			fakeKubeSecretRepo.CreateReturns(nil, errors.New("error-creating-secret"))
-		})
-
-		It("returns the error", func() {
-			Expect(err).To(MatchError("error-creating-secret"))
-		})
-	})
-
-	When("updating the servicebinding status errors", func() {
-		BeforeEach(func() {
-			fakeKubeServiceBindingRepo.UpdateStateReturns(errors.New("error-updating-status"))
-		})
-
-		It("returns the error", func() {
-			Expect(err).To(MatchError("error-updating-status"))
-		})
-	})
 })

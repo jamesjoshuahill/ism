@@ -69,3 +69,7 @@ func (repo *KubeSecretRepo) Create(binding *v1alpha1.ServiceBinding, creds map[s
 
 	return secret, nil
 }
+
+func (repo *KubeSecretRepo) Delete(secret *corev1.Secret) error {
+	return repo.client.Delete(context.TODO(), secret)
+}
