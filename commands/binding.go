@@ -36,10 +36,17 @@ type BindingGetUsecase interface {
 	GetBindingDetailsByName(name string) (*usecases.BindingDetails, error)
 }
 
+//go:generate counterfeiter . BindingDeleter
+
+type BindingDeleter interface {
+	Delete(name string) error
+}
+
 type BindingCommand struct {
 	BindingCreateCommand BindingCreateCommand `command:"create" long-description:"Create a service binding"`
 	BindingListCommand   BindingListCommand   `command:"list" long-description:"List the service bindings"`
 	BindingGetCommand    BindingGetCommand    `command:"get" long-description:"Get a service binding"`
+	BindingDeleteCommand BindingDeleteCommand `command:"delete" long-description:"Delete a service binding"`
 }
 
 type BindingCreateCommand struct {
@@ -60,6 +67,13 @@ type BindingGetCommand struct {
 
 	UI                UI
 	BindingGetUsecase BindingGetUsecase
+}
+
+type BindingDeleteCommand struct {
+	Name string `long:"name" description:"Name of the service binding" required:"true"`
+
+	UI             UI
+	BindingDeleter BindingDeleter
 }
 
 func (cmd *BindingCreateCommand) Execute([]string) error {
@@ -94,6 +108,15 @@ func (cmd *BindingGetCommand) Execute([]string) error {
 	}
 
 	return cmd.UI.DisplayYAML(binding)
+}
+
+func (cmd *BindingDeleteCommand) Execute([]string) error {
+	if err := cmd.BindingDeleter.Delete(cmd.Name); err != nil {
+		return err
+	}
+
+	cmd.UI.DisplayText("Binding '{{.BindingName}}' is being deleted.", map[string]interface{}{"BindingName": cmd.Name})
+	return nil
 }
 
 func buildBindingTableData(bindings []*usecases.Binding) [][]string {

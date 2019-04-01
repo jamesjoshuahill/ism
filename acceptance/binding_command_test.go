@@ -51,10 +51,12 @@ var _ = Describe("CLI binding command", func() {
 
 		It("displays help and exits 0", func() {
 			Eventually(session).Should(Exit(0))
-			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`ism \[OPTIONS\] binding <create | get | list>`))
-			Eventually(session).Should(Say("\n"))
-			Eventually(session).Should(Say("The binding command group lets you create, get and list service bindings"))
+			Eventually(session).Should(Say("The binding command group lets you create, get, list and delete service bindings"))
+			Eventually(session).Should(Say("Available commands:"))
+			Eventually(session).Should(Say("create"))
+			Eventually(session).Should(Say("delete"))
+			Eventually(session).Should(Say("get"))
+			Eventually(session).Should(Say("list"))
 		})
 	})
 
@@ -224,6 +226,59 @@ var _ = Describe("CLI binding command", func() {
 			It("displays 'Binding not found' and exits 1", func() {
 				Eventually(session).Should(Exit(1))
 				Eventually(session.Err).Should(Say("binding not found"))
+			})
+		})
+
+		When("required args are not passed", func() {
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("the required flag `--name' was not specified"))
+			})
+		})
+	})
+
+	Describe("delete sub command", func() {
+		BeforeEach(func() {
+			args = append(args, "delete")
+		})
+
+		When("--help is passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--help")
+			})
+
+			It("displays help and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Usage:"))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] binding delete`))
+				Eventually(session).Should(Say("\n"))
+				Eventually(session).Should(Say("Delete a service binding"))
+			})
+		})
+
+		PWhen("valid args are passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "binding-deletion-binding")
+
+				registerBroker("binding-deletion-broker")
+				createInstance("binding-deletion-instance", "binding-deletion-broker")
+				createBinding("binding-deletion-binding", "binding-deletion-instance")
+
+				Expect(getBrokerBindings()).To(HaveLen(1))
+			})
+
+			AfterEach(func() {
+				deleteBroker("binding-deletion-broker")
+				deleteInstance("binding-deletion-instance")
+				deleteBinding("binding-deletion-binding")
+				cleanBrokerData()
+			})
+
+			It("starts deletion of the service binding", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Binding 'binding-deletion-binding' is being deleted\\."))
+
+				Eventually(getBrokerBindings).Should(HaveLen(0))
 			})
 		})
 

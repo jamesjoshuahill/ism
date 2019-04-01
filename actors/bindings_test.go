@@ -133,4 +133,26 @@ var _ = Describe("Binding Actor", func() {
 			})
 		})
 	})
+
+	Describe("Delete", func() {
+		var err error
+
+		JustBeforeEach(func() {
+			err = bindingsActor.Delete("binding-1")
+		})
+
+		It("deletes the binding", func() {
+			Expect(fakeBindingRepository.DeleteArgsForCall(0)).To(Equal("binding-1"))
+		})
+
+		When("deleting the binding fails", func() {
+			BeforeEach(func() {
+				fakeBindingRepository.DeleteReturns(errors.New("error-deleting-binding"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-deleting-binding"))
+			})
+		})
+	})
 })

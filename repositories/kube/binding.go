@@ -56,6 +56,17 @@ func (b *Binding) Create(binding *osbapi.Binding) error {
 	return b.KubeClient.Create(context.TODO(), bindingResource)
 }
 
+func (b *Binding) Delete(name string) error {
+	bindingResource := &v1alpha1.ServiceBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: "default",
+		},
+	}
+
+	return b.KubeClient.Delete(context.TODO(), bindingResource)
+}
+
 func (b *Binding) FindByName(name string) (*osbapi.Binding, error) {
 	binding := &v1alpha1.ServiceBinding{}
 	err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: "default"}, binding)

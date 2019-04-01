@@ -235,4 +235,57 @@ var _ = Describe("Binding command", func() {
 			})
 		})
 	})
+
+	Describe("Delete sub command", func() {
+		var (
+			fakeBindingDeleter *commandsfakes.FakeBindingDeleter
+			fakeUI             *commandsfakes.FakeUI
+
+			deleteCommand BindingDeleteCommand
+
+			executeErr error
+		)
+
+		BeforeEach(func() {
+			fakeBindingDeleter = &commandsfakes.FakeBindingDeleter{}
+			fakeUI = &commandsfakes.FakeUI{}
+
+			deleteCommand = BindingDeleteCommand{
+				Name:           "my-binding",
+				BindingDeleter: fakeBindingDeleter,
+				UI:             fakeUI,
+			}
+		})
+
+		JustBeforeEach(func() {
+			executeErr = deleteCommand.Execute(nil)
+		})
+
+		It("calls to delete the binding", func() {
+			bindingName := fakeBindingDeleter.DeleteArgsForCall(0)
+			Expect(bindingName).To(Equal("my-binding"))
+		})
+
+		It("doesn't error", func() {
+			Expect(executeErr).NotTo(HaveOccurred())
+		})
+
+		It("displays that the binding is being deleted", func() {
+			Expect(fakeUI.DisplayTextCallCount()).To(Equal(1))
+
+			text, data := fakeUI.DisplayTextArgsForCall(0)
+			Expect(text).To(Equal("Binding '{{.BindingName}}' is being deleted."))
+			Expect(data[0]).To(HaveKeyWithValue("BindingName", "my-binding"))
+		})
+
+		When("delete binding fails", func() {
+			BeforeEach(func() {
+				fakeBindingDeleter.DeleteReturns(errors.New("error-deleting-binding"))
+			})
+
+			It("returns an error", func() {
+				Expect(executeErr).To(MatchError("error-deleting-binding"))
+			})
+		})
+	})
 })

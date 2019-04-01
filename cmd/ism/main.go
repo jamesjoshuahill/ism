@@ -148,6 +148,10 @@ func main() {
 				UI:                UI,
 				BindingGetUsecase: bindingGetUsecase,
 			},
+			BindingDeleteCommand: commands.BindingDeleteCommand{
+				UI:             UI,
+				BindingDeleter: bindingsActor,
+			},
 		},
 	}
 

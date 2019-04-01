@@ -26,6 +26,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -107,6 +108,40 @@ var _ = Describe("Binding", func() {
 			It("propagates the error", func() {
 				Expect(err).To(HaveOccurred())
 			})
+		})
+	})
+
+	Describe("Delete", func() {
+		BeforeEach(func() {
+			bindingResource := &v1alpha1.ServiceBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-binding",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceBindingSpec{
+					Name:       "my-binding",
+					InstanceID: "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "my-broker",
+				},
+			}
+
+			Expect(kubeClient.Create(context.TODO(), bindingResource)).To(Succeed())
+		})
+
+		It("deletes the ServiceBinding resource", func() {
+			Expect(bindingRepo.Delete("my-binding")).To(Succeed())
+
+			key := types.NamespacedName{
+				Name:      "my-binding",
+				Namespace: "default",
+			}
+
+			fetched := &v1alpha1.ServiceBinding{}
+			err := kubeClient.Get(context.TODO(), key, fetched)
+			Expect(err).To(HaveOccurred())
+			Expect(kerrors.IsNotFound(err)).To(BeTrue())
 		})
 	})
 
