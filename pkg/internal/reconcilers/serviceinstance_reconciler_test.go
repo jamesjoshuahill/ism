@@ -152,7 +152,7 @@ var _ = Describe("ServiceInstanceReconciler", func() {
 			}))
 		})
 
-		PIt("adds a finalizer", func() {
+		It("adds a finalizer", func() {
 			Expect(fakeKubeServiceInstanceRepo.UpdateCallCount()).To(Equal(1))
 			instance := fakeKubeServiceInstanceRepo.UpdateArgsForCall(0)
 			Expect(instance.ObjectMeta.Finalizers).To(HaveLen(1))
@@ -185,7 +185,7 @@ var _ = Describe("ServiceInstanceReconciler", func() {
 			})
 		})
 
-		PWhen("updating the serviceinstance finalizer errors", func() {
+		When("updating the serviceinstance finalizer errors", func() {
 			BeforeEach(func() {
 				fakeKubeServiceInstanceRepo.UpdateReturns(errors.New("error-updating"))
 			})
@@ -202,6 +202,70 @@ var _ = Describe("ServiceInstanceReconciler", func() {
 
 			It("returns the error", func() {
 				Expect(err).To(MatchError("error-updating-status"))
+			})
+		})
+	})
+
+	When("the service instance has been marked for deletion", func() {
+		BeforeEach(func() {
+			time := metav1.Now()
+			returnedServiceInstance.ObjectMeta.DeletionTimestamp = &time
+
+			returnedServiceInstance.Status.State = v1alpha1.ServiceInstanceStateProvisioned
+		})
+
+		It("updates the status to deprovisioning", func() {
+			Expect(fakeKubeServiceInstanceRepo.UpdateStateCallCount()).To(Equal(1))
+			instance, newState := fakeKubeServiceInstanceRepo.UpdateStateArgsForCall(0)
+			Expect(newState).To(Equal(v1alpha1.ServiceInstanceStateDeprovisioning))
+			Expect(*instance).To(Equal(*returnedServiceInstance))
+		})
+
+		It("deletes the service instance using the broker client", func() {
+			Expect(fakeBrokerClient.DeprovisionInstanceCallCount()).To(Equal(1))
+			deprovisionRequest := fakeBrokerClient.DeprovisionInstanceArgsForCall(0)
+
+			Expect(*deprovisionRequest).To(Equal(osbapi.DeprovisionRequest{
+				InstanceID:        string(returnedServiceInstance.ObjectMeta.UID),
+				ServiceID:         returnedServiceInstance.Spec.ServiceID,
+				PlanID:            returnedServiceInstance.Spec.PlanID,
+				AcceptsIncomplete: false,
+			}))
+		})
+
+		It("removes the finalizer", func() {
+			Expect(fakeKubeServiceInstanceRepo.UpdateCallCount()).To(Equal(1))
+			instance := fakeKubeServiceInstanceRepo.UpdateArgsForCall(0)
+			Expect(instance.ObjectMeta.Finalizers).To(HaveLen(0))
+		})
+
+		When("updating the status to deprovisioning errors", func() {
+			BeforeEach(func() {
+				fakeKubeServiceInstanceRepo.UpdateStateReturnsOnCall(0, errors.New("error-updating-status"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-updating-status"))
+			})
+		})
+
+		When("deprovisioning the serviceinstance using the broker client fails ", func() {
+			BeforeEach(func() {
+				fakeBrokerClient.DeprovisionInstanceReturns(nil, errors.New("error-deprovisioning-instance"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-deprovisioning-instance"))
+			})
+		})
+
+		When("updating the serviceinstance finalizer errors", func() {
+			BeforeEach(func() {
+				fakeKubeServiceInstanceRepo.UpdateReturns(errors.New("error-updating"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-updating"))
 			})
 		})
 	})

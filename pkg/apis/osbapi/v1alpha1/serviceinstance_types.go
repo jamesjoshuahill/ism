@@ -23,8 +23,9 @@ import (
 type ServiceInstanceState string
 
 const (
-	ServiceInstanceStateProvisioning ServiceInstanceState = "provisioning"
-	ServiceInstanceStateProvisioned  ServiceInstanceState = "provisioned"
+	ServiceInstanceStateProvisioning   ServiceInstanceState = "provisioning"
+	ServiceInstanceStateProvisioned    ServiceInstanceState = "provisioned"
+	ServiceInstanceStateDeprovisioning ServiceInstanceState = "deprovisioning"
 )
 
 // ServiceInstanceSpec defines the desired state of ServiceInstance

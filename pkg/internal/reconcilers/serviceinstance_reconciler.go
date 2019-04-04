@@ -22,6 +22,7 @@ import (
 
 	"github.com/go-logr/logr"
 	v1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
+	"github.com/pivotal-cf/ism/pkg/finalizer"
 	osbapi "github.com/pmorie/go-open-service-broker-client/v2"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -60,25 +61,43 @@ func NewServiceInstanceReconciler(
 	}
 }
 
-func (r *ServiceInstanceReconciler) handleCreate(broker *v1alpha1.Broker, instance *v1alpha1.ServiceInstance) error {
+func (r *ServiceInstanceReconciler) handleCreate(osbapiClient osbapi.Client, instance *v1alpha1.ServiceInstance) error {
 	if err := r.kubeServiceInstanceRepo.UpdateState(instance, v1alpha1.ServiceInstanceStateProvisioning); err != nil {
 		return err
 	}
 
-	if err := r.provision(broker, instance); err != nil {
+	if err := r.provision(osbapiClient, instance); err != nil {
 		return err
 	}
 
-	// finalizer.AddFinalizer(instance, serviceInstanceFinalizer)
-	// if err := r.kubeServiceInstanceRepo.Update(instance); err != nil {
-	// 	return err
-	// }
+	finalizer.AddFinalizer(instance, serviceInstanceFinalizer)
+	if err := r.kubeServiceInstanceRepo.Update(instance); err != nil {
+		return err
+	}
 
 	if err := r.kubeServiceInstanceRepo.UpdateState(instance, v1alpha1.ServiceInstanceStateProvisioned); err != nil {
 		return err
 	}
 
-	r.log.Info("Instance provisioned")
+	r.log.Info("Instance created")
+	return nil
+}
+
+func (r *ServiceInstanceReconciler) handleDelete(osbapiClient osbapi.Client, instance *v1alpha1.ServiceInstance) error {
+	if err := r.kubeServiceInstanceRepo.UpdateState(instance, v1alpha1.ServiceInstanceStateDeprovisioning); err != nil {
+		return err
+	}
+
+	if err := r.deprovision(osbapiClient, instance); err != nil {
+		return err
+	}
+
+	finalizer.RemoveFinalizer(instance, serviceInstanceFinalizer)
+	if err := r.kubeServiceInstanceRepo.Update(instance); err != nil {
+		return err
+	}
+
+	r.log.Info("Instance deleted")
 	return nil
 }
 
@@ -97,8 +116,20 @@ func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconc
 		return reconcile.Result{}, err
 	}
 
+	osbapiConfig := brokerClientConfig(broker)
+	osbapiClient, err := r.createBrokerClient(osbapiConfig)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
+		if err := r.handleDelete(osbapiClient, instance); err != nil {
+			return reconcile.Result{}, err
+		}
+	}
+
 	if instance.Status.State == "" {
-		if err := r.handleCreate(broker, instance); err != nil {
+		if err := r.handleCreate(osbapiClient, instance); err != nil {
 			return reconcile.Result{}, err
 		}
 	}
@@ -106,14 +137,8 @@ func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconc
 	return reconcile.Result{}, nil
 }
 
-func (r *ServiceInstanceReconciler) provision(broker *v1alpha1.Broker, instance *v1alpha1.ServiceInstance) error {
-	osbapiConfig := brokerClientConfig(broker)
-	osbapiClient, err := r.createBrokerClient(osbapiConfig)
-	if err != nil {
-		return err
-	}
-
-	_, err = osbapiClient.ProvisionInstance(&osbapi.ProvisionRequest{
+func (r *ServiceInstanceReconciler) provision(osbapiClient osbapi.Client, instance *v1alpha1.ServiceInstance) error {
+	_, err := osbapiClient.ProvisionInstance(&osbapi.ProvisionRequest{
 		InstanceID:        string(instance.ObjectMeta.UID),
 		AcceptsIncomplete: false,
 		ServiceID:         instance.Spec.ServiceID,
@@ -121,5 +146,16 @@ func (r *ServiceInstanceReconciler) provision(broker *v1alpha1.Broker, instance 
 		OrganizationGUID:  instance.ObjectMeta.Namespace,
 		SpaceGUID:         instance.ObjectMeta.Namespace,
 	})
+	return err
+}
+
+func (r *ServiceInstanceReconciler) deprovision(osbapiClient osbapi.Client, instance *v1alpha1.ServiceInstance) error {
+	_, err := osbapiClient.DeprovisionInstance(&osbapi.DeprovisionRequest{
+		InstanceID:        string(instance.ObjectMeta.UID),
+		AcceptsIncomplete: false,
+		ServiceID:         instance.Spec.ServiceID,
+		PlanID:            instance.Spec.PlanID,
+	})
+
 	return err
 }

@@ -84,8 +84,8 @@ var _ = Describe("CLI instance command", func() {
 			})
 
 			AfterEach(func() {
-				deleteBroker("instance-creation-broker")
 				deleteInstance("my-instance")
+				deleteBroker("instance-creation-broker")
 				cleanBrokerData()
 			})
 
@@ -172,7 +172,7 @@ var _ = Describe("CLI instance command", func() {
 			})
 		})
 
-		PWhen("valid args are passed", func() {
+		When("valid args are passed", func() {
 			BeforeEach(func() {
 				args = append(args, "--name", "instance-deletion-instance")
 
