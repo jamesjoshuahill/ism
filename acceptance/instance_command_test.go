@@ -52,9 +52,9 @@ var _ = Describe("CLI instance command", func() {
 		It("displays help and exits 0", func() {
 			Eventually(session).Should(Exit(0))
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`ism \[OPTIONS\] instance <create | list>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] instance <create | delete | list>`))
 			Eventually(session).Should(Say("\n"))
-			Eventually(session).Should(Say("The instance command group lets you create and list service instances"))
+			Eventually(session).Should(Say("The instance command group lets you create, list and delete service instances"))
 		})
 	})
 
@@ -149,6 +149,56 @@ var _ = Describe("CLI instance command", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("NAME\\s+SERVICE\\s+PLAN\\s+BROKER\\s+STATUS\\s+CREATED AT"))
 				Eventually(session).Should(Say("instance-list-test-instance\\s+" + serviceName + "\\s+" + planName + "\\s+instance-list-command-broker\\s+" + "created" + "\\s+" + timeRegex))
+			})
+		})
+	})
+
+	Describe("delete sub command", func() {
+		BeforeEach(func() {
+			args = append(args, "delete")
+		})
+
+		When("--help is passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--help")
+			})
+
+			It("displays help and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Usage:"))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] instance delete`))
+				Eventually(session).Should(Say("\n"))
+				Eventually(session).Should(Say("Delete a service instance"))
+			})
+		})
+
+		PWhen("valid args are passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "instance-deletion-instance")
+
+				registerBroker("instance-deletion-broker")
+				createInstance("instance-deletion-instance", "instance-deletion-broker")
+
+				Expect(getBrokerInstances()).To(HaveLen(1))
+			})
+
+			AfterEach(func() {
+				deleteBroker("instance-deletion-broker")
+				cleanBrokerData()
+			})
+
+			It("starts deletion of the service instance", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Instance 'instance-deletion-instance' is being deleted\\."))
+
+				Eventually(getBrokerInstances).Should(HaveLen(0))
+			})
+		})
+
+		When("required args are not passed", func() {
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("the required flag `--name' was not specified"))
 			})
 		})
 	})

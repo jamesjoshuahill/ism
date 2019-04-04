@@ -171,4 +171,26 @@ var _ = Describe("Instance Actor", func() {
 			})
 		})
 	})
+
+	Describe("Delete", func() {
+		var err error
+
+		JustBeforeEach(func() {
+			err = instancesActor.Delete("instance-1")
+		})
+
+		It("deletes the instance", func() {
+			Expect(fakeInstanceRepository.DeleteArgsForCall(0)).To(Equal("instance-1"))
+		})
+
+		When("deleting the instance fails", func() {
+			BeforeEach(func() {
+				fakeInstanceRepository.DeleteReturns(errors.New("error-deleting-instance"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-deleting-instance"))
+			})
+		})
+	})
 })

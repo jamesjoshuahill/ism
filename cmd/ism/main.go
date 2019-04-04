@@ -134,6 +134,10 @@ func main() {
 				UI:                  UI,
 				InstanceListUsecase: instanceListUsecase,
 			},
+			InstanceDeleteCommand: commands.InstanceDeleteCommand{
+				UI:              UI,
+				InstanceDeleter: instancesActor,
+			},
 		},
 		BindingCommand: commands.BindingCommand{
 			BindingCreateCommand: commands.BindingCreateCommand{

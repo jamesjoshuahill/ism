@@ -172,4 +172,57 @@ var _ = Describe("Instance Command", func() {
 			})
 		})
 	})
+
+	Describe("Delete sub command", func() {
+		var (
+			fakeInstanceDeleter *commandsfakes.FakeInstanceDeleter
+			fakeUI              *commandsfakes.FakeUI
+
+			deleteCommand InstanceDeleteCommand
+
+			executeErr error
+		)
+
+		BeforeEach(func() {
+			fakeInstanceDeleter = &commandsfakes.FakeInstanceDeleter{}
+			fakeUI = &commandsfakes.FakeUI{}
+
+			deleteCommand = InstanceDeleteCommand{
+				Name:            "my-instance",
+				InstanceDeleter: fakeInstanceDeleter,
+				UI:              fakeUI,
+			}
+		})
+
+		JustBeforeEach(func() {
+			executeErr = deleteCommand.Execute(nil)
+		})
+
+		It("calls to delete the instance", func() {
+			instanceName := fakeInstanceDeleter.DeleteArgsForCall(0)
+			Expect(instanceName).To(Equal("my-instance"))
+		})
+
+		It("doesn't error", func() {
+			Expect(executeErr).NotTo(HaveOccurred())
+		})
+
+		It("displays that the instance is being deleted", func() {
+			Expect(fakeUI.DisplayTextCallCount()).To(Equal(1))
+
+			text, data := fakeUI.DisplayTextArgsForCall(0)
+			Expect(text).To(Equal("Instance '{{.InstanceName}}' is being deleted."))
+			Expect(data[0]).To(HaveKeyWithValue("InstanceName", "my-instance"))
+		})
+
+		When("delete instance fails", func() {
+			BeforeEach(func() {
+				fakeInstanceDeleter.DeleteReturns(errors.New("error-deleting-instance"))
+			})
+
+			It("returns an error", func() {
+				Expect(executeErr).To(MatchError("error-deleting-instance"))
+			})
+		})
+	})
 })

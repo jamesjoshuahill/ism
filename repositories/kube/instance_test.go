@@ -24,6 +24,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -306,6 +307,39 @@ var _ = Describe("Instance", func() {
 			It("propagates the error", func() {
 				Expect(err).To(HaveOccurred())
 			})
+		})
+	})
+
+	Describe("Delete", func() {
+		BeforeEach(func() {
+			instanceResource := &v1alpha1.ServiceInstance{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-instance",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceInstanceSpec{
+					Name:       "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "broker-1",
+				},
+			}
+
+			Expect(kubeClient.Create(context.TODO(), instanceResource)).To(Succeed())
+		})
+
+		It("deletes the ServiceInstance resource", func() {
+			Expect(instanceRepo.Delete("my-instance")).To(Succeed())
+
+			key := types.NamespacedName{
+				Name:      "my-instance",
+				Namespace: "default",
+			}
+
+			fetched := &v1alpha1.ServiceInstance{}
+			err := kubeClient.Get(context.TODO(), key, fetched)
+			Expect(err).To(HaveOccurred())
+			Expect(kerrors.IsNotFound(err)).To(BeTrue())
 		})
 	})
 })

@@ -119,6 +119,17 @@ func (i *Instance) FindAll() ([]*osbapi.Instance, error) {
 	return instances, nil
 }
 
+func (i *Instance) Delete(name string) error {
+	instanceResource := &v1alpha1.ServiceInstance{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: "default",
+		},
+	}
+
+	return i.KubeClient.Delete(context.TODO(), instanceResource)
+}
+
 func (i *Instance) setStatus(state v1alpha1.ServiceInstanceState) string {
 	if state == v1alpha1.ServiceInstanceStateProvisioned {
 		return created

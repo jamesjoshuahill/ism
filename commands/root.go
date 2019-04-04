@@ -27,6 +27,6 @@ type UI interface {
 type RootCommand struct {
 	BrokerCommand   BrokerCommand   `command:"broker" long-description:"The broker command group lets you register and list service brokers from the marketplace"`
 	ServiceCommand  ServiceCommand  `command:"service" long-description:"The service command group lets you list the available services in the marketplace"`
-	InstanceCommand InstanceCommand `command:"instance" long-description:"The instance command group lets you create and list service instances"`
+	InstanceCommand InstanceCommand `command:"instance" long-description:"The instance command group lets you create, list and delete service instances"`
 	BindingCommand  BindingCommand  `command:"binding" long-description:"The binding command group lets you create, get, list and delete service bindings"`
 }

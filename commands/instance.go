@@ -32,9 +32,16 @@ type InstanceListUsecase interface {
 	GetInstances() ([]*usecases.Instance, error)
 }
 
+//go:generate counterfeiter . InstanceDeleter
+
+type InstanceDeleter interface {
+	Delete(name string) error
+}
+
 type InstanceCommand struct {
 	InstanceCreateCommand InstanceCreateCommand `command:"create" long-description:"Create a service instance"`
 	InstanceListCommand   InstanceListCommand   `command:"list" long-description:"List the service instances"`
+	InstanceDeleteCommand InstanceDeleteCommand `command:"delete" long-description:"Delete a service instance"`
 }
 
 type InstanceCreateCommand struct {
@@ -47,6 +54,18 @@ type InstanceCreateCommand struct {
 	InstanceCreateUsecase InstanceCreateUsecase
 }
 
+type InstanceListCommand struct {
+	UI                  UI
+	InstanceListUsecase InstanceListUsecase
+}
+
+type InstanceDeleteCommand struct {
+	Name string `long:"name" description:"Name of the service instance" required:"true"`
+
+	UI              UI
+	InstanceDeleter InstanceDeleter
+}
+
 func (cmd *InstanceCreateCommand) Execute([]string) error {
 	if err := cmd.InstanceCreateUsecase.Create(cmd.Name, cmd.Plan, cmd.Service, cmd.Broker); err != nil {
 		return err
@@ -55,11 +74,6 @@ func (cmd *InstanceCreateCommand) Execute([]string) error {
 	cmd.UI.DisplayText("Instance '{{.InstanceName}}' is being created.", map[string]interface{}{"InstanceName": cmd.Name})
 
 	return nil
-}
-
-type InstanceListCommand struct {
-	UI                  UI
-	InstanceListUsecase InstanceListUsecase
 }
 
 func (cmd *InstanceListCommand) Execute([]string) error {
@@ -75,6 +89,15 @@ func (cmd *InstanceListCommand) Execute([]string) error {
 
 	instancesTable := buildInstanceTableData(instances)
 	cmd.UI.DisplayTable(instancesTable)
+	return nil
+}
+
+func (cmd *InstanceDeleteCommand) Execute([]string) error {
+	if err := cmd.InstanceDeleter.Delete(cmd.Name); err != nil {
+		return err
+	}
+
+	cmd.UI.DisplayText("Instance '{{.InstanceName}}' is being deleted.", map[string]interface{}{"InstanceName": cmd.Name})
 	return nil
 }
 
