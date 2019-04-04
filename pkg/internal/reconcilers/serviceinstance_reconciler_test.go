@@ -131,25 +131,79 @@ var _ = Describe("ServiceInstanceReconciler", func() {
 		}))
 	})
 
-	It("creates the service instance using the broker client", func() {
-		Expect(fakeBrokerClient.ProvisionInstanceCallCount()).To(Equal(1))
-		provisionRequest := fakeBrokerClient.ProvisionInstanceArgsForCall(0)
+	When("provisioning the service instance", func() {
+		It("updates the status to provisioning", func() {
+			instance, newState := fakeKubeServiceInstanceRepo.UpdateStateArgsForCall(0)
+			Expect(newState).To(Equal(v1alpha1.ServiceInstanceStateProvisioning))
+			Expect(*instance).To(Equal(*returnedServiceInstance))
+		})
 
-		Expect(*provisionRequest).To(Equal(osbapi.ProvisionRequest{
-			InstanceID:        string(returnedServiceInstance.ObjectMeta.UID),
-			AcceptsIncomplete: false,
-			ServiceID:         returnedServiceInstance.Spec.ServiceID,
-			PlanID:            returnedServiceInstance.Spec.PlanID,
-			OrganizationGUID:  returnedServiceInstance.ObjectMeta.Namespace,
-			SpaceGUID:         returnedServiceInstance.ObjectMeta.Namespace,
-		}))
-	})
+		It("creates the service instance using the broker client", func() {
+			Expect(fakeBrokerClient.ProvisionInstanceCallCount()).To(Equal(1))
+			provisionRequest := fakeBrokerClient.ProvisionInstanceArgsForCall(0)
 
-	It("updates the service instance status to created", func() {
-		Expect(fakeKubeServiceInstanceRepo.UpdateStateCallCount()).To(Equal(1))
-		service, newState := fakeKubeServiceInstanceRepo.UpdateStateArgsForCall(0)
-		Expect(newState).To(Equal(v1alpha1.ServiceInstanceStateProvisioned))
-		Expect(*service).To(Equal(*returnedServiceInstance))
+			Expect(*provisionRequest).To(Equal(osbapi.ProvisionRequest{
+				InstanceID:        string(returnedServiceInstance.ObjectMeta.UID),
+				AcceptsIncomplete: false,
+				ServiceID:         returnedServiceInstance.Spec.ServiceID,
+				PlanID:            returnedServiceInstance.Spec.PlanID,
+				OrganizationGUID:  returnedServiceInstance.ObjectMeta.Namespace,
+				SpaceGUID:         returnedServiceInstance.ObjectMeta.Namespace,
+			}))
+		})
+
+		PIt("adds a finalizer", func() {
+			Expect(fakeKubeServiceInstanceRepo.UpdateCallCount()).To(Equal(1))
+			instance := fakeKubeServiceInstanceRepo.UpdateArgsForCall(0)
+			Expect(instance.ObjectMeta.Finalizers).To(HaveLen(1))
+			Expect(instance.ObjectMeta.Finalizers[0]).To(Equal("finalizer.serviceinstance.osbapi.ism.io"))
+		})
+
+		It("updates the status to provisioned", func() {
+			service, newState := fakeKubeServiceInstanceRepo.UpdateStateArgsForCall(1)
+			Expect(newState).To(Equal(v1alpha1.ServiceInstanceStateProvisioned))
+			Expect(*service).To(Equal(*returnedServiceInstance))
+		})
+
+		When("updating the serviceinstance status to provisioning errors", func() {
+			BeforeEach(func() {
+				fakeKubeServiceInstanceRepo.UpdateStateReturnsOnCall(0, errors.New("error-updating-status"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-updating-status"))
+			})
+		})
+
+		When("creating the serviceinstance using the broker client fails ", func() {
+			BeforeEach(func() {
+				fakeBrokerClient.ProvisionInstanceReturns(nil, errors.New("error-provisioning-instance"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-provisioning-instance"))
+			})
+		})
+
+		PWhen("updating the serviceinstance finalizer errors", func() {
+			BeforeEach(func() {
+				fakeKubeServiceInstanceRepo.UpdateReturns(errors.New("error-updating"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-updating"))
+			})
+		})
+
+		When("updating the serviceinstance status to provisioned errors", func() {
+			BeforeEach(func() {
+				fakeKubeServiceInstanceRepo.UpdateStateReturnsOnCall(1, errors.New("error-updating-status"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-updating-status"))
+			})
+		})
 	})
 
 	When("fetching the service instance resource using the kube repo fails", func() {
@@ -195,16 +249,6 @@ var _ = Describe("ServiceInstanceReconciler", func() {
 		})
 	})
 
-	When("creating the serviceinstance using the broker client fails ", func() {
-		BeforeEach(func() {
-			fakeBrokerClient.ProvisionInstanceReturns(nil, errors.New("error-provisioning-instance"))
-		})
-
-		It("returns the error", func() {
-			Expect(err).To(MatchError("error-provisioning-instance"))
-		})
-	})
-
 	When("the serviceinstance state reports it is already provisioned", func() {
 		BeforeEach(func() {
 			returnedServiceInstance.Status.State = v1alpha1.ServiceInstanceStateProvisioned
@@ -220,16 +264,6 @@ var _ = Describe("ServiceInstanceReconciler", func() {
 
 		It("still reconciles successfully ", func() {
 			Expect(err).NotTo(HaveOccurred())
-		})
-	})
-
-	When("updating the serviceinstance status errors", func() {
-		BeforeEach(func() {
-			fakeKubeServiceInstanceRepo.UpdateStateReturns(errors.New("error-updating-status"))
-		})
-
-		It("returns the error", func() {
-			Expect(err).To(MatchError("error-updating-status"))
 		})
 	})
 })

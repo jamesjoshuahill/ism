@@ -50,3 +50,7 @@ func (repo *KubeServiceInstanceRepo) UpdateState(serviceInstance *v1alpha1.Servi
 
 	return repo.client.Status().Update(ctx, serviceInstance)
 }
+
+func (repo *KubeServiceInstanceRepo) Update(serviceinstance *v1alpha1.ServiceInstance) error {
+	return repo.client.Update(ctx, serviceinstance)
+}

@@ -81,6 +81,39 @@ var _ = Describe("KubeServiceInstanceRepo", func() {
 		})
 	})
 
+	Describe("Update", func() {
+		When("the serviceinstance exists", func() {
+			BeforeEach(func() {
+				err := kubeClient.Create(context.Background(), existingServiceInstance)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("updates the serviceinstance", func() {
+				existingServiceInstance.ObjectMeta.SetLabels(map[string]string{"label": "one"})
+
+				Expect(repo.Update(existingServiceInstance)).To(Succeed())
+
+				remoteModifiedInstance := &v1alpha1.ServiceInstance{}
+
+				Expect(kubeClient.Get(
+					context.TODO(),
+					types.NamespacedName{
+						Name:      existingServiceInstance.Name,
+						Namespace: existingServiceInstance.Namespace},
+					remoteModifiedInstance)).To(Succeed())
+
+				Expect(remoteModifiedInstance.ObjectMeta.GetLabels()).To(Equal(map[string]string{"label": "one"}))
+			})
+		})
+
+		When("the serviceinstance doesn't exist", func() {
+			It("returns an error", func() {
+				err := repo.Update(existingServiceInstance)
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("UpdateStatus", func() {
 		When("the serviceInstance exists", func() {
 			BeforeEach(func() {

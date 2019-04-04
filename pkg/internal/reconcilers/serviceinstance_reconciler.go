@@ -26,13 +26,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-// var ctx = context.TODO()
+const (
+	serviceInstanceReconciler = "serviceinstance.osbapi.ism.io"
+	serviceInstanceFinalizer  = "finalizer." + serviceInstanceReconciler
+)
 
 //go:generate counterfeiter . KubeServiceInstanceRepo
 
 type KubeServiceInstanceRepo interface {
 	Get(resource types.NamespacedName) (*v1alpha1.ServiceInstance, error)
 	UpdateState(serviceinstance *v1alpha1.ServiceInstance, newState v1alpha1.ServiceInstanceState) error
+	Update(serviceinstance *v1alpha1.ServiceInstance) error
 }
 
 type ServiceInstanceReconciler struct {
@@ -56,6 +60,28 @@ func NewServiceInstanceReconciler(
 	}
 }
 
+func (r *ServiceInstanceReconciler) handleCreate(broker *v1alpha1.Broker, instance *v1alpha1.ServiceInstance) error {
+	if err := r.kubeServiceInstanceRepo.UpdateState(instance, v1alpha1.ServiceInstanceStateProvisioning); err != nil {
+		return err
+	}
+
+	if err := r.provision(broker, instance); err != nil {
+		return err
+	}
+
+	// finalizer.AddFinalizer(instance, serviceInstanceFinalizer)
+	// if err := r.kubeServiceInstanceRepo.Update(instance); err != nil {
+	// 	return err
+	// }
+
+	if err := r.kubeServiceInstanceRepo.UpdateState(instance, v1alpha1.ServiceInstanceStateProvisioned); err != nil {
+		return err
+	}
+
+	r.log.Info("Instance provisioned")
+	return nil
+}
+
 func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	instance, err := r.kubeServiceInstanceRepo.Get(request.NamespacedName)
 	if err != nil {
@@ -68,23 +94,13 @@ func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconc
 
 	broker, err := r.kubeBrokerRepo.Get(types.NamespacedName{Name: instance.Spec.BrokerName, Namespace: instance.ObjectMeta.Namespace})
 	if err != nil {
-		//TODO what if the broker does not exist?
 		return reconcile.Result{}, err
 	}
 
-	if instance.Status.State == v1alpha1.ServiceInstanceStateProvisioned {
-		return reconcile.Result{}, nil
-	}
-
-	err = r.provision(broker, instance)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
-	r.log.Info("Instance Provisioned")
-
-	if err := r.kubeServiceInstanceRepo.UpdateState(instance, v1alpha1.ServiceInstanceStateProvisioned); err != nil {
-		return reconcile.Result{}, err
+	if instance.Status.State == "" {
+		if err := r.handleCreate(broker, instance); err != nil {
+			return reconcile.Result{}, err
+		}
 	}
 
 	return reconcile.Result{}, nil

@@ -212,6 +212,16 @@ var _ = Describe("ServiceBindingReconciler", func() {
 				Expect(err).To(MatchError("error-updating-status"))
 			})
 		})
+
+		When("updating the servicebinding finalizer errors", func() {
+			BeforeEach(func() {
+				fakeKubeServiceBindingRepo.UpdateReturns(errors.New("error-updating"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-updating"))
+			})
+		})
 	})
 
 	When("the service binding has been marked for deletion", func() {

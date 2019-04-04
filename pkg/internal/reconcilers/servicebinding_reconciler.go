@@ -30,8 +30,8 @@ import (
 )
 
 const (
-	reconciler       = "servicebinding.osbapi.ism.io"
-	bindingFinalizer = "finalizer." + reconciler
+	serviceBindingReconciler = "servicebinding.osbapi.ism.io"
+	serviceBindingFinalizer  = "finalizer." + serviceBindingReconciler
 )
 
 //go:generate counterfeiter . KubeServiceBindingRepo
@@ -121,7 +121,7 @@ func (r *ServiceBindingReconciler) handleCreate(broker *v1alpha1.Broker, binding
 		return err
 	}
 
-	finalizer.AddFinalizer(binding, bindingFinalizer)
+	finalizer.AddFinalizer(binding, serviceBindingFinalizer)
 	if err := r.kubeServiceBindingRepo.Update(binding); err != nil {
 		return err
 	}
@@ -154,7 +154,7 @@ func (r *ServiceBindingReconciler) handleDelete(broker *v1alpha1.Broker, binding
 		return err
 	}
 
-	finalizer.RemoveFinalizer(binding, bindingFinalizer)
+	finalizer.RemoveFinalizer(binding, serviceBindingFinalizer)
 	if err := r.kubeServiceBindingRepo.Update(binding); err != nil {
 		return err
 	}
