@@ -61,6 +61,42 @@ func NewServiceInstanceReconciler(
 	}
 }
 
+func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	instance, err := r.kubeServiceInstanceRepo.Get(request.NamespacedName)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return reconcile.Result{}, nil
+		}
+
+		return reconcile.Result{}, err
+	}
+
+	broker, err := r.kubeBrokerRepo.Get(types.NamespacedName{Name: instance.Spec.BrokerName, Namespace: instance.ObjectMeta.Namespace})
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	osbapiConfig := brokerClientConfig(broker)
+	osbapiClient, err := r.createBrokerClient(osbapiConfig)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
+		if err := r.handleDelete(osbapiClient, instance); err != nil {
+			return reconcile.Result{}, err
+		}
+	}
+
+	if instance.Status.State == "" {
+		if err := r.handleCreate(osbapiClient, instance); err != nil {
+			return reconcile.Result{}, err
+		}
+	}
+
+	return reconcile.Result{}, nil
+}
+
 func (r *ServiceInstanceReconciler) handleCreate(osbapiClient osbapi.Client, instance *v1alpha1.ServiceInstance) error {
 	if err := r.kubeServiceInstanceRepo.UpdateState(instance, v1alpha1.ServiceInstanceStateProvisioning); err != nil {
 		return err
@@ -99,42 +135,6 @@ func (r *ServiceInstanceReconciler) handleDelete(osbapiClient osbapi.Client, ins
 
 	r.log.Info("Instance deleted")
 	return nil
-}
-
-func (r *ServiceInstanceReconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	instance, err := r.kubeServiceInstanceRepo.Get(request.NamespacedName)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return reconcile.Result{}, nil
-		}
-
-		return reconcile.Result{}, err
-	}
-
-	broker, err := r.kubeBrokerRepo.Get(types.NamespacedName{Name: instance.Spec.BrokerName, Namespace: instance.ObjectMeta.Namespace})
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
-	osbapiConfig := brokerClientConfig(broker)
-	osbapiClient, err := r.createBrokerClient(osbapiConfig)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
-	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
-		if err := r.handleDelete(osbapiClient, instance); err != nil {
-			return reconcile.Result{}, err
-		}
-	}
-
-	if instance.Status.State == "" {
-		if err := r.handleCreate(osbapiClient, instance); err != nil {
-			return reconcile.Result{}, err
-		}
-	}
-
-	return reconcile.Result{}, nil
 }
 
 func (r *ServiceInstanceReconciler) provision(osbapiClient osbapi.Client, instance *v1alpha1.ServiceInstance) error {

@@ -131,7 +131,7 @@ var _ = Describe("ServiceInstanceReconciler", func() {
 		}))
 	})
 
-	When("provisioning the service instance", func() {
+	Describe("service instance create", func() {
 		It("updates the status to provisioning", func() {
 			instance, newState := fakeKubeServiceInstanceRepo.UpdateStateArgsForCall(0)
 			Expect(newState).To(Equal(v1alpha1.ServiceInstanceStateProvisioning))
@@ -206,7 +206,7 @@ var _ = Describe("ServiceInstanceReconciler", func() {
 		})
 	})
 
-	When("the service instance has been marked for deletion", func() {
+	Describe("service instance delete", func() {
 		BeforeEach(func() {
 			time := metav1.Now()
 			returnedServiceInstance.ObjectMeta.DeletionTimestamp = &time
