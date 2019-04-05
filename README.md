@@ -56,6 +56,10 @@ ism binding create \
 # get a binding (including credentials)
 ism binding get \
   --name example-binding
+
+# delete a binding
+ism binding delete \
+  --name example-binding
 ```
 
 ### Development
