@@ -125,6 +125,34 @@ func (b *Binding) FindAll() ([]*osbapi.Binding, error) {
 	return bindings, nil
 }
 
+func (b *Binding) FindAllForInstance(instanceID string) ([]*osbapi.Binding, error) {
+	list := &v1alpha1.ServiceBindingList{}
+	if err := b.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
+		return []*osbapi.Binding{}, err
+	}
+
+	bindings := []*osbapi.Binding{}
+	for _, binding := range list.Items {
+		// TODO: This code will be refactored so filtering happens in the API
+		// See #164327846
+		if binding.Spec.InstanceID == instanceID {
+			bindings = append(bindings, &osbapi.Binding{
+				ID:         string(binding.ObjectMeta.UID),
+				Name:       binding.Spec.Name,
+				InstanceID: binding.Spec.InstanceID,
+				PlanID:     binding.Spec.PlanID,
+				ServiceID:  binding.Spec.ServiceID,
+				BrokerName: binding.Spec.BrokerName,
+				Status:     b.setStatus(binding.Status.State),
+				CreatedAt:  binding.ObjectMeta.CreationTimestamp.String(),
+				//TODO: Should we add credentials?
+			})
+		}
+	}
+
+	return bindings, nil
+}
+
 func (b *Binding) setStatus(state v1alpha1.ServiceBindingState) string {
 	if state == v1alpha1.ServiceBindingStateCreated {
 		return created

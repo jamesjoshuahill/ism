@@ -43,6 +43,19 @@ type FakeBindingRepository struct {
 		result1 []*osbapi.Binding
 		result2 error
 	}
+	FindAllForInstanceStub        func(string) ([]*osbapi.Binding, error)
+	findAllForInstanceMutex       sync.RWMutex
+	findAllForInstanceArgsForCall []struct {
+		arg1 string
+	}
+	findAllForInstanceReturns struct {
+		result1 []*osbapi.Binding
+		result2 error
+	}
+	findAllForInstanceReturnsOnCall map[int]struct {
+		result1 []*osbapi.Binding
+		result2 error
+	}
 	FindByNameStub        func(string) (*osbapi.Binding, error)
 	findByNameMutex       sync.RWMutex
 	findByNameArgsForCall []struct {
@@ -235,6 +248,69 @@ func (fake *FakeBindingRepository) FindAllReturnsOnCall(i int, result1 []*osbapi
 	}{result1, result2}
 }
 
+func (fake *FakeBindingRepository) FindAllForInstance(arg1 string) ([]*osbapi.Binding, error) {
+	fake.findAllForInstanceMutex.Lock()
+	ret, specificReturn := fake.findAllForInstanceReturnsOnCall[len(fake.findAllForInstanceArgsForCall)]
+	fake.findAllForInstanceArgsForCall = append(fake.findAllForInstanceArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("FindAllForInstance", []interface{}{arg1})
+	fake.findAllForInstanceMutex.Unlock()
+	if fake.FindAllForInstanceStub != nil {
+		return fake.FindAllForInstanceStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.findAllForInstanceReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeBindingRepository) FindAllForInstanceCallCount() int {
+	fake.findAllForInstanceMutex.RLock()
+	defer fake.findAllForInstanceMutex.RUnlock()
+	return len(fake.findAllForInstanceArgsForCall)
+}
+
+func (fake *FakeBindingRepository) FindAllForInstanceCalls(stub func(string) ([]*osbapi.Binding, error)) {
+	fake.findAllForInstanceMutex.Lock()
+	defer fake.findAllForInstanceMutex.Unlock()
+	fake.FindAllForInstanceStub = stub
+}
+
+func (fake *FakeBindingRepository) FindAllForInstanceArgsForCall(i int) string {
+	fake.findAllForInstanceMutex.RLock()
+	defer fake.findAllForInstanceMutex.RUnlock()
+	argsForCall := fake.findAllForInstanceArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeBindingRepository) FindAllForInstanceReturns(result1 []*osbapi.Binding, result2 error) {
+	fake.findAllForInstanceMutex.Lock()
+	defer fake.findAllForInstanceMutex.Unlock()
+	fake.FindAllForInstanceStub = nil
+	fake.findAllForInstanceReturns = struct {
+		result1 []*osbapi.Binding
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeBindingRepository) FindAllForInstanceReturnsOnCall(i int, result1 []*osbapi.Binding, result2 error) {
+	fake.findAllForInstanceMutex.Lock()
+	defer fake.findAllForInstanceMutex.Unlock()
+	fake.FindAllForInstanceStub = nil
+	if fake.findAllForInstanceReturnsOnCall == nil {
+		fake.findAllForInstanceReturnsOnCall = make(map[int]struct {
+			result1 []*osbapi.Binding
+			result2 error
+		})
+	}
+	fake.findAllForInstanceReturnsOnCall[i] = struct {
+		result1 []*osbapi.Binding
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeBindingRepository) FindByName(arg1 string) (*osbapi.Binding, error) {
 	fake.findByNameMutex.Lock()
 	ret, specificReturn := fake.findByNameReturnsOnCall[len(fake.findByNameArgsForCall)]
@@ -307,6 +383,8 @@ func (fake *FakeBindingRepository) Invocations() map[string][][]interface{} {
 	defer fake.deleteMutex.RUnlock()
 	fake.findAllMutex.RLock()
 	defer fake.findAllMutex.RUnlock()
+	fake.findAllForInstanceMutex.RLock()
+	defer fake.findAllForInstanceMutex.RUnlock()
 	fake.findByNameMutex.RLock()
 	defer fake.findByNameMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

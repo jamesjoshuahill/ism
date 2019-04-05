@@ -23,6 +23,7 @@ import "github.com/pivotal-cf/ism/osbapi"
 //go:generate counterfeiter . BrokerFetcher
 //go:generate counterfeiter . InstanceFetcher
 //go:generate counterfeiter . InstanceCreator
+//go:generate counterfeiter . InstanceDeleter
 //go:generate counterfeiter . PlanFetcher
 //go:generate counterfeiter . ServiceFetcher
 
@@ -32,6 +33,7 @@ type BindingCreator interface {
 
 type BindingFetcher interface {
 	GetBindingByName(name string) (*osbapi.Binding, error)
+	GetBindingsForInstance(instanceID string) ([]*osbapi.Binding, error)
 	GetBindings() ([]*osbapi.Binding, error)
 }
 
@@ -48,6 +50,10 @@ type InstanceFetcher interface {
 
 type InstanceCreator interface {
 	Create(*osbapi.Instance) error
+}
+
+type InstanceDeleter interface {
+	Delete(name string) error
 }
 
 type PlanFetcher interface {

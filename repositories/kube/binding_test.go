@@ -387,6 +387,79 @@ var _ = Describe("Binding", func() {
 			))
 		})
 	})
+
+	Describe("FindAllForInstance", func() {
+		var (
+			bindings          []*osbapi.Binding
+			bindingCreatedAt1 string
+			bindingID1        string
+			err               error
+		)
+
+		BeforeEach(func() {
+			bindingResource1 := &v1alpha1.ServiceBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-binding-1",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceBindingSpec{
+					Name:       "my-binding-1",
+					InstanceID: "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "my-broker",
+				},
+				Status: v1alpha1.ServiceBindingStatus{
+					State: v1alpha1.ServiceBindingStateCreated,
+				},
+			}
+
+			bindingResource2 := &v1alpha1.ServiceBinding{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-binding-2",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceBindingSpec{
+					Name:       "my-binding-2",
+					InstanceID: "instance-2",
+					PlanID:     "plan-2",
+					ServiceID:  "service-2",
+					BrokerName: "my-broker-2",
+				},
+			}
+
+			Expect(kubeClient.Create(context.TODO(), bindingResource1)).To(Succeed())
+			Expect(kubeClient.Status().Update(context.TODO(), bindingResource1)).To(Succeed())
+			Expect(kubeClient.Create(context.TODO(), bindingResource2)).To(Succeed())
+			bindingCreatedAt1 = createdAtForBinding(kubeClient, bindingResource1)
+			bindingID1 = idForBinding(kubeClient, bindingResource1)
+		})
+
+		JustBeforeEach(func() {
+			bindings, err = bindingRepo.FindAllForInstance("instance-1")
+		})
+
+		AfterEach(func() {
+			deleteBindings(kubeClient, "my-binding-1", "my-binding-2")
+		})
+
+		It("returns all bindings whose instanceID matches the provided ID", func() {
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(bindings).To(Equal([]*osbapi.Binding{
+				&osbapi.Binding{
+					ID:         bindingID1,
+					CreatedAt:  bindingCreatedAt1,
+					Name:       "my-binding-1",
+					InstanceID: "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "my-broker",
+					Status:     "created",
+				}},
+			))
+		})
+	})
 })
 
 func createdAtForBinding(kubeClient client.Client, instanceResource *v1alpha1.ServiceBinding) string {

@@ -187,11 +187,39 @@ var _ = Describe("CLI instance command", func() {
 				cleanBrokerData()
 			})
 
-			It("starts deletion of the service instance", func() {
+			It("deletes the service instance", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("Instance 'instance-deletion-instance' is being deleted\\."))
 
 				Eventually(getBrokerInstances).Should(HaveLen(0))
+			})
+		})
+
+		When("valid args are passed and the service instance has bindings", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "instance-deletion-instance")
+
+				registerBroker("instance-deletion-broker")
+				createInstance("instance-deletion-instance", "instance-deletion-broker")
+				createBinding("instance-deletion-binding", "instance-deletion-instance")
+
+				Expect(getBrokerInstances()).To(HaveLen(1))
+			})
+
+			AfterEach(func() {
+				deleteBinding("instance-deletion-binding")
+				deleteInstance("instance-deletion-instance")
+				deleteBroker("instance-deletion-broker")
+				cleanBrokerData()
+			})
+
+			It("doesn't delete the instance", func() {
+				Expect(getBrokerInstances()).To(HaveLen(1))
+			})
+
+			It("errors with a useful message", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("Instance 'instance-deletion-instance' cannot be deleted as it has 1 binding"))
 			})
 		})
 

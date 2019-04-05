@@ -23,6 +23,7 @@ import "github.com/pivotal-cf/ism/osbapi"
 type BindingRepository interface {
 	FindAll() ([]*osbapi.Binding, error)
 	FindByName(name string) (*osbapi.Binding, error)
+	FindAllForInstance(instanceID string) ([]*osbapi.Binding, error)
 	Create(binding *osbapi.Binding) error
 	Delete(name string) error
 }
@@ -45,4 +46,8 @@ func (a *BindingsActor) GetBindingByName(name string) (*osbapi.Binding, error) {
 
 func (a *BindingsActor) GetBindings() ([]*osbapi.Binding, error) {
 	return a.Repository.FindAll()
+}
+
+func (a *BindingsActor) GetBindingsForInstance(instanceID string) ([]*osbapi.Binding, error) {
+	return a.Repository.FindAllForInstance(instanceID)
 }

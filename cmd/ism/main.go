@@ -90,6 +90,12 @@ func main() {
 		PlanFetcher:     plansActor,
 	}
 
+	instanceDeleteUsecase := &usecases.InstanceDeleteUsecase{
+		InstanceFetcher: instancesActor,
+		InstanceDeleter: instancesActor,
+		BindingFetcher:  bindingsActor,
+	}
+
 	bindingCreateUsecase := &usecases.BindingCreateUsecase{
 		BindingCreator:  bindingsActor,
 		InstanceFetcher: instancesActor,
@@ -135,8 +141,8 @@ func main() {
 				InstanceListUsecase: instanceListUsecase,
 			},
 			InstanceDeleteCommand: commands.InstanceDeleteCommand{
-				UI:              UI,
-				InstanceDeleter: instancesActor,
+				UI:                    UI,
+				InstanceDeleteUsecase: instanceDeleteUsecase,
 			},
 		},
 		BindingCommand: commands.BindingCommand{

@@ -175,8 +175,8 @@ var _ = Describe("Instance Command", func() {
 
 	Describe("Delete sub command", func() {
 		var (
-			fakeInstanceDeleter *commandsfakes.FakeInstanceDeleter
-			fakeUI              *commandsfakes.FakeUI
+			fakeInstanceDeleteUsecase *commandsfakes.FakeInstanceDeleteUsecase
+			fakeUI                    *commandsfakes.FakeUI
 
 			deleteCommand InstanceDeleteCommand
 
@@ -184,13 +184,13 @@ var _ = Describe("Instance Command", func() {
 		)
 
 		BeforeEach(func() {
-			fakeInstanceDeleter = &commandsfakes.FakeInstanceDeleter{}
+			fakeInstanceDeleteUsecase = &commandsfakes.FakeInstanceDeleteUsecase{}
 			fakeUI = &commandsfakes.FakeUI{}
 
 			deleteCommand = InstanceDeleteCommand{
-				Name:            "my-instance",
-				InstanceDeleter: fakeInstanceDeleter,
-				UI:              fakeUI,
+				Name:                  "my-instance",
+				InstanceDeleteUsecase: fakeInstanceDeleteUsecase,
+				UI:                    fakeUI,
 			}
 		})
 
@@ -199,7 +199,7 @@ var _ = Describe("Instance Command", func() {
 		})
 
 		It("calls to delete the instance", func() {
-			instanceName := fakeInstanceDeleter.DeleteArgsForCall(0)
+			instanceName := fakeInstanceDeleteUsecase.DeleteArgsForCall(0)
 			Expect(instanceName).To(Equal("my-instance"))
 		})
 
@@ -217,7 +217,7 @@ var _ = Describe("Instance Command", func() {
 
 		When("delete instance fails", func() {
 			BeforeEach(func() {
-				fakeInstanceDeleter.DeleteReturns(errors.New("error-deleting-instance"))
+				fakeInstanceDeleteUsecase.DeleteReturns(errors.New("error-deleting-instance"))
 			})
 
 			It("returns an error", func() {

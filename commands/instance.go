@@ -32,9 +32,9 @@ type InstanceListUsecase interface {
 	GetInstances() ([]*usecases.Instance, error)
 }
 
-//go:generate counterfeiter . InstanceDeleter
+//go:generate counterfeiter . InstanceDeleteUsecase
 
-type InstanceDeleter interface {
+type InstanceDeleteUsecase interface {
 	Delete(name string) error
 }
 
@@ -62,8 +62,8 @@ type InstanceListCommand struct {
 type InstanceDeleteCommand struct {
 	Name string `long:"name" description:"Name of the service instance" required:"true"`
 
-	UI              UI
-	InstanceDeleter InstanceDeleter
+	UI                    UI
+	InstanceDeleteUsecase InstanceDeleteUsecase
 }
 
 func (cmd *InstanceCreateCommand) Execute([]string) error {
@@ -93,7 +93,7 @@ func (cmd *InstanceListCommand) Execute([]string) error {
 }
 
 func (cmd *InstanceDeleteCommand) Execute([]string) error {
-	if err := cmd.InstanceDeleter.Delete(cmd.Name); err != nil {
+	if err := cmd.InstanceDeleteUsecase.Delete(cmd.Name); err != nil {
 		return err
 	}
 

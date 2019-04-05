@@ -273,7 +273,7 @@ var _ = Describe("CLI binding command", func() {
 				cleanBrokerData()
 			})
 
-			It("starts deletion of the service binding", func() {
+			It("deletes the service binding", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("Binding 'binding-deletion-binding' is being deleted\\."))
 

@@ -7,7 +7,7 @@ import (
 	commands "github.com/pivotal-cf/ism/commands"
 )
 
-type FakeInstanceDeleter struct {
+type FakeInstanceDeleteUsecase struct {
 	DeleteStub        func(string) error
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
@@ -23,7 +23,7 @@ type FakeInstanceDeleter struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeInstanceDeleter) Delete(arg1 string) error {
+func (fake *FakeInstanceDeleteUsecase) Delete(arg1 string) error {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
@@ -41,26 +41,26 @@ func (fake *FakeInstanceDeleter) Delete(arg1 string) error {
 	return fakeReturns.result1
 }
 
-func (fake *FakeInstanceDeleter) DeleteCallCount() int {
+func (fake *FakeInstanceDeleteUsecase) DeleteCallCount() int {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	return len(fake.deleteArgsForCall)
 }
 
-func (fake *FakeInstanceDeleter) DeleteCalls(stub func(string) error) {
+func (fake *FakeInstanceDeleteUsecase) DeleteCalls(stub func(string) error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = stub
 }
 
-func (fake *FakeInstanceDeleter) DeleteArgsForCall(i int) string {
+func (fake *FakeInstanceDeleteUsecase) DeleteArgsForCall(i int) string {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	argsForCall := fake.deleteArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeInstanceDeleter) DeleteReturns(result1 error) {
+func (fake *FakeInstanceDeleteUsecase) DeleteReturns(result1 error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = nil
@@ -69,7 +69,7 @@ func (fake *FakeInstanceDeleter) DeleteReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeInstanceDeleter) DeleteReturnsOnCall(i int, result1 error) {
+func (fake *FakeInstanceDeleteUsecase) DeleteReturnsOnCall(i int, result1 error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = nil
@@ -83,7 +83,7 @@ func (fake *FakeInstanceDeleter) DeleteReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeInstanceDeleter) Invocations() map[string][][]interface{} {
+func (fake *FakeInstanceDeleteUsecase) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.deleteMutex.RLock()
@@ -95,7 +95,7 @@ func (fake *FakeInstanceDeleter) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeInstanceDeleter) recordInvocation(key string, args []interface{}) {
+func (fake *FakeInstanceDeleteUsecase) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -107,4 +107,4 @@ func (fake *FakeInstanceDeleter) recordInvocation(key string, args []interface{}
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ commands.InstanceDeleter = new(FakeInstanceDeleter)
+var _ commands.InstanceDeleteUsecase = new(FakeInstanceDeleteUsecase)
