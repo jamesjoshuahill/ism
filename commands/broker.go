@@ -32,9 +32,16 @@ type BrokersFetcher interface {
 	GetBrokers() ([]*osbapi.Broker, error)
 }
 
+//go:generate counterfeiter . BrokerDeleteUsecase
+
+type BrokerDeleteUsecase interface {
+	Delete(name string) error
+}
+
 type BrokerCommand struct {
 	BrokerRegisterCommand BrokerRegisterCommand `command:"register" long-description:"Register a service broker into the marketplace"`
 	BrokerListCommand     BrokerListCommand     `command:"list" long-description:"List the service brokers in the marketplace"`
+	BrokerDeleteCommand   BrokerDeleteCommand   `command:"delete" long-description:"Delete a service broker from the marketplace"`
 }
 
 type BrokerListCommand struct {
@@ -50,6 +57,13 @@ type BrokerRegisterCommand struct {
 
 	UI              UI
 	BrokerRegistrar BrokerRegistrar
+}
+
+type BrokerDeleteCommand struct {
+	Name string `long:"name" description:"Name of the service broker" required:"true"`
+
+	UI                  UI
+	BrokerDeleteUsecase BrokerDeleteUsecase
 }
 
 func (cmd *BrokerRegisterCommand) Execute([]string) error {
@@ -84,6 +98,15 @@ func (cmd *BrokerListCommand) Execute([]string) error {
 
 	brokersTable := buildBrokerTableData(brokers)
 	cmd.UI.DisplayTable(brokersTable)
+	return nil
+}
+
+func (cmd *BrokerDeleteCommand) Execute([]string) error {
+	if err := cmd.BrokerDeleteUsecase.Delete(cmd.Name); err != nil {
+		return err
+	}
+
+	cmd.UI.DisplayText("Broker '{{.BrokerName}}' is being deleted.", map[string]interface{}{"BrokerName": cmd.Name})
 	return nil
 }
 

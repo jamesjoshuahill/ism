@@ -93,7 +93,7 @@ var _ = Describe("Brokers Actor", func() {
 			broker, err = brokersActor.GetBrokerByName("my-broker")
 		})
 
-		It("finds the binding from the repository", func() {
+		It("finds the broker from the repository", func() {
 			Expect(fakeBrokerRepository.FindByNameCallCount()).To(Equal(1))
 			Expect(*broker).To(Equal(osbapi.Broker{Name: "my-broker"}))
 		})
@@ -131,6 +131,28 @@ var _ = Describe("Brokers Actor", func() {
 
 			It("propagates the error", func() {
 				Expect(err).To(MatchError("error-registering-broker"))
+			})
+		})
+	})
+
+	Describe("Delete", func() {
+		var err error
+
+		JustBeforeEach(func() {
+			err = brokersActor.Delete("broker-1")
+		})
+
+		It("deletes the broker", func() {
+			Expect(fakeBrokerRepository.DeleteArgsForCall(0)).To(Equal("broker-1"))
+		})
+
+		When("deleting the broker fails", func() {
+			BeforeEach(func() {
+				fakeBrokerRepository.DeleteReturns(errors.New("error-deleting-broker"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-deleting-broker"))
 			})
 		})
 	})

@@ -331,6 +331,18 @@ type brokerData struct {
 	ServiceInstances map[string]serviceInstance `json:"serviceInstances"`
 }
 
+type brokerList struct {
+	Items []brokerListItem `json:"items"`
+}
+
+type brokerListItem struct {
+	Spec map[string]interface{} `json:"spec"`
+}
+
+type broker struct {
+	Name string
+}
+
 type serviceInstance struct {
 	PlanName    string                    `json:"plan_name"`
 	ServiceName string                    `json:"service_name"`
@@ -354,6 +366,22 @@ func getBrokerData() brokerData {
 	Expect(json.Unmarshal(respBytes, &data)).To(Succeed())
 
 	return data
+}
+
+func getBrokers() []broker {
+	jsonOutput := runKubectl("get", "brokers", "-o", "json")
+	var data brokerList
+
+	Expect(json.Unmarshal([]byte(jsonOutput), &data)).To(Succeed())
+
+	var brokers []broker
+	for _, brokerItem := range data.Items {
+		brokers = append(brokers, broker{
+			Name: brokerItem.Spec["name"].(string),
+		})
+	}
+
+	return brokers
 }
 
 func getBrokerInstances() []serviceInstance {

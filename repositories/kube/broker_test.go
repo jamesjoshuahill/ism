@@ -25,6 +25,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -139,6 +140,39 @@ var _ = Describe("Broker", func() {
 				Expect(registrationDuration).To(BeNumerically(">", registrationTimeout))
 				Expect(registrationDuration).To(BeNumerically("<", registrationTimeout+estimatedExecutionTime))
 			})
+		})
+	})
+
+	Describe("Delete", func() {
+		BeforeEach(func() {
+			brokerResource := &v1alpha1.Broker{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-broker",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.BrokerSpec{
+					Name:     "my-broker",
+					URL:      "broker-1-url",
+					Username: "broker-1-username",
+					Password: "broker-1-password",
+				},
+			}
+
+			Expect(kubeClient.Create(context.TODO(), brokerResource)).To(Succeed())
+		})
+
+		It("deletes the Broker resource", func() {
+			Expect(brokerRepo.Delete("my-broker")).To(Succeed())
+
+			key := types.NamespacedName{
+				Name:      "my-broker",
+				Namespace: "default",
+			}
+
+			fetched := &v1alpha1.Broker{}
+			err := kubeClient.Get(context.TODO(), key, fetched)
+			Expect(err).To(HaveOccurred())
+			Expect(kerrors.IsNotFound(err)).To(BeTrue())
 		})
 	})
 

@@ -119,6 +119,30 @@ func (i *Instance) FindAll() ([]*osbapi.Instance, error) {
 	return instances, nil
 }
 
+func (i *Instance) FindAllForBroker(brokerName string) ([]*osbapi.Instance, error) {
+	list := &v1alpha1.ServiceInstanceList{}
+	if err := i.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
+		return []*osbapi.Instance{}, err
+	}
+
+	instances := []*osbapi.Instance{}
+	for _, instance := range list.Items {
+		if instance.Spec.BrokerName == brokerName {
+			instances = append(instances, &osbapi.Instance{
+				ID:         string(instance.ObjectMeta.UID),
+				Name:       instance.Spec.Name,
+				PlanID:     instance.Spec.PlanID,
+				ServiceID:  instance.Spec.ServiceID,
+				BrokerName: instance.Spec.BrokerName,
+				Status:     i.setStatus(instance.Status.State),
+				CreatedAt:  instance.ObjectMeta.CreationTimestamp.String(),
+			})
+		}
+	}
+
+	return instances, nil
+}
+
 func (i *Instance) Delete(name string) error {
 	instanceResource := &v1alpha1.ServiceInstance{
 		ObjectMeta: metav1.ObjectMeta{

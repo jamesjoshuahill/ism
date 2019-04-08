@@ -132,6 +132,38 @@ var _ = Describe("Instance Actor", func() {
 		})
 	})
 
+	Describe("GetInstancesForBroker", func() {
+		var (
+			err               error
+			returnedInstances []*osbapi.Instance
+		)
+
+		BeforeEach(func() {
+			fakeInstanceRepository.FindAllForBrokerReturns([]*osbapi.Instance{{ID: "instance-1"}}, nil)
+		})
+
+		JustBeforeEach(func() {
+			returnedInstances, err = instancesActor.GetInstancesForBroker("broker-1")
+		})
+
+		It("returns the instances", func() {
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fakeInstanceRepository.FindAllForBrokerArgsForCall(0)).To(Equal("broker-1"))
+
+			Expect(returnedInstances).To(Equal([]*osbapi.Instance{{ID: "instance-1"}}))
+		})
+
+		When("finding the instances fails", func() {
+			BeforeEach(func() {
+				fakeInstanceRepository.FindAllForBrokerReturns(nil, errors.New("error-finding-instances"))
+			})
+
+			It("propagates the error", func() {
+				Expect(err).To(MatchError("error-finding-instances"))
+			})
+		})
+	})
+
 	Describe("FindAll", func() {
 		var (
 			err       error

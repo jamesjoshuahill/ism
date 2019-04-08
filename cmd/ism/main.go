@@ -71,6 +71,11 @@ func main() {
 		Repository: bindingRepository,
 	}
 
+	brokerDeleteUsecase := &usecases.BrokerDeleteUsecase{
+		InstanceFetcher: instancesActor,
+		BrokerDeleter:   brokersActor,
+	}
+
 	serviceListUsecase := &usecases.ServiceListUsecase{
 		BrokerFetcher:  brokersActor,
 		ServiceFetcher: servicesActor,
@@ -123,6 +128,10 @@ func main() {
 			BrokerListCommand: commands.BrokerListCommand{
 				UI:             UI,
 				BrokersFetcher: brokersActor,
+			},
+			BrokerDeleteCommand: commands.BrokerDeleteCommand{
+				UI:                  UI,
+				BrokerDeleteUsecase: brokerDeleteUsecase,
 			},
 		},
 		ServiceCommand: commands.ServiceCommand{

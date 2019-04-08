@@ -24,6 +24,7 @@ type BrokerRepository interface {
 	FindAll() ([]*osbapi.Broker, error)
 	FindByName(name string) (*osbapi.Broker, error)
 	Register(*osbapi.Broker) error
+	Delete(name string) error
 }
 
 type BrokersActor struct {
@@ -41,4 +42,8 @@ func (a *BrokersActor) Register(broker *osbapi.Broker) error {
 
 func (a *BrokersActor) GetBrokerByName(name string) (*osbapi.Broker, error) {
 	return a.Repository.FindByName(name)
+}
+
+func (a *BrokersActor) Delete(name string) error {
+	return a.Repository.Delete(name)
 }

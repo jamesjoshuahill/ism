@@ -194,6 +194,77 @@ var _ = Describe("Instance", func() {
 		})
 	})
 
+	Describe("FindAllForBroker", func() {
+		var (
+			instances          []*osbapi.Instance
+			instanceID1        string
+			instanceCreatedAt1 string
+			err                error
+		)
+
+		BeforeEach(func() {
+			instanceResource1 := &v1alpha1.ServiceInstance{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "instance-1",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceInstanceSpec{
+					Name:       "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					BrokerName: "my-broker-1",
+				},
+				Status: v1alpha1.ServiceInstanceStatus{
+					State: v1alpha1.ServiceInstanceStateProvisioned,
+				},
+			}
+
+			instanceResource2 := &v1alpha1.ServiceInstance{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "instance-2",
+					Namespace: "default",
+				},
+				Spec: v1alpha1.ServiceInstanceSpec{
+					Name:       "instance-2",
+					PlanID:     "plan-2",
+					ServiceID:  "service-2",
+					BrokerName: "my-broker-2",
+				},
+			}
+
+			Expect(kubeClient.Create(context.TODO(), instanceResource1)).To(Succeed())
+			Expect(kubeClient.Status().Update(context.TODO(), instanceResource1)).To(Succeed())
+
+			Expect(kubeClient.Create(context.TODO(), instanceResource2)).To(Succeed())
+			instanceCreatedAt1 = createdAtForInstance(kubeClient, instanceResource1)
+			instanceID1 = idForInstance(kubeClient, instanceResource1)
+		})
+
+		JustBeforeEach(func() {
+			instances, err = instanceRepo.FindAllForBroker("my-broker-1")
+		})
+
+		AfterEach(func() {
+			deleteInstances(kubeClient, "instance-1", "instance-2")
+		})
+
+		It("returns all instances for a specific broker", func() {
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(instances).To(ConsistOf(
+				&osbapi.Instance{
+					ID:         instanceID1,
+					CreatedAt:  instanceCreatedAt1,
+					Name:       "instance-1",
+					PlanID:     "plan-1",
+					ServiceID:  "service-1",
+					Status:     "created",
+					BrokerName: "my-broker-1",
+				},
+			))
+		})
+	})
+
 	Describe("FindByID", func() {
 		var (
 			instance          *osbapi.Instance

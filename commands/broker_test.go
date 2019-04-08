@@ -171,4 +171,57 @@ var _ = Describe("Broker command", func() {
 			})
 		})
 	})
+
+	Describe("Delete sub command", func() {
+		var (
+			fakeBrokerDeleteUsecase *commandsfakes.FakeBrokerDeleteUsecase
+			fakeUI                  *commandsfakes.FakeUI
+
+			deleteCommand BrokerDeleteCommand
+
+			executeErr error
+		)
+
+		BeforeEach(func() {
+			fakeBrokerDeleteUsecase = &commandsfakes.FakeBrokerDeleteUsecase{}
+			fakeUI = &commandsfakes.FakeUI{}
+
+			deleteCommand = BrokerDeleteCommand{
+				Name:                "my-broker",
+				BrokerDeleteUsecase: fakeBrokerDeleteUsecase,
+				UI:                  fakeUI,
+			}
+		})
+
+		JustBeforeEach(func() {
+			executeErr = deleteCommand.Execute(nil)
+		})
+
+		It("calls to delete the broker", func() {
+			brokerName := fakeBrokerDeleteUsecase.DeleteArgsForCall(0)
+			Expect(brokerName).To(Equal("my-broker"))
+		})
+
+		It("doesn't error", func() {
+			Expect(executeErr).NotTo(HaveOccurred())
+		})
+
+		It("displays that the broker is being deleted", func() {
+			Expect(fakeUI.DisplayTextCallCount()).To(Equal(1))
+
+			text, data := fakeUI.DisplayTextArgsForCall(0)
+			Expect(text).To(Equal("Broker '{{.BrokerName}}' is being deleted."))
+			Expect(data[0]).To(HaveKeyWithValue("BrokerName", "my-broker"))
+		})
+
+		When("delete broker fails", func() {
+			BeforeEach(func() {
+				fakeBrokerDeleteUsecase.DeleteReturns(errors.New("error-deleting-broker"))
+			})
+
+			It("returns an error", func() {
+				Expect(executeErr).To(MatchError("error-deleting-broker"))
+			})
+		})
+	})
 })

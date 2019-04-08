@@ -89,6 +89,17 @@ func (b *Broker) FindAll() ([]*osbapi.Broker, error) {
 	return brokers, nil
 }
 
+func (b *Broker) Delete(name string) error {
+	brokerResource := &v1alpha1.Broker{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: "default",
+		},
+	}
+
+	return b.KubeClient.Delete(context.TODO(), brokerResource)
+}
+
 func (b *Broker) Register(broker *osbapi.Broker) error {
 	brokerResource := &v1alpha1.Broker{
 		ObjectMeta: metav1.ObjectMeta{

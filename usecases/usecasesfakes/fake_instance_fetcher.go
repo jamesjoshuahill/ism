@@ -47,6 +47,19 @@ type FakeInstanceFetcher struct {
 		result1 []*osbapi.Instance
 		result2 error
 	}
+	GetInstancesForBrokerStub        func(string) ([]*osbapi.Instance, error)
+	getInstancesForBrokerMutex       sync.RWMutex
+	getInstancesForBrokerArgsForCall []struct {
+		arg1 string
+	}
+	getInstancesForBrokerReturns struct {
+		result1 []*osbapi.Instance
+		result2 error
+	}
+	getInstancesForBrokerReturnsOnCall map[int]struct {
+		result1 []*osbapi.Instance
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -232,6 +245,69 @@ func (fake *FakeInstanceFetcher) GetInstancesReturnsOnCall(i int, result1 []*osb
 	}{result1, result2}
 }
 
+func (fake *FakeInstanceFetcher) GetInstancesForBroker(arg1 string) ([]*osbapi.Instance, error) {
+	fake.getInstancesForBrokerMutex.Lock()
+	ret, specificReturn := fake.getInstancesForBrokerReturnsOnCall[len(fake.getInstancesForBrokerArgsForCall)]
+	fake.getInstancesForBrokerArgsForCall = append(fake.getInstancesForBrokerArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetInstancesForBroker", []interface{}{arg1})
+	fake.getInstancesForBrokerMutex.Unlock()
+	if fake.GetInstancesForBrokerStub != nil {
+		return fake.GetInstancesForBrokerStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getInstancesForBrokerReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeInstanceFetcher) GetInstancesForBrokerCallCount() int {
+	fake.getInstancesForBrokerMutex.RLock()
+	defer fake.getInstancesForBrokerMutex.RUnlock()
+	return len(fake.getInstancesForBrokerArgsForCall)
+}
+
+func (fake *FakeInstanceFetcher) GetInstancesForBrokerCalls(stub func(string) ([]*osbapi.Instance, error)) {
+	fake.getInstancesForBrokerMutex.Lock()
+	defer fake.getInstancesForBrokerMutex.Unlock()
+	fake.GetInstancesForBrokerStub = stub
+}
+
+func (fake *FakeInstanceFetcher) GetInstancesForBrokerArgsForCall(i int) string {
+	fake.getInstancesForBrokerMutex.RLock()
+	defer fake.getInstancesForBrokerMutex.RUnlock()
+	argsForCall := fake.getInstancesForBrokerArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeInstanceFetcher) GetInstancesForBrokerReturns(result1 []*osbapi.Instance, result2 error) {
+	fake.getInstancesForBrokerMutex.Lock()
+	defer fake.getInstancesForBrokerMutex.Unlock()
+	fake.GetInstancesForBrokerStub = nil
+	fake.getInstancesForBrokerReturns = struct {
+		result1 []*osbapi.Instance
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeInstanceFetcher) GetInstancesForBrokerReturnsOnCall(i int, result1 []*osbapi.Instance, result2 error) {
+	fake.getInstancesForBrokerMutex.Lock()
+	defer fake.getInstancesForBrokerMutex.Unlock()
+	fake.GetInstancesForBrokerStub = nil
+	if fake.getInstancesForBrokerReturnsOnCall == nil {
+		fake.getInstancesForBrokerReturnsOnCall = make(map[int]struct {
+			result1 []*osbapi.Instance
+			result2 error
+		})
+	}
+	fake.getInstancesForBrokerReturnsOnCall[i] = struct {
+		result1 []*osbapi.Instance
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeInstanceFetcher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -241,6 +317,8 @@ func (fake *FakeInstanceFetcher) Invocations() map[string][][]interface{} {
 	defer fake.getInstanceByNameMutex.RUnlock()
 	fake.getInstancesMutex.RLock()
 	defer fake.getInstancesMutex.RUnlock()
+	fake.getInstancesForBrokerMutex.RLock()
+	defer fake.getInstancesForBrokerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

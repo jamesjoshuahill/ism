@@ -16,29 +16,34 @@ specific language governing permissions and limitations under the License.
 
 package usecases
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
-type InstanceDeleteUsecase struct {
-	InstanceDeleter InstanceDeleter
+type BrokerDeleteUsecase struct {
+	BrokerDeleter   BrokerDeleter
 	InstanceFetcher InstanceFetcher
-	BindingFetcher  BindingFetcher
 }
 
-func (u *InstanceDeleteUsecase) Delete(name string) error {
-	instance, err := u.InstanceFetcher.GetInstanceByName(name)
+func (u *BrokerDeleteUsecase) Delete(name string) error {
+	instances, err := u.InstanceFetcher.GetInstancesForBroker(name)
 	if err != nil {
 		return err
 	}
 
-	bindings, err := u.BindingFetcher.GetBindingsForInstance(instance.ID)
-	if err != nil {
-		return err
+	if len(instances) > 0 {
+		errorMessage := fmt.Sprintf("Broker '%s' cannot be deleted as it has %d instance", name, len(instances))
+		return grammaticallyCorrectError(errorMessage, len(instances))
 	}
 
-	if len(bindings) > 0 {
-		errorMessage := fmt.Sprintf("Instance '%s' cannot be deleted as it has %d binding", name, len(bindings))
-		return grammaticallyCorrectError(errorMessage, len(bindings))
+	return u.BrokerDeleter.Delete(name)
+}
+
+func grammaticallyCorrectError(errorMessage string, num int) error {
+	if num > 1 {
+		errorMessage = errorMessage + "s"
 	}
 
-	return u.InstanceDeleter.Delete(name)
+	return errors.New(errorMessage)
 }

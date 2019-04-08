@@ -25,6 +25,7 @@ type InstanceRepository interface {
 	FindAll() ([]*osbapi.Instance, error)
 	FindByName(name string) (*osbapi.Instance, error)
 	FindByID(id string) (*osbapi.Instance, error)
+	FindAllForBroker(brokerName string) ([]*osbapi.Instance, error)
 	Delete(name string) error
 }
 
@@ -46,6 +47,10 @@ func (a *InstancesActor) GetInstanceByName(name string) (*osbapi.Instance, error
 
 func (a *InstancesActor) GetInstanceByID(id string) (*osbapi.Instance, error) {
 	return a.Repository.FindByID(id)
+}
+
+func (a *InstancesActor) GetInstancesForBroker(brokerName string) ([]*osbapi.Instance, error) {
+	return a.Repository.FindAllForBroker(brokerName)
 }
 
 func (a *InstancesActor) Delete(name string) error {

@@ -145,4 +145,75 @@ var _ = Describe("CLI broker command", func() {
 			})
 		})
 	})
+
+	Describe("delete sub command", func() {
+		BeforeEach(func() {
+			args = append(args, "delete")
+		})
+
+		When("--help is passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--help")
+			})
+
+			It("displays help and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Usage:"))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] broker delete`))
+				Eventually(session).Should(Say("\n"))
+				Eventually(session).Should(Say("Delete a service broker from the marketplace"))
+			})
+		})
+
+		When("valid args are passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "instance-deletion-broker")
+
+				registerBroker("instance-deletion-broker")
+
+				Expect(getBrokers()).To(HaveLen(1))
+			})
+
+			It("deletes the service broker", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Broker 'instance-deletion-broker' is being deleted\\."))
+
+				Eventually(getBrokers).Should(HaveLen(0))
+			})
+		})
+
+		When("valid args are passed and the broker has a service instance", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "instance-deletion-broker")
+
+				registerBroker("instance-deletion-broker")
+				createInstance("instance-deletion-instance", "instance-deletion-broker")
+
+				Expect(getBrokers()).To(HaveLen(1))
+				Expect(getBrokerInstances()).To(HaveLen(1))
+			})
+
+			AfterEach(func() {
+				deleteInstance("instance-deletion-instance")
+				deleteBroker("instance-deletion-broker")
+				cleanBrokerData()
+			})
+
+			It("doesn't delete the instance", func() {
+				Expect(getBrokerInstances()).To(HaveLen(1))
+			})
+
+			It("errors with a useful message", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("Broker 'instance-deletion-broker' cannot be deleted as it has 1 instance"))
+			})
+		})
+
+		When("required args are not passed", func() {
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("the required flag `--name' was not specified"))
+			})
+		})
+	})
 })
