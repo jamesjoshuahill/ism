@@ -51,7 +51,8 @@ var _ = Describe("CLI binding command", func() {
 
 		It("displays help and exits 0", func() {
 			Eventually(session).Should(Exit(0))
-			Eventually(session).Should(Say("The binding command group lets you create, get, list and delete service bindings"))
+			Eventually(session).Should(Say("The binding command group lets you create, get, list, and delete service"))
+			Eventually(session).Should(Say("bindings"))
 			Eventually(session).Should(Say("Available commands:"))
 			Eventually(session).Should(Say("create"))
 			Eventually(session).Should(Say("delete"))

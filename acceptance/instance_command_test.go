@@ -54,7 +54,7 @@ var _ = Describe("CLI instance command", func() {
 			Eventually(session).Should(Say("Usage:"))
 			Eventually(session).Should(Say(`ism \[OPTIONS\] instance <create | delete | list>`))
 			Eventually(session).Should(Say("\n"))
-			Eventually(session).Should(Say("The instance command group lets you create, list and delete service instances"))
+			Eventually(session).Should(Say("The instance command group lets you create, list, and delete service instances"))
 		})
 	})
 
