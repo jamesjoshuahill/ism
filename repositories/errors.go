@@ -20,5 +20,5 @@ type BrokerRegisterTimeoutErr struct {
 }
 
 func (e BrokerRegisterTimeoutErr) Error() string {
-	return fmt.Sprintf("timed out waiting for broker '%s' to be registered", e.BrokerName)
+	return fmt.Sprintf("ERROR: Timed out waiting for service broker '%s' to be registered", e.BrokerName)
 }
