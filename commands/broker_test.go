@@ -19,6 +19,8 @@ package commands_test
 import (
 	"errors"
 
+	"github.com/pivotal-cf/ism/repositories"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -79,6 +81,16 @@ var _ = Describe("Broker command", func() {
 					Username: "test-username",
 					Password: "test-password",
 				}))
+			})
+
+			When("a broker with the same name already exists", func() {
+				BeforeEach(func() {
+					fakeBrokerRegistrar.RegisterReturns(repositories.BrokerAlreadyExistsError)
+				})
+
+				It("returns an informative error message", func() {
+					Expect(executeErr).To(MatchError("ERROR: A service broker named 'broker-1' already exists."))
+				})
 			})
 
 			When("registering the broker errors", func() {

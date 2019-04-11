@@ -79,6 +79,22 @@ var _ = Describe("CLI broker command", func() {
 			})
 		})
 
+		When("a broker with the same name already exists", func() {
+			BeforeEach(func() {
+				registerBroker("register-dup-name-broker")
+				args = append(args, "--name", "register-dup-name-broker", "--url", nodeBrokerURL, "--username", nodeBrokerUsername, "--password", nodeBrokerPassword)
+			})
+
+			AfterEach(func() {
+				deleteBroker("register-dup-name-broker")
+			})
+
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("ERROR: A service broker named 'register-dup-name-broker' already exists."))
+			})
+		})
+
 		When("--help is passed", func() {
 			BeforeEach(func() {
 				args = append(args, "--help")

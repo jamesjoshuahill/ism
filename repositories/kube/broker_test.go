@@ -20,6 +20,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/pivotal-cf/ism/repositories"
+
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -110,7 +112,7 @@ var _ = Describe("Broker", func() {
 				}))
 			})
 
-			When("creating a new Broker fails", func() {
+			When("a broker with the same name already exists", func() {
 				BeforeEach(func() {
 					// register the broker first, so that the second register errors
 					b := &osbapi.Broker{
@@ -123,8 +125,8 @@ var _ = Describe("Broker", func() {
 					Expect(brokerRepo.Register(b)).To(Succeed())
 				})
 
-				It("propagates the error", func() {
-					Expect(err).To(HaveOccurred())
+				It("returns a 'BrokerAlreadyExists' error", func() {
+					Expect(err).To(Equal(repositories.BrokerAlreadyExistsError))
 				})
 			})
 		})

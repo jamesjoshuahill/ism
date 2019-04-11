@@ -17,7 +17,10 @@ specific language governing permissions and limitations under the License.
 package commands
 
 import (
+	"fmt"
+
 	"github.com/pivotal-cf/ism/osbapi"
+	"github.com/pivotal-cf/ism/repositories"
 )
 
 //go:generate counterfeiter . BrokerRegistrar
@@ -67,7 +70,6 @@ type BrokerDeleteCommand struct {
 }
 
 func (cmd *BrokerRegisterCommand) Execute([]string) error {
-
 	//TODO: This is the only command that uses the osbapi types, should this just pass params instead?
 	newBroker := &osbapi.Broker{
 		Name:     cmd.Name,
@@ -77,6 +79,9 @@ func (cmd *BrokerRegisterCommand) Execute([]string) error {
 	}
 
 	if err := cmd.BrokerRegistrar.Register(newBroker); err != nil {
+		if err == repositories.BrokerAlreadyExistsError {
+			return fmt.Errorf("ERROR: A service broker named '%s' already exists.", cmd.Name)
+		}
 		return err
 	}
 

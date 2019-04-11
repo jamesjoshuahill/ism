@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pivotal-cf/ism/repositories"
+
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -115,6 +117,9 @@ func (b *Broker) Register(broker *osbapi.Broker) error {
 	}
 
 	if err := b.KubeClient.Create(context.TODO(), brokerResource); err != nil {
+		if kerrors.ReasonForError(err) == metav1.StatusReasonAlreadyExists {
+			return repositories.BrokerAlreadyExistsError
+		}
 		return err
 	}
 
