@@ -17,10 +17,7 @@ specific language governing permissions and limitations under the License.
 package commands
 
 import (
-	"fmt"
-
 	"github.com/pivotal-cf/ism/osbapi"
-	"github.com/pivotal-cf/ism/repositories"
 )
 
 //go:generate counterfeiter . BrokerRegistrar
@@ -79,9 +76,6 @@ func (cmd *BrokerRegisterCommand) Execute([]string) error {
 	}
 
 	if err := cmd.BrokerRegistrar.Register(newBroker); err != nil {
-		if err == repositories.ErrBrokerAlreadyExists {
-			return fmt.Errorf("ERROR: A service broker named '%s' already exists.", cmd.Name)
-		}
 		return err
 	}
 

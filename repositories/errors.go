@@ -5,7 +5,14 @@ import (
 	"fmt"
 )
 
-var ErrBrokerAlreadyExists = errors.New("broker already exists")
+type ErrBrokerAlreadyExists struct {
+	Name string
+}
+
+func (e ErrBrokerAlreadyExists) Error() string {
+	return fmt.Sprintf("ERROR: A service broker named '%s' already exists.", e.Name)
+}
+
 var ErrBrokerNotFound = errors.New("broker not found")
 
 type BrokerRegisterTimeoutErr struct {

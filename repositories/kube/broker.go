@@ -106,7 +106,7 @@ func (b *Broker) Register(broker *osbapi.Broker) error {
 
 	if err := b.KubeClient.Create(context.TODO(), brokerResource); err != nil {
 		if kerrors.ReasonForError(err) == metav1.StatusReasonAlreadyExists {
-			return repositories.ErrBrokerAlreadyExists
+			return repositories.ErrBrokerAlreadyExists{Name: broker.Name}
 		}
 		return err
 	}
