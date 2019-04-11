@@ -126,7 +126,7 @@ var _ = Describe("Broker", func() {
 				})
 
 				It("returns a 'BrokerAlreadyExists' error", func() {
-					Expect(err).To(Equal(repositories.BrokerAlreadyExistsError))
+					Expect(err).To(Equal(repositories.ErrBrokerAlreadyExists))
 				})
 			})
 		})

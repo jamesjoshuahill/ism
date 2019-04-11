@@ -18,8 +18,6 @@ package kube
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/pivotal-cf/ism/repositories"
@@ -35,16 +33,6 @@ import (
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
 )
 
-var errBrokerNotFound = errors.New("broker not found")
-
-type BrokerRegisterTimeoutErr struct {
-	brokerName string
-}
-
-func (e BrokerRegisterTimeoutErr) Error() string {
-	return fmt.Sprintf("timed out waiting for broker '%s' to be registered", e.brokerName)
-}
-
 type Broker struct {
 	KubeClient          client.Client
 	RegistrationTimeout time.Duration
@@ -55,7 +43,7 @@ func (b *Broker) FindByName(name string) (*osbapi.Broker, error) {
 	err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: "default"}, broker)
 	if err != nil {
 		if kerrors.IsNotFound(err) {
-			return nil, errBrokerNotFound
+			return nil, repositories.ErrBrokerNotFound
 		}
 		return nil, err
 	}
@@ -118,7 +106,7 @@ func (b *Broker) Register(broker *osbapi.Broker) error {
 
 	if err := b.KubeClient.Create(context.TODO(), brokerResource); err != nil {
 		if kerrors.ReasonForError(err) == metav1.StatusReasonAlreadyExists {
-			return repositories.BrokerAlreadyExistsError
+			return repositories.ErrBrokerAlreadyExists
 		}
 		return err
 	}
@@ -140,7 +128,7 @@ func (b *Broker) waitForBrokerRegistration(broker *v1alpha1.Broker) error {
 
 	if err != nil {
 		if err == wait.ErrWaitTimeout {
-			return BrokerRegisterTimeoutErr{brokerName: broker.Name}
+			return repositories.BrokerRegisterTimeoutErr{BrokerName: broker.Name}
 		}
 
 		return err

@@ -85,7 +85,7 @@ var _ = Describe("Broker command", func() {
 
 			When("a broker with the same name already exists", func() {
 				BeforeEach(func() {
-					fakeBrokerRegistrar.RegisterReturns(repositories.BrokerAlreadyExistsError)
+					fakeBrokerRegistrar.RegisterReturns(repositories.ErrBrokerAlreadyExists)
 				})
 
 				It("returns an informative error message", func() {

@@ -79,7 +79,7 @@ func (cmd *BrokerRegisterCommand) Execute([]string) error {
 	}
 
 	if err := cmd.BrokerRegistrar.Register(newBroker); err != nil {
-		if err == repositories.BrokerAlreadyExistsError {
+		if err == repositories.ErrBrokerAlreadyExists {
 			return fmt.Errorf("ERROR: A service broker named '%s' already exists.", cmd.Name)
 		}
 		return err
