@@ -56,3 +56,13 @@ func TestStorageBroker(t *testing.T) {
 	g.Expect(c.Delete(context.TODO(), fetched)).NotTo(gomega.HaveOccurred())
 	g.Expect(c.Get(context.TODO(), key, fetched)).To(gomega.HaveOccurred())
 }
+
+func TestIsRegistered(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+
+	notRegistered := BrokerStatus{}
+	g.Expect(notRegistered.IsRegistered()).NotTo(gomega.BeTrue())
+
+	registered := BrokerStatus{Registered: &BrokerStateRegistered{}}
+	g.Expect(registered.IsRegistered()).To(gomega.BeTrue())
+}

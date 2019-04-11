@@ -23,16 +23,16 @@ type FakeKubeBrokerRepo struct {
 		result1 *v1alpha1.Broker
 		result2 error
 	}
-	UpdateStateStub        func(*v1alpha1.Broker, v1alpha1.BrokerState) error
-	updateStateMutex       sync.RWMutex
-	updateStateArgsForCall []struct {
+	UpdateStatusStub        func(*v1alpha1.Broker, v1alpha1.BrokerStatus) error
+	updateStatusMutex       sync.RWMutex
+	updateStatusArgsForCall []struct {
 		arg1 *v1alpha1.Broker
-		arg2 v1alpha1.BrokerState
+		arg2 v1alpha1.BrokerStatus
 	}
-	updateStateReturns struct {
+	updateStatusReturns struct {
 		result1 error
 	}
-	updateStateReturnsOnCall map[int]struct {
+	updateStatusReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
@@ -102,63 +102,63 @@ func (fake *FakeKubeBrokerRepo) GetReturnsOnCall(i int, result1 *v1alpha1.Broker
 	}{result1, result2}
 }
 
-func (fake *FakeKubeBrokerRepo) UpdateState(arg1 *v1alpha1.Broker, arg2 v1alpha1.BrokerState) error {
-	fake.updateStateMutex.Lock()
-	ret, specificReturn := fake.updateStateReturnsOnCall[len(fake.updateStateArgsForCall)]
-	fake.updateStateArgsForCall = append(fake.updateStateArgsForCall, struct {
+func (fake *FakeKubeBrokerRepo) UpdateStatus(arg1 *v1alpha1.Broker, arg2 v1alpha1.BrokerStatus) error {
+	fake.updateStatusMutex.Lock()
+	ret, specificReturn := fake.updateStatusReturnsOnCall[len(fake.updateStatusArgsForCall)]
+	fake.updateStatusArgsForCall = append(fake.updateStatusArgsForCall, struct {
 		arg1 *v1alpha1.Broker
-		arg2 v1alpha1.BrokerState
+		arg2 v1alpha1.BrokerStatus
 	}{arg1, arg2})
-	fake.recordInvocation("UpdateState", []interface{}{arg1, arg2})
-	fake.updateStateMutex.Unlock()
-	if fake.UpdateStateStub != nil {
-		return fake.UpdateStateStub(arg1, arg2)
+	fake.recordInvocation("UpdateStatus", []interface{}{arg1, arg2})
+	fake.updateStatusMutex.Unlock()
+	if fake.UpdateStatusStub != nil {
+		return fake.UpdateStatusStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateStateReturns
+	fakeReturns := fake.updateStatusReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeKubeBrokerRepo) UpdateStateCallCount() int {
-	fake.updateStateMutex.RLock()
-	defer fake.updateStateMutex.RUnlock()
-	return len(fake.updateStateArgsForCall)
+func (fake *FakeKubeBrokerRepo) UpdateStatusCallCount() int {
+	fake.updateStatusMutex.RLock()
+	defer fake.updateStatusMutex.RUnlock()
+	return len(fake.updateStatusArgsForCall)
 }
 
-func (fake *FakeKubeBrokerRepo) UpdateStateCalls(stub func(*v1alpha1.Broker, v1alpha1.BrokerState) error) {
-	fake.updateStateMutex.Lock()
-	defer fake.updateStateMutex.Unlock()
-	fake.UpdateStateStub = stub
+func (fake *FakeKubeBrokerRepo) UpdateStatusCalls(stub func(*v1alpha1.Broker, v1alpha1.BrokerStatus) error) {
+	fake.updateStatusMutex.Lock()
+	defer fake.updateStatusMutex.Unlock()
+	fake.UpdateStatusStub = stub
 }
 
-func (fake *FakeKubeBrokerRepo) UpdateStateArgsForCall(i int) (*v1alpha1.Broker, v1alpha1.BrokerState) {
-	fake.updateStateMutex.RLock()
-	defer fake.updateStateMutex.RUnlock()
-	argsForCall := fake.updateStateArgsForCall[i]
+func (fake *FakeKubeBrokerRepo) UpdateStatusArgsForCall(i int) (*v1alpha1.Broker, v1alpha1.BrokerStatus) {
+	fake.updateStatusMutex.RLock()
+	defer fake.updateStatusMutex.RUnlock()
+	argsForCall := fake.updateStatusArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeKubeBrokerRepo) UpdateStateReturns(result1 error) {
-	fake.updateStateMutex.Lock()
-	defer fake.updateStateMutex.Unlock()
-	fake.UpdateStateStub = nil
-	fake.updateStateReturns = struct {
+func (fake *FakeKubeBrokerRepo) UpdateStatusReturns(result1 error) {
+	fake.updateStatusMutex.Lock()
+	defer fake.updateStatusMutex.Unlock()
+	fake.UpdateStatusStub = nil
+	fake.updateStatusReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeKubeBrokerRepo) UpdateStateReturnsOnCall(i int, result1 error) {
-	fake.updateStateMutex.Lock()
-	defer fake.updateStateMutex.Unlock()
-	fake.UpdateStateStub = nil
-	if fake.updateStateReturnsOnCall == nil {
-		fake.updateStateReturnsOnCall = make(map[int]struct {
+func (fake *FakeKubeBrokerRepo) UpdateStatusReturnsOnCall(i int, result1 error) {
+	fake.updateStatusMutex.Lock()
+	defer fake.updateStatusMutex.Unlock()
+	fake.UpdateStatusStub = nil
+	if fake.updateStatusReturnsOnCall == nil {
+		fake.updateStatusReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.updateStateReturnsOnCall[i] = struct {
+	fake.updateStatusReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -168,8 +168,8 @@ func (fake *FakeKubeBrokerRepo) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.getMutex.RLock()
 	defer fake.getMutex.RUnlock()
-	fake.updateStateMutex.RLock()
-	defer fake.updateStateMutex.RUnlock()
+	fake.updateStatusMutex.RLock()
+	defer fake.updateStatusMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
