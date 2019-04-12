@@ -2,10 +2,10 @@
 package usecasesfakes
 
 import (
-	sync "sync"
+	"sync"
 
-	osbapi "github.com/pivotal-cf/ism/osbapi"
-	usecases "github.com/pivotal-cf/ism/usecases"
+	"github.com/pivotal-cf/ism/osbapi"
+	"github.com/pivotal-cf/ism/usecases"
 )
 
 type FakeServiceFetcher struct {

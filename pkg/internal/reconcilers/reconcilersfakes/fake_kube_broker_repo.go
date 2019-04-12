@@ -2,11 +2,11 @@
 package reconcilersfakes
 
 import (
-	sync "sync"
+	"sync"
 
-	v1alpha1 "github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
-	reconcilers "github.com/pivotal-cf/ism/pkg/internal/reconcilers"
-	types "k8s.io/apimachinery/pkg/types"
+	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
+	"github.com/pivotal-cf/ism/pkg/internal/reconcilers"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 type FakeKubeBrokerRepo struct {

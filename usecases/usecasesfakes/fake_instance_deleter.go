@@ -2,9 +2,9 @@
 package usecasesfakes
 
 import (
-	sync "sync"
+	"sync"
 
-	usecases "github.com/pivotal-cf/ism/usecases"
+	"github.com/pivotal-cf/ism/usecases"
 )
 
 type FakeInstanceDeleter struct {

@@ -2,10 +2,10 @@
 package commandsfakes
 
 import (
-	sync "sync"
+	"sync"
 
-	commands "github.com/pivotal-cf/ism/commands"
-	usecases "github.com/pivotal-cf/ism/usecases"
+	"github.com/pivotal-cf/ism/commands"
+	"github.com/pivotal-cf/ism/usecases"
 )
 
 type FakeBindingListUsecase struct {

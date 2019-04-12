@@ -2,10 +2,10 @@
 package actorsfakes
 
 import (
-	sync "sync"
+	"sync"
 
-	actors "github.com/pivotal-cf/ism/actors"
-	osbapi "github.com/pivotal-cf/ism/osbapi"
+	"github.com/pivotal-cf/ism/actors"
+	"github.com/pivotal-cf/ism/osbapi"
 )
 
 type FakePlanRepository struct {

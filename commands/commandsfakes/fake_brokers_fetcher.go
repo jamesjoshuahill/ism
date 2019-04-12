@@ -2,10 +2,10 @@
 package commandsfakes
 
 import (
-	sync "sync"
+	"sync"
 
-	commands "github.com/pivotal-cf/ism/commands"
-	osbapi "github.com/pivotal-cf/ism/osbapi"
+	"github.com/pivotal-cf/ism/commands"
+	"github.com/pivotal-cf/ism/osbapi"
 )
 
 type FakeBrokersFetcher struct {

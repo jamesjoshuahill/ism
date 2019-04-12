@@ -2,9 +2,9 @@
 package commandsfakes
 
 import (
-	sync "sync"
+	"sync"
 
-	commands "github.com/pivotal-cf/ism/commands"
+	"github.com/pivotal-cf/ism/commands"
 )
 
 type FakeInstanceDeleteUsecase struct {
