@@ -12,7 +12,7 @@ A [Go](https://golang.org/) development environment is needed in order to build 
 
 ```
 go get github.com/pivotal-cf/ism
-cd $GOPATH/github.com/pivotal-cf/ism
+cd "$(go env GOPATH)/src/github.com/pivotal-cf/ism"
 make cli
 ```
 
@@ -21,7 +21,7 @@ Access to a Kubernetes cluster is needed in order to install and run the custom 
 ```
 kubectl cluster-info # ensure you have access to a cluster
 make install         # install CRDs into the cluster
-make run             # run the custom controllers on your local machine
+make deploy          # run the custom controllers on the cluster
 ```
 
 ### Usage
@@ -71,11 +71,16 @@ The following dependencies need to be installed in order to hack on ism:
   * [ginkgo](https://github.com/onsi/ginkgo)
   * [counterfeiter](https://github.com/maxbrunsfeld/counterfeiter)
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-* [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
+* [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) (1.0.x)
 * [kustomize](https://github.com/kubernetes-sigs/kustomize)
 * Access to a k8s cluster
 
 The tests can be run via `make test`.
+
+You can run the controller locally.
+```
+make run          # run the custom controllers locally 
+```
 
 ### Contributing
 
