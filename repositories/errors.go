@@ -6,19 +6,19 @@ import (
 )
 
 type ErrBrokerAlreadyExists struct {
-	Name string
-}
-
-func (e ErrBrokerAlreadyExists) Error() string {
-	return fmt.Sprintf("A service broker named '%s' already exists.", e.Name)
-}
-
-var ErrBrokerNotFound = errors.New("broker not found")
-
-type BrokerRegisterTimeoutErr struct {
 	BrokerName string
 }
 
-func (e BrokerRegisterTimeoutErr) Error() string {
+func (e ErrBrokerAlreadyExists) Error() string {
+	return fmt.Sprintf("A service broker named '%s' already exists.", e.BrokerName)
+}
+
+var ErrBrokerNotFound = errors.New("Service broker not found")
+
+type ErrBrokerRegisterTimeout struct {
+	BrokerName string
+}
+
+func (e ErrBrokerRegisterTimeout) Error() string {
 	return fmt.Sprintf("Timed out waiting for service broker '%s' to be registered", e.BrokerName)
 }

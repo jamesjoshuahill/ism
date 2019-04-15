@@ -126,14 +126,14 @@ var _ = Describe("Broker", func() {
 				})
 
 				It("returns a 'BrokerAlreadyExists' error", func() {
-					Expect(err).To(Equal(repositories.ErrBrokerAlreadyExists{Name: "broker-1"}))
+					Expect(err).To(Equal(repositories.ErrBrokerAlreadyExists{BrokerName: "broker-1"}))
 				})
 			})
 		})
 
 		When("the status of a broker is never set to registered", func() {
 			It("should eventually timeout", func() {
-				Expect(err).To(MatchError(repositories.BrokerRegisterTimeoutErr{BrokerName: "broker-1"}))
+				Expect(err).To(MatchError(repositories.ErrBrokerRegisterTimeout{BrokerName: "broker-1"}))
 			})
 
 			It("times out once the timeout has been reached", func() {
@@ -227,7 +227,7 @@ var _ = Describe("Broker", func() {
 
 		When("the broker does not exist", func() {
 			It("returns an error", func() {
-				Expect(err).To(MatchError("broker not found"))
+				Expect(err).To(MatchError("Service broker not found"))
 			})
 		})
 	})
