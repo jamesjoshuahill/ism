@@ -149,9 +149,9 @@ var _ = Describe("BrokerReconciler", func() {
 	})
 
 	It("updates the broker status to registered", func() {
-		Expect(fakeKubeBrokerRepo.UpdateStatusCallCount()).To(Equal(1))
-		broker, newStatus := fakeKubeBrokerRepo.UpdateStatusArgsForCall(0)
-		Expect(newStatus).To(Equal(v1alpha1.BrokerStatus{Registered: &v1alpha1.BrokerStateRegistered{}}))
+		Expect(fakeKubeBrokerRepo.UpdateStateCallCount()).To(Equal(1))
+		broker, newState := fakeKubeBrokerRepo.UpdateStateArgsForCall(0)
+		Expect(newState).To(Equal(v1alpha1.BrokerStateRegistered))
 		Expect(*broker).To(Equal(returnedBroker))
 	})
 
@@ -179,9 +179,9 @@ var _ = Describe("BrokerReconciler", func() {
 		Expect(catalogPlanArg).To(Equal(catalogPlanThree))
 	})
 
-	When("the broker status reports it is already registered", func() {
+	When("the broker state reports it is already registered", func() {
 		BeforeEach(func() {
-			returnedBroker.Status = v1alpha1.BrokerStatus{Registered: &v1alpha1.BrokerStateRegistered{}}
+			returnedBroker.Status.State = v1alpha1.BrokerStateRegistered
 		})
 
 		It("doesn't call the broker", func() {
@@ -189,7 +189,7 @@ var _ = Describe("BrokerReconciler", func() {
 		})
 
 		It("doesn't update the status", func() {
-			Expect(fakeKubeBrokerRepo.UpdateStatusCallCount()).To(Equal(0))
+			Expect(fakeKubeBrokerRepo.UpdateStateCallCount()).To(Equal(0))
 		})
 
 		It("still reconciles successfully ", func() {
@@ -199,7 +199,7 @@ var _ = Describe("BrokerReconciler", func() {
 
 	When("updating the broker status errors", func() {
 		BeforeEach(func() {
-			fakeKubeBrokerRepo.UpdateStatusReturns(errors.New("error-updating-status"))
+			fakeKubeBrokerRepo.UpdateStateReturns(errors.New("error-updating-status"))
 		})
 
 		It("returns the error", func() {

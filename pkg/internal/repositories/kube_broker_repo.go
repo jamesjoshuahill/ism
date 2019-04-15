@@ -47,8 +47,8 @@ func (repo *KubeBrokerRepo) Get(resource types.NamespacedName) (*v1alpha1.Broker
 	return broker, nil
 }
 
-func (repo *KubeBrokerRepo) UpdateStatus(broker *v1alpha1.Broker, newStatus v1alpha1.BrokerStatus) error {
-	broker.Status = newStatus
+func (repo *KubeBrokerRepo) UpdateState(broker *v1alpha1.Broker, newState v1alpha1.BrokerState) error {
+	broker.Status.State = newState
 
 	return repo.client.Status().Update(ctx, broker)
 }

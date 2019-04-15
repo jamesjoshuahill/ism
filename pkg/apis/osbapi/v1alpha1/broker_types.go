@@ -20,6 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type BrokerState string
+
+const (
+	BrokerStateRegistered BrokerState = "registered"
+)
+
 // BrokerSpec defines the desired state of Broker
 type BrokerSpec struct {
 	Name     string `json:"name"`
@@ -30,14 +36,8 @@ type BrokerSpec struct {
 
 // BrokerStatus defines the observed state of Broker
 type BrokerStatus struct {
-	Registered *BrokerStateRegistered `json:"registered,omitempty"`
+	State BrokerState `json:"state,omitempty"`
 }
-
-func (s BrokerStatus) IsRegistered() bool {
-	return s.Registered != nil
-}
-
-type BrokerStateRegistered struct{}
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

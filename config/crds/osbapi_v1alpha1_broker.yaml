@@ -46,8 +46,8 @@ spec:
           type: object
         status:
           properties:
-            registered:
-              type: object
+            state:
+              type: string
           type: object
   version: v1alpha1
 status:

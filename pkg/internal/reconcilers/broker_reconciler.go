@@ -34,7 +34,7 @@ var ctx = context.TODO()
 
 type KubeBrokerRepo interface {
 	Get(resource types.NamespacedName) (*v1alpha1.Broker, error)
-	UpdateStatus(broker *v1alpha1.Broker, newStatus v1alpha1.BrokerStatus) error
+	UpdateState(broker *v1alpha1.Broker, newState v1alpha1.BrokerState) error
 }
 
 //go:generate counterfeiter . KubeServiceRepo
@@ -89,7 +89,7 @@ func (r *BrokerReconciler) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	if broker.Status.IsRegistered() {
+	if broker.Status.State == v1alpha1.BrokerStateRegistered {
 		return reconcile.Result{}, nil
 	}
 
@@ -111,8 +111,7 @@ func (r *BrokerReconciler) Reconcile(request reconcile.Request) (reconcile.Resul
 		}
 	}
 
-	status := v1alpha1.BrokerStatus{Registered: &v1alpha1.BrokerStateRegistered{}}
-	if err := r.kubeBrokerRepo.UpdateStatus(broker, status); err != nil {
+	if err := r.kubeBrokerRepo.UpdateState(broker, v1alpha1.BrokerStateRegistered); err != nil {
 		return reconcile.Result{}, err
 	}
 

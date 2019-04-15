@@ -342,7 +342,7 @@ func simulateRegistration(kubeClient client.Client, brokerName string, done chan
 				break //loop again
 			}
 
-			broker.Status = v1alpha1.BrokerStatus{Registered: &v1alpha1.BrokerStateRegistered{}}
+			broker.Status.State = v1alpha1.BrokerStateRegistered
 			Expect(kubeClient.Status().Update(context.TODO(), broker)).To(Succeed())
 		}
 	}
