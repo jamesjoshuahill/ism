@@ -133,7 +133,7 @@ var _ = Describe("Broker", func() {
 
 		When("the status of a broker is never set to registered", func() {
 			It("should eventually timeout", func() {
-				Expect(err).To(MatchError("ERROR: Timed out waiting for service broker 'broker-1' to be registered"))
+				Expect(err).To(MatchError(repositories.BrokerRegisterTimeoutErr{BrokerName: "broker-1"}))
 			})
 
 			It("times out once the timeout has been reached", func() {

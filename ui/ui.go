@@ -56,7 +56,7 @@ func (ui *UI) DisplayYAML(data interface{}) error {
 }
 
 func (ui *UI) DisplayError(err error) {
-	fmt.Fprintln(ui.Err, err.Error())
+	fmt.Fprintln(ui.Err, "ERROR: "+err.Error())
 }
 
 func (ui *UI) DisplayTable(table [][]string) {

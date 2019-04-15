@@ -76,9 +76,9 @@ key2:
 	})
 
 	Describe("DisplayError", func() {
-		It("prints error text", func() {
+		It("prints error text with an ERROR: prefix", func() {
 			testUI.DisplayError(errors.New("This is an error"))
-			Expect(testUI.Err).To(Say("This is an error\n"))
+			Expect(testUI.Err).To(Say("ERROR: This is an error\n"))
 		})
 	})
 

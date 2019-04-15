@@ -10,7 +10,7 @@ type ErrBrokerAlreadyExists struct {
 }
 
 func (e ErrBrokerAlreadyExists) Error() string {
-	return fmt.Sprintf("ERROR: A service broker named '%s' already exists.", e.Name)
+	return fmt.Sprintf("A service broker named '%s' already exists.", e.Name)
 }
 
 var ErrBrokerNotFound = errors.New("broker not found")
@@ -20,5 +20,5 @@ type BrokerRegisterTimeoutErr struct {
 }
 
 func (e BrokerRegisterTimeoutErr) Error() string {
-	return fmt.Sprintf("ERROR: Timed out waiting for service broker '%s' to be registered", e.BrokerName)
+	return fmt.Sprintf("Timed out waiting for service broker '%s' to be registered", e.BrokerName)
 }
