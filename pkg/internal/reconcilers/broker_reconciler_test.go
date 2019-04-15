@@ -150,7 +150,7 @@ var _ = Describe("BrokerReconciler", func() {
 
 	It("updates the broker status to registered", func() {
 		Expect(fakeKubeBrokerRepo.UpdateStateCallCount()).To(Equal(1))
-		broker, newState := fakeKubeBrokerRepo.UpdateStateArgsForCall(0)
+		broker, newState, _ := fakeKubeBrokerRepo.UpdateStateArgsForCall(0)
 		Expect(newState).To(Equal(v1alpha1.BrokerStateRegistered))
 		Expect(*broker).To(Equal(returnedBroker))
 	})
@@ -240,13 +240,47 @@ var _ = Describe("BrokerReconciler", func() {
 		})
 	})
 
-	When("fetching the catalog using the broker client fails", func() {
+	When("fetching the catalog using the broker client fails with an unknown error", func() {
 		BeforeEach(func() {
 			fakeBrokerClient.GetCatalogReturns(nil, errors.New("error-getting-catalog"))
 		})
 
 		It("returns the error", func() {
 			Expect(err).To(MatchError("error-getting-catalog"))
+		})
+
+		It("updates the registration status to failed with an error message", func() {
+			_, passedState, passedMessage := fakeKubeBrokerRepo.UpdateStateArgsForCall(0)
+
+			Expect(passedState).To(Equal(v1alpha1.BrokerStateRegistrationFailed))
+			Expect(passedMessage).To(Equal("Unknown error"))
+		})
+
+		Context("and updating the status fails", func() {
+			BeforeEach(func() {
+				fakeKubeBrokerRepo.UpdateStateReturns(errors.New("error-updating-status"))
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-updating-status"))
+			})
+		})
+	})
+
+	When("fetching the catalog using the broker client fails with an auth error", func() {
+		BeforeEach(func() {
+			fakeBrokerClient.GetCatalogReturns(nil, osbapi.HTTPStatusCodeError{StatusCode: 401})
+		})
+
+		It("returns the error", func() {
+			Expect(err).To(MatchError(osbapi.HTTPStatusCodeError{StatusCode: 401}))
+		})
+
+		It("updates the registration status to failed with an error message", func() {
+			_, passedState, passedMessage := fakeKubeBrokerRepo.UpdateStateArgsForCall(0)
+
+			Expect(passedState).To(Equal(v1alpha1.BrokerStateRegistrationFailed))
+			Expect(passedMessage).To(Equal("Service broker authentication failed"))
 		})
 	})
 

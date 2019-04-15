@@ -46,6 +46,8 @@ spec:
           type: object
         status:
           properties:
+            message:
+              type: string
             state:
               type: string
           type: object

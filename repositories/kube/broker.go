@@ -18,6 +18,7 @@ package kube
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/pivotal-cf/ism/repositories"
@@ -111,7 +112,12 @@ func (b *Broker) Register(broker *osbapi.Broker) error {
 		return err
 	}
 
-	return b.waitForBrokerRegistration(brokerResource)
+	if err := b.waitForBrokerRegistration(brokerResource); err != nil {
+		var _ = b.Delete(broker.Name) // attempt to delete the broker, but don't return an error if we can't
+		return err
+	}
+
+	return nil
 }
 
 func (b *Broker) waitForBrokerRegistration(broker *v1alpha1.Broker) error {
@@ -121,6 +127,10 @@ func (b *Broker) waitForBrokerRegistration(broker *v1alpha1.Broker) error {
 		err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: broker.Name, Namespace: broker.Namespace}, fetchedBroker)
 		if err == nil && fetchedBroker.Status.State == v1alpha1.BrokerStateRegistered {
 			return true, nil
+		}
+
+		if err == nil && fetchedBroker.Status.State == v1alpha1.BrokerStateRegistrationFailed {
+			return true, errors.New(fetchedBroker.Status.Message)
 		}
 
 		return false, nil

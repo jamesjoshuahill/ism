@@ -23,7 +23,8 @@ import (
 type BrokerState string
 
 const (
-	BrokerStateRegistered BrokerState = "registered"
+	BrokerStateRegistered         BrokerState = "registered"
+	BrokerStateRegistrationFailed BrokerState = "registration-failed"
 )
 
 // BrokerSpec defines the desired state of Broker
@@ -36,7 +37,8 @@ type BrokerSpec struct {
 
 // BrokerStatus defines the observed state of Broker
 type BrokerStatus struct {
-	State BrokerState `json:"state,omitempty"`
+	State   BrokerState `json:"state,omitempty"`
+	Message string      `json:"message,omitempty"`
 }
 
 // +genclient

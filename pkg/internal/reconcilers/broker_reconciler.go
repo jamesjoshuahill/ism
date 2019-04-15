@@ -34,7 +34,7 @@ var ctx = context.TODO()
 
 type KubeBrokerRepo interface {
 	Get(resource types.NamespacedName) (*v1alpha1.Broker, error)
-	UpdateState(broker *v1alpha1.Broker, newState v1alpha1.BrokerState) error
+	UpdateState(broker *v1alpha1.Broker, newState v1alpha1.BrokerState, message string) error
 }
 
 //go:generate counterfeiter . KubeServiceRepo
@@ -95,6 +95,12 @@ func (r *BrokerReconciler) Reconcile(request reconcile.Request) (reconcile.Resul
 
 	catalog, err := r.catalog(broker)
 	if err != nil {
+		message := messageForError(err)
+
+		if err := r.kubeBrokerRepo.UpdateState(broker, v1alpha1.BrokerStateRegistrationFailed, message); err != nil {
+			return reconcile.Result{}, err
+		}
+
 		return reconcile.Result{}, err
 	}
 
@@ -111,7 +117,7 @@ func (r *BrokerReconciler) Reconcile(request reconcile.Request) (reconcile.Resul
 		}
 	}
 
-	if err := r.kubeBrokerRepo.UpdateState(broker, v1alpha1.BrokerStateRegistered); err != nil {
+	if err := r.kubeBrokerRepo.UpdateState(broker, v1alpha1.BrokerStateRegistered, ""); err != nil {
 		return reconcile.Result{}, err
 	}
 
@@ -141,4 +147,17 @@ func brokerClientConfig(broker *v1alpha1.Broker) *osbapi.ClientConfiguration {
 		},
 	}
 	return osbapiConfig
+}
+
+func messageForError(err error) string {
+	httpErr, ok := osbapi.IsHTTPError(err)
+
+	if ok {
+		switch httpErr.StatusCode {
+		case 401:
+			return "Service broker authentication failed"
+		}
+	}
+
+	return "Unknown error"
 }

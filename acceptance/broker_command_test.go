@@ -91,7 +91,28 @@ var _ = Describe("CLI broker command", func() {
 
 			It("displays an informative message and exits 1", func() {
 				Eventually(session).Should(Exit(1))
-				Eventually(session.Err).Should(Say("ERROR: A service broker named 'register-dup-name-broker' already exists."))
+				Eventually(session.Err).Should(Say("ERROR: A service broker named 'register-dup-name-broker' already exists"))
+			})
+		})
+
+		When("when an invalid username or password is provided", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "register-invalid-creds-broker", "--url", nodeBrokerURL, "--username", "invalid-username", "--password", "invalid-password")
+			})
+
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("ERROR: Service broker authentication failed"))
+			})
+
+			It("deletes the broker", func() {
+				Eventually(func() string {
+					brokerListCommand := exec.Command(nodePathToCLI, "broker", "list")
+					output, err := brokerListCommand.Output()
+					Expect(err).NotTo(HaveOccurred())
+
+					return string(output)
+				}).Should(ContainSubstring("No brokers found"))
 			})
 		})
 

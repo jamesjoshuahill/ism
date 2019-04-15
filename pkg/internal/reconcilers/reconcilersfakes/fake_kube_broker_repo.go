@@ -23,11 +23,12 @@ type FakeKubeBrokerRepo struct {
 		result1 *v1alpha1.Broker
 		result2 error
 	}
-	UpdateStateStub        func(*v1alpha1.Broker, v1alpha1.BrokerState) error
+	UpdateStateStub        func(*v1alpha1.Broker, v1alpha1.BrokerState, string) error
 	updateStateMutex       sync.RWMutex
 	updateStateArgsForCall []struct {
 		arg1 *v1alpha1.Broker
 		arg2 v1alpha1.BrokerState
+		arg3 string
 	}
 	updateStateReturns struct {
 		result1 error
@@ -102,17 +103,18 @@ func (fake *FakeKubeBrokerRepo) GetReturnsOnCall(i int, result1 *v1alpha1.Broker
 	}{result1, result2}
 }
 
-func (fake *FakeKubeBrokerRepo) UpdateState(arg1 *v1alpha1.Broker, arg2 v1alpha1.BrokerState) error {
+func (fake *FakeKubeBrokerRepo) UpdateState(arg1 *v1alpha1.Broker, arg2 v1alpha1.BrokerState, arg3 string) error {
 	fake.updateStateMutex.Lock()
 	ret, specificReturn := fake.updateStateReturnsOnCall[len(fake.updateStateArgsForCall)]
 	fake.updateStateArgsForCall = append(fake.updateStateArgsForCall, struct {
 		arg1 *v1alpha1.Broker
 		arg2 v1alpha1.BrokerState
-	}{arg1, arg2})
-	fake.recordInvocation("UpdateState", []interface{}{arg1, arg2})
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("UpdateState", []interface{}{arg1, arg2, arg3})
 	fake.updateStateMutex.Unlock()
 	if fake.UpdateStateStub != nil {
-		return fake.UpdateStateStub(arg1, arg2)
+		return fake.UpdateStateStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
@@ -127,17 +129,17 @@ func (fake *FakeKubeBrokerRepo) UpdateStateCallCount() int {
 	return len(fake.updateStateArgsForCall)
 }
 
-func (fake *FakeKubeBrokerRepo) UpdateStateCalls(stub func(*v1alpha1.Broker, v1alpha1.BrokerState) error) {
+func (fake *FakeKubeBrokerRepo) UpdateStateCalls(stub func(*v1alpha1.Broker, v1alpha1.BrokerState, string) error) {
 	fake.updateStateMutex.Lock()
 	defer fake.updateStateMutex.Unlock()
 	fake.UpdateStateStub = stub
 }
 
-func (fake *FakeKubeBrokerRepo) UpdateStateArgsForCall(i int) (*v1alpha1.Broker, v1alpha1.BrokerState) {
+func (fake *FakeKubeBrokerRepo) UpdateStateArgsForCall(i int) (*v1alpha1.Broker, v1alpha1.BrokerState, string) {
 	fake.updateStateMutex.RLock()
 	defer fake.updateStateMutex.RUnlock()
 	argsForCall := fake.updateStateArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeKubeBrokerRepo) UpdateStateReturns(result1 error) {

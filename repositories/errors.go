@@ -10,7 +10,7 @@ type ErrBrokerAlreadyExists struct {
 }
 
 func (e ErrBrokerAlreadyExists) Error() string {
-	return fmt.Sprintf("A service broker named '%s' already exists.", e.BrokerName)
+	return fmt.Sprintf("A service broker named '%s' already exists", e.BrokerName)
 }
 
 var ErrBrokerNotFound = errors.New("Service broker not found")

@@ -77,20 +77,17 @@ var _ = Describe("Broker", func() {
 			registrationDuration = time.Since(before)
 		})
 
-		AfterEach(func() {
-			deleteBrokers(kubeClient, "broker-1")
-		})
-
 		When("the status of a broker is set to registered", func() {
 			var closeChan chan bool
 
 			BeforeEach(func() {
 				closeChan = make(chan bool)
-				go simulateRegistration(kubeClient, "broker-1", closeChan)
+				go simulateRegistrationSuccess(kubeClient, "broker-1", closeChan)
 			})
 
 			AfterEach(func() {
 				closeChan <- true
+				deleteBrokers(kubeClient, "broker-1")
 			})
 
 			It("creates a new Broker resource instance", func() {
@@ -125,7 +122,7 @@ var _ = Describe("Broker", func() {
 				}
 
 				closeChan = make(chan bool)
-				go simulateRegistration(kubeClient, "broker-1", closeChan)
+				go simulateRegistrationSuccess(kubeClient, "broker-1", closeChan)
 
 				// register the broker first, so that the second register errors
 				Expect(brokerRepo.Register(b)).To(Succeed())
@@ -133,6 +130,7 @@ var _ = Describe("Broker", func() {
 
 			AfterEach(func() {
 				closeChan <- true
+				deleteBrokers(kubeClient, "broker-1")
 			})
 
 			It("returns a 'BrokerAlreadyExists' error", func() {
@@ -150,6 +148,29 @@ var _ = Describe("Broker", func() {
 
 				Expect(registrationDuration).To(BeNumerically(">", registrationTimeout))
 				Expect(registrationDuration).To(BeNumerically("<", registrationTimeout+estimatedExecutionTime))
+			})
+		})
+
+		When("the status of the broker is set to failed", func() {
+			var closeChan chan bool
+
+			BeforeEach(func() {
+				closeChan = make(chan bool)
+				go simulateRegistrationFailure(kubeClient, "broker-1", "error-message", closeChan)
+			})
+
+			AfterEach(func() {
+				closeChan <- true
+			})
+
+			It("returns the error", func() {
+				Expect(err).To(MatchError("error-message"))
+			})
+
+			It("deletes the broker resource", func() {
+				fetchedBrokerResource := &v1alpha1.Broker{}
+				err := kubeClient.Get(context.TODO(), types.NamespacedName{Name: "broker-1", Namespace: "default"}, fetchedBrokerResource)
+				Expect(kerrors.IsNotFound(err)).To(BeTrue())
 			})
 		})
 	})
@@ -335,7 +356,15 @@ func deleteBrokers(kubeClient client.Client, brokerNames ...string) {
 	}
 }
 
-func simulateRegistration(kubeClient client.Client, brokerName string, done chan bool) {
+func simulateRegistrationSuccess(kubeClient client.Client, brokerName string, done chan bool) {
+	simulateRegistration(kubeClient, brokerName, v1alpha1.BrokerStateRegistered, "", done)
+}
+
+func simulateRegistrationFailure(kubeClient client.Client, brokerName string, message string, done chan bool) {
+	simulateRegistration(kubeClient, brokerName, v1alpha1.BrokerStateRegistrationFailed, message, done)
+}
+
+func simulateRegistration(kubeClient client.Client, brokerName string, state v1alpha1.BrokerState, message string, done chan bool) {
 	for {
 		select {
 		case <-done:
@@ -351,8 +380,11 @@ func simulateRegistration(kubeClient client.Client, brokerName string, done chan
 				break //loop again
 			}
 
-			broker.Status.State = v1alpha1.BrokerStateRegistered
-			Expect(kubeClient.Status().Update(context.TODO(), broker)).To(Succeed())
+			if broker.Status.State != state || broker.Status.Message != message {
+				broker.Status.State = state
+				broker.Status.Message = message
+				Expect(kubeClient.Status().Update(context.TODO(), broker)).To(Succeed())
+			}
 		}
 	}
 }
