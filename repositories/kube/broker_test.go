@@ -81,7 +81,7 @@ var _ = Describe("Broker", func() {
 			deleteBrokers(kubeClient, "broker-1")
 		})
 
-		When("the controller reacts to the broker", func() {
+		When("the status of a broker is set to registered", func() {
 			var closeChan chan bool
 
 			BeforeEach(func() {
@@ -111,23 +111,32 @@ var _ = Describe("Broker", func() {
 					Password: "broker-1-password",
 				}))
 			})
+		})
 
-			When("a broker with the same name already exists", func() {
-				BeforeEach(func() {
-					// register the broker first, so that the second register errors
-					b := &osbapi.Broker{
-						Name:     "broker-1",
-						URL:      "broker-1-url",
-						Username: "broker-1-username",
-						Password: "broker-1-password",
-					}
+		When("a broker with the same name already exists", func() {
+			var closeChan chan bool
 
-					Expect(brokerRepo.Register(b)).To(Succeed())
-				})
+			BeforeEach(func() {
+				b := &osbapi.Broker{
+					Name:     "broker-1",
+					URL:      "broker-1-url",
+					Username: "broker-1-username",
+					Password: "broker-1-password",
+				}
 
-				It("returns a 'BrokerAlreadyExists' error", func() {
-					Expect(err).To(Equal(repositories.ErrBrokerAlreadyExists{BrokerName: "broker-1"}))
-				})
+				closeChan = make(chan bool)
+				go simulateRegistration(kubeClient, "broker-1", closeChan)
+
+				// register the broker first, so that the second register errors
+				Expect(brokerRepo.Register(b)).To(Succeed())
+			})
+
+			AfterEach(func() {
+				closeChan <- true
+			})
+
+			It("returns a 'BrokerAlreadyExists' error", func() {
+				Expect(err).To(Equal(repositories.ErrBrokerAlreadyExists{BrokerName: "broker-1"}))
 			})
 		})
 
