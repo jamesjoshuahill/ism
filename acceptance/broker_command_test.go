@@ -95,7 +95,7 @@ var _ = Describe("CLI broker command", func() {
 			})
 		})
 
-		When("when an invalid username or password is provided", func() {
+		When("an invalid username or password is provided", func() {
 			BeforeEach(func() {
 				args = append(args, "--name", "register-invalid-creds-broker", "--url", nodeBrokerURL, "--username", "invalid-username", "--password", "invalid-password")
 			})
@@ -116,7 +116,7 @@ var _ = Describe("CLI broker command", func() {
 			})
 		})
 
-		When("when a catalog is not found at the provided url", func() {
+		When("a catalog is not found at the provided url", func() {
 			BeforeEach(func() {
 				args = append(args, "--name", "register-bad-url-broker", "--url", "http://example.com", "--username", nodeBrokerUsername, "--password", nodeBrokerPassword)
 			})
@@ -137,7 +137,7 @@ var _ = Describe("CLI broker command", func() {
 			})
 		})
 
-		When("when the catalog response is invalid JSON", func() {
+		When("the catalog response is invalid JSON", func() {
 			BeforeEach(func() {
 				args = append(args, "--name", "register-bad-catalog-broker", "--url", nodeBrokerURL, "--username", nodeBrokerUsername, "--password", nodeBrokerPassword)
 				setBrokerErrorMode("invalidjson")
