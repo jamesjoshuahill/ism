@@ -116,6 +116,27 @@ var _ = Describe("CLI broker command", func() {
 			})
 		})
 
+		When("when a catalog is not found at the provided url", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "register-bad-url-broker", "--url", "https://example.com", "--username", nodeBrokerUsername, "--password", nodeBrokerPassword)
+			})
+
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("ERROR: Service broker catalog not found"))
+			})
+
+			It("deletes the broker", func() {
+				Eventually(func() string {
+					brokerListCommand := exec.Command(nodePathToCLI, "broker", "list")
+					output, err := brokerListCommand.Output()
+					Expect(err).NotTo(HaveOccurred())
+
+					return string(output)
+				}).Should(ContainSubstring("No brokers found"))
+			})
+		})
+
 		When("--help is passed", func() {
 			BeforeEach(func() {
 				args = append(args, "--help")

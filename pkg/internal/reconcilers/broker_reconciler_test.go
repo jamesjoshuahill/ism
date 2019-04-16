@@ -284,6 +284,23 @@ var _ = Describe("BrokerReconciler", func() {
 		})
 	})
 
+	When("fetching the catalog using the broker client fails with a not found error", func() {
+		BeforeEach(func() {
+			fakeBrokerClient.GetCatalogReturns(nil, osbapi.HTTPStatusCodeError{StatusCode: 404})
+		})
+
+		It("returns the error", func() {
+			Expect(err).To(MatchError(osbapi.HTTPStatusCodeError{StatusCode: 404}))
+		})
+
+		It("updates the registration status to failed with an error message", func() {
+			_, passedState, passedMessage := fakeKubeBrokerRepo.UpdateStateArgsForCall(0)
+
+			Expect(passedState).To(Equal(v1alpha1.BrokerStateRegistrationFailed))
+			Expect(passedMessage).To(Equal("Service broker catalog not found"))
+		})
+	})
+
 	When("creating service resource fails", func() {
 		BeforeEach(func() {
 			fakeKubeServiceRepo.CreateReturnsOnCall(0, nil, errors.New("error-creating-service"))

@@ -156,6 +156,8 @@ func messageForError(err error) string {
 		switch httpErr.StatusCode {
 		case 401:
 			return "Service broker authentication failed"
+		case 404:
+			return "Service broker catalog not found"
 		}
 	}
 
