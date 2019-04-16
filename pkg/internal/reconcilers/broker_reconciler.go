@@ -18,6 +18,7 @@ package reconcilers
 
 import (
 	"context"
+	"net"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -150,10 +151,12 @@ func brokerClientConfig(broker *v1alpha1.Broker) *osbapi.ClientConfiguration {
 }
 
 func messageForError(err error) string {
-	httpErr, ok := osbapi.IsHTTPError(err)
+	if e, ok := err.(net.Error); ok && e.Timeout() {
+		return "Timed out requesting the service broker catalog"
+	}
 
-	if ok {
-		switch httpErr.StatusCode {
+	if e, ok := osbapi.IsHTTPError(err); ok {
+		switch e.StatusCode {
 		case 200:
 			return "Service broker did not return a valid catalog"
 		case 401:

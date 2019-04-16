@@ -18,6 +18,7 @@ package reconcilers_test
 
 import (
 	"errors"
+	"net"
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo"
@@ -315,6 +316,23 @@ var _ = Describe("BrokerReconciler", func() {
 
 			Expect(passedState).To(Equal(v1alpha1.BrokerStateRegistrationFailed))
 			Expect(passedMessage).To(Equal("Service broker did not return a valid catalog"))
+		})
+	})
+
+	When("fetching the catalog using the broker client fails with a timeout error", func() {
+		BeforeEach(func() {
+			fakeBrokerClient.GetCatalogReturns(nil, &net.DNSError{IsTimeout: true})
+		})
+
+		It("returns the error", func() {
+			Expect(err).To(MatchError(&net.DNSError{IsTimeout: true}))
+		})
+
+		It("updates the registration status to failed with an error message", func() {
+			_, passedState, passedMessage := fakeKubeBrokerRepo.UpdateStateArgsForCall(0)
+
+			Expect(passedState).To(Equal(v1alpha1.BrokerStateRegistrationFailed))
+			Expect(passedMessage).To(Equal("Timed out requesting the service broker catalog"))
 		})
 	})
 
