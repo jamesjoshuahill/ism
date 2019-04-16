@@ -118,7 +118,7 @@ var _ = Describe("CLI broker command", func() {
 
 		When("when a catalog is not found at the provided url", func() {
 			BeforeEach(func() {
-				args = append(args, "--name", "register-bad-url-broker", "--url", "https://example.com", "--username", nodeBrokerUsername, "--password", nodeBrokerPassword)
+				args = append(args, "--name", "register-bad-url-broker", "--url", "http://example.com", "--username", nodeBrokerUsername, "--password", nodeBrokerPassword)
 			})
 
 			It("displays an informative message and exits 1", func() {
