@@ -1,7 +1,7 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= ismteam/controller:latest
-BROKERIMG ?= ismteam/overview-broker:latest
+BROKERIMG ?= ismteam/overview-broker:ci-0.0.1
 CLI_NAME = bin/ism
 GINKGO_ARGS = -r -p -randomizeSuites -randomizeAllSpecs
 

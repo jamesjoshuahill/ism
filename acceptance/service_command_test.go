@@ -97,7 +97,7 @@ var _ = Describe("CLI service command", func() {
 			It("displays services and plans for the broker", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("SERVICE\\s+PLANS\\s+BROKER\\s+DESCRIPTION"))
-				Eventually(session).Should(Say("overview-service\\s+simple, complex\\s+service-list-command-broker\\s+Provides an overview of any service instances and bindings that have been created by a platform"))
+				Eventually(session).Should(Say("overview-service\\s+large, small\\s+service-list-command-broker\\s+Provides an overview of any service instances and bindings that have been created by a platform"))
 			})
 		})
 	})

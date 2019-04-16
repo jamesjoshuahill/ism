@@ -39,7 +39,7 @@ import (
 
 const (
 	serviceName = "overview-service"
-	planName    = "simple"
+	planName    = "small"
 	brokerPort  = 8081
 )
 

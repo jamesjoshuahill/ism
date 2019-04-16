@@ -213,7 +213,7 @@ var _ = Describe("CLI binding command", func() {
 					"\\s+username: " + username + "\n" +
 					"instance: binding-get-instance\n" +
 					"name: binding-get-binding\n" +
-					"plan: simple\n" +
+					"plan: " + planName + "\n" +
 					"service: overview-service\n" +
 					"status: created"))
 			})

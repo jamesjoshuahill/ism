@@ -29,6 +29,6 @@ spec:
     spec:
       containers:
       - name: overview-broker
-        image: ismteam/overview-broker:latest
+        image: ismteam/overview-broker:ci-0.0.1
         ports:
         - containerPort: 8080
