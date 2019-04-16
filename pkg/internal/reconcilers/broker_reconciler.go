@@ -154,6 +154,8 @@ func messageForError(err error) string {
 
 	if ok {
 		switch httpErr.StatusCode {
+		case 200:
+			return "Service broker did not return a valid catalog"
 		case 401:
 			return "Service broker authentication failed"
 		case 404:

@@ -22,6 +22,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -410,6 +411,17 @@ func cleanBrokerData() {
 	resp, err := http.Post(brokerDataURL, "", nil)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(resp.StatusCode).To(Equal(200))
+}
+
+func setBrokerErrorMode(mode string) {
+	brokerErrorModeURL := fmt.Sprintf("http://127.0.0.1:%d/admin/setErrorMode", brokerPort)
+	resp, err := http.PostForm(brokerErrorModeURL, url.Values{"mode": {mode}})
+	Expect(err).NotTo(HaveOccurred())
+	Expect(resp.StatusCode).To(Equal(200))
+}
+
+func disableBrokerErrorMode() {
+	setBrokerErrorMode("")
 }
 
 func cleanCustomResources() {

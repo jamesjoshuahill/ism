@@ -137,6 +137,34 @@ var _ = Describe("CLI broker command", func() {
 			})
 		})
 
+		When("when the catalog response is invalid JSON", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "register-bad-catalog-broker", "--url", nodeBrokerURL, "--username", nodeBrokerUsername, "--password", nodeBrokerPassword)
+				setBrokerErrorMode("invalidjson")
+			})
+
+			AfterEach(func() {
+				disableBrokerErrorMode()
+			})
+
+			It("displays an informative message, exits 1 and deletes the broker", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("ERROR: Service broker did not return a valid catalog"))
+
+				// Note: we are purposefully not separating the next assertion into a separate 'It'
+				// block. This is because the reconcile loop could sneak in and successfully
+				// register the broker after the broker error mode has been disabled in the 'AfterEach'.
+				// (i.e. before error mode is enabled again in the next 'BeforeEach').
+				Eventually(func() string {
+					brokerListCommand := exec.Command(nodePathToCLI, "broker", "list")
+					output, err := brokerListCommand.Output()
+					Expect(err).NotTo(HaveOccurred())
+
+					return string(output)
+				}).Should(ContainSubstring("No brokers found"))
+			})
+		})
+
 		When("--help is passed", func() {
 			BeforeEach(func() {
 				args = append(args, "--help")
