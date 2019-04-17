@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const timeout = time.Second * 30
+const timeout = time.Second * 60
 
 func main() {
 	UI := &ui.UI{
