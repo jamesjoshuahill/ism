@@ -254,7 +254,7 @@ var _ = Describe("BrokerReconciler", func() {
 			_, passedState, passedMessage := fakeKubeBrokerRepo.UpdateStateArgsForCall(0)
 
 			Expect(passedState).To(Equal(v1alpha1.BrokerStateRegistrationFailed))
-			Expect(passedMessage).To(Equal("Unknown error"))
+			Expect(passedMessage).To(Equal("error-getting-catalog"))
 		})
 
 		Context("and updating the status fails", func() {

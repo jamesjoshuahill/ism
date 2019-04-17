@@ -166,5 +166,5 @@ func messageForError(err error) string {
 		}
 	}
 
-	return "Unknown error"
+	return err.Error()
 }
