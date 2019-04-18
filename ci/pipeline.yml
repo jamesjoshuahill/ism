@@ -50,12 +50,14 @@ jobs:
 resources:
 - name: ism
   type: git
+  icon: github-face
   source:
     uri: https://github.com/pivotal-cf/ism
     branch: master
 
 - name: ism-controller-image
   type: docker-image
+  icon: docker
   source:
     repository: ismteam/controller
     username: {{DOCKERHUB_USERNAME}}
