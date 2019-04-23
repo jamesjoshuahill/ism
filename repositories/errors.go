@@ -22,3 +22,11 @@ type ErrBrokerRegisterTimeout struct {
 func (e ErrBrokerRegisterTimeout) Error() string {
 	return fmt.Sprintf("Timed out waiting for service broker '%s' to be registered", e.BrokerName)
 }
+
+type ErrInstanceAlreadyExists struct {
+	InstanceName string
+}
+
+func (e ErrInstanceAlreadyExists) Error() string {
+	return fmt.Sprintf("A service instance named '%s' already exists", e.InstanceName)
+}

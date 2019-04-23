@@ -28,6 +28,7 @@ import (
 
 	"github.com/pivotal-cf/ism/osbapi"
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
+	"github.com/pivotal-cf/ism/repositories"
 )
 
 const (
@@ -55,7 +56,14 @@ func (i *Instance) Create(instance *osbapi.Instance) error {
 		},
 	}
 
-	return i.KubeClient.Create(context.TODO(), instanceResource)
+	if err := i.KubeClient.Create(context.TODO(), instanceResource); err != nil {
+		if kerrors.ReasonForError(err) == metav1.StatusReasonAlreadyExists {
+			return repositories.ErrInstanceAlreadyExists{InstanceName: instance.Name}
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (i *Instance) FindByName(name string) (*osbapi.Instance, error) {

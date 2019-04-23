@@ -30,6 +30,7 @@ import (
 
 	"github.com/pivotal-cf/ism/osbapi"
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
+	"github.com/pivotal-cf/ism/repositories"
 	. "github.com/pivotal-cf/ism/repositories/kube"
 )
 
@@ -362,7 +363,7 @@ var _ = Describe("Instance", func() {
 			}))
 		})
 
-		When("creating a new Instance fails", func() {
+		When("creating an Instance with a duplicate name", func() {
 			BeforeEach(func() {
 				// create the instance first, so that the second create errors
 				b := &osbapi.Instance{
@@ -375,8 +376,8 @@ var _ = Describe("Instance", func() {
 				Expect(instanceRepo.Create(b)).To(Succeed())
 			})
 
-			It("propagates the error", func() {
-				Expect(err).To(HaveOccurred())
+			It("returns a 'ErrInstanceAlreadyExists' error", func() {
+				Expect(err).To(Equal(repositories.ErrInstanceAlreadyExists{InstanceName: "instance-1"}))
 			})
 		})
 	})

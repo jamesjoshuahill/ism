@@ -97,6 +97,26 @@ var _ = Describe("CLI instance command", func() {
 			})
 		})
 
+		When("the cli fails instance creation", func() {
+			//an instance with the same name already exists
+			BeforeEach(func() {
+				registerBroker("instance-dup-name-broker")
+				createInstance("instance-dup-name-instance", "instance-dup-name-broker")
+
+				args = append(args, "--name", "instance-dup-name-instance", "--service", serviceName, "--plan", planName, "--broker", "instance-dup-name-broker")
+			})
+
+			AfterEach(func() {
+				deleteInstance("instance-dup-name-instance")
+				deleteBroker("instance-dup-name-broker")
+			})
+
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("ERROR: A service instance named 'instance-dup-name-instance' already exists"))
+			})
+		})
+
 		When("required args are not passed", func() {
 			It("displays an informative message and exits 1", func() {
 				Eventually(session).Should(Exit(1))
