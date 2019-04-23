@@ -102,12 +102,10 @@ var _ = Describe("CLI broker command", func() {
 				args = append(args, "--name", "register-invalid-creds-broker", "--url", nodeBrokerURL, "--username", "invalid-username", "--password", "invalid-password")
 			})
 
-			It("displays an informative message and exits 1", func() {
+			It("displays an informative message, exits 1 and deletes the broker", func() {
 				Eventually(session).Should(Exit(1))
 				Eventually(session.Err).Should(Say("ERROR: Service broker authentication failed"))
-			})
 
-			It("deletes the broker", func() {
 				Eventually(func() string {
 					brokerListCommand := exec.Command(nodePathToCLI, "broker", "list")
 					output, err := brokerListCommand.Output()
