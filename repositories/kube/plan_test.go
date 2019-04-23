@@ -48,14 +48,14 @@ var _ = Describe("Plan", func() {
 		}
 	})
 
-	Describe("Find", func() {
+	Describe("GetPlanByID", func() {
 		var (
 			plan *osbapi.Plan
 			err  error
 		)
 
 		JustBeforeEach(func() {
-			plan, err = planRepo.Find("plan-1")
+			plan, err = planRepo.GetPlanByID("plan-1")
 		})
 
 		When("the plan exists", func() {
@@ -119,14 +119,14 @@ var _ = Describe("Plan", func() {
 		})
 	})
 
-	Describe("FindByService", func() {
+	Describe("GetPlans", func() {
 		var (
 			plans []*osbapi.Plan
 			err   error
 		)
 
 		JustBeforeEach(func() {
-			plans, err = planRepo.FindByService("service-1")
+			plans, err = planRepo.GetPlans("service-1")
 		})
 
 		When("plans contain owner references to services", func() {

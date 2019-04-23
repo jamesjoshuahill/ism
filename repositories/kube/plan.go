@@ -35,7 +35,7 @@ type Plan struct {
 	KubeClient client.Client
 }
 
-func (p *Plan) Find(planID string) (*osbapi.Plan, error) {
+func (p *Plan) GetPlanByID(planID string) (*osbapi.Plan, error) {
 	plan := &v1alpha1.BrokerServicePlan{}
 	err := p.KubeClient.Get(context.TODO(), types.NamespacedName{Name: planID, Namespace: "default"}, plan)
 
@@ -53,7 +53,7 @@ func (p *Plan) Find(planID string) (*osbapi.Plan, error) {
 	}, nil
 }
 
-func (p *Plan) FindByService(serviceID string) ([]*osbapi.Plan, error) {
+func (p *Plan) GetPlans(serviceID string) ([]*osbapi.Plan, error) {
 	list := &v1alpha1.BrokerServicePlanList{}
 	if err := p.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
 		return []*osbapi.Plan{}, err

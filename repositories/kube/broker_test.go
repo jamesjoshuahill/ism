@@ -208,7 +208,7 @@ var _ = Describe("Broker", func() {
 		})
 	})
 
-	Describe("FindByName", func() {
+	Describe("GetBrokerByName", func() {
 		var (
 			broker          *osbapi.Broker
 			brokerCreatedAt string
@@ -216,7 +216,7 @@ var _ = Describe("Broker", func() {
 		)
 
 		JustBeforeEach(func() {
-			broker, err = brokerRepo.FindByName("my-broker")
+			broker, err = brokerRepo.GetBrokerByName("my-broker")
 		})
 
 		When("the broker exists", func() {
@@ -262,7 +262,7 @@ var _ = Describe("Broker", func() {
 		})
 	})
 
-	Describe("FindAll", func() {
+	Describe("GetBrokers", func() {
 		var (
 			brokers          []*osbapi.Broker
 			brokerCreatedAt1 string
@@ -304,7 +304,7 @@ var _ = Describe("Broker", func() {
 		})
 
 		JustBeforeEach(func() {
-			brokers, err = brokerRepo.FindAll()
+			brokers, err = brokerRepo.GetBrokers()
 		})
 
 		AfterEach(func() {

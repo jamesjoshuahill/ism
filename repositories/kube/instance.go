@@ -66,7 +66,7 @@ func (i *Instance) Create(instance *osbapi.Instance) error {
 	return nil
 }
 
-func (i *Instance) FindByName(name string) (*osbapi.Instance, error) {
+func (i *Instance) GetInstanceByName(name string) (*osbapi.Instance, error) {
 	instance := &v1alpha1.ServiceInstance{}
 	err := i.KubeClient.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: "default"}, instance)
 
@@ -90,8 +90,8 @@ func (i *Instance) FindByName(name string) (*osbapi.Instance, error) {
 	return osbapiInstance, nil
 }
 
-func (i *Instance) FindByID(id string) (*osbapi.Instance, error) {
-	instances, err := i.FindAll()
+func (i *Instance) GetInstanceByID(id string) (*osbapi.Instance, error) {
+	instances, err := i.GetInstances()
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (i *Instance) FindByID(id string) (*osbapi.Instance, error) {
 	return nil, errInstanceNotFound
 }
 
-func (i *Instance) FindAll() ([]*osbapi.Instance, error) {
+func (i *Instance) GetInstances() ([]*osbapi.Instance, error) {
 	list := &v1alpha1.ServiceInstanceList{}
 	if err := i.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
 		return []*osbapi.Instance{}, err
@@ -127,7 +127,7 @@ func (i *Instance) FindAll() ([]*osbapi.Instance, error) {
 	return instances, nil
 }
 
-func (i *Instance) FindAllForBroker(brokerName string) ([]*osbapi.Instance, error) {
+func (i *Instance) GetInstancesForBroker(brokerName string) ([]*osbapi.Instance, error) {
 	list := &v1alpha1.ServiceInstanceList{}
 	if err := i.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
 		return []*osbapi.Instance{}, err

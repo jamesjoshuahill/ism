@@ -25,7 +25,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/pivotal-cf/ism/actors"
 	"github.com/pivotal-cf/ism/commands"
 
 	"github.com/pivotal-cf/ism/pkg/apis/osbapi/v1alpha1"
@@ -55,79 +54,63 @@ func main() {
 	instanceRepository := &kube.Instance{KubeClient: kubeClient}
 	bindingRepository := &kube.Binding{KubeClient: kubeClient}
 
-	brokersActor := &actors.BrokersActor{
-		Repository: brokerRepository,
-	}
-	servicesActor := &actors.ServicesActor{
-		Repository: serviceRepository,
-	}
-	plansActor := &actors.PlansActor{
-		Repository: planRepository,
-	}
-	instancesActor := &actors.InstancesActor{
-		Repository: instanceRepository,
-	}
-	bindingsActor := &actors.BindingsActor{
-		Repository: bindingRepository,
-	}
-
 	brokerDeleteUsecase := &usecases.BrokerDeleteUsecase{
-		InstanceFetcher: instancesActor,
-		BrokerDeleter:   brokersActor,
+		InstanceFetcher: instanceRepository,
+		BrokerDeleter:   brokerRepository,
 	}
 
 	serviceListUsecase := &usecases.ServiceListUsecase{
-		BrokerFetcher:  brokersActor,
-		ServiceFetcher: servicesActor,
-		PlanFetcher:    plansActor,
+		BrokerFetcher:  brokerRepository,
+		ServiceFetcher: serviceRepository,
+		PlanFetcher:    planRepository,
 	}
 
 	instanceCreateUsecase := &usecases.InstanceCreateUsecase{
-		BrokerFetcher:   brokersActor,
-		ServiceFetcher:  servicesActor,
-		PlanFetcher:     plansActor,
-		InstanceCreator: instancesActor,
+		BrokerFetcher:   brokerRepository,
+		ServiceFetcher:  serviceRepository,
+		PlanFetcher:     planRepository,
+		InstanceCreator: instanceRepository,
 	}
 
 	instanceListUsecase := &usecases.InstanceListUsecase{
-		InstanceFetcher: instancesActor,
-		ServiceFetcher:  servicesActor,
-		PlanFetcher:     plansActor,
+		InstanceFetcher: instanceRepository,
+		ServiceFetcher:  serviceRepository,
+		PlanFetcher:     planRepository,
 	}
 
 	instanceDeleteUsecase := &usecases.InstanceDeleteUsecase{
-		InstanceFetcher: instancesActor,
-		InstanceDeleter: instancesActor,
-		BindingFetcher:  bindingsActor,
+		InstanceFetcher: instanceRepository,
+		InstanceDeleter: instanceRepository,
+		BindingFetcher:  bindingRepository,
 	}
 
 	bindingCreateUsecase := &usecases.BindingCreateUsecase{
-		BindingCreator:  bindingsActor,
-		InstanceFetcher: instancesActor,
+		BindingCreator:  bindingRepository,
+		InstanceFetcher: instanceRepository,
 	}
 
 	bindingListUsecase := &usecases.BindingListUsecase{
-		BindingFetcher:  bindingsActor,
-		InstanceFetcher: instancesActor,
+		BindingFetcher:  bindingRepository,
+		InstanceFetcher: instanceRepository,
 	}
 
 	bindingGetUsecase := &usecases.BindingGetUsecase{
-		BindingFetcher:  bindingsActor,
-		InstanceFetcher: instancesActor,
-		ServiceFetcher:  servicesActor,
-		PlanFetcher:     plansActor,
-		BrokerFetcher:   brokersActor,
+		BindingFetcher:  bindingRepository,
+		InstanceFetcher: instanceRepository,
+		ServiceFetcher:  serviceRepository,
+		PlanFetcher:     planRepository,
+		BrokerFetcher:   brokerRepository,
 	}
 
 	rootCommand := commands.RootCommand{
 		BrokerCommand: commands.BrokerCommand{
 			BrokerRegisterCommand: commands.BrokerRegisterCommand{
 				UI:              UI,
-				BrokerRegistrar: brokersActor,
+				BrokerRegistrar: brokerRepository,
 			},
 			BrokerListCommand: commands.BrokerListCommand{
 				UI:             UI,
-				BrokersFetcher: brokersActor,
+				BrokersFetcher: brokerRepository,
 			},
 			BrokerDeleteCommand: commands.BrokerDeleteCommand{
 				UI:                  UI,
@@ -169,7 +152,7 @@ func main() {
 			},
 			BindingDeleteCommand: commands.BindingDeleteCommand{
 				UI:             UI,
-				BindingDeleter: bindingsActor,
+				BindingDeleter: bindingRepository,
 			},
 		},
 	}

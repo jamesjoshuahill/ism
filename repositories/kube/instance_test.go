@@ -52,7 +52,7 @@ var _ = Describe("Instance", func() {
 		}
 	})
 
-	Describe("FindAll", func() {
+	Describe("GetInstances", func() {
 		var (
 			instances          []*osbapi.Instance
 			instanceID1        string
@@ -103,7 +103,7 @@ var _ = Describe("Instance", func() {
 		})
 
 		JustBeforeEach(func() {
-			instances, err = instanceRepo.FindAll()
+			instances, err = instanceRepo.GetInstances()
 		})
 
 		AfterEach(func() {
@@ -136,7 +136,7 @@ var _ = Describe("Instance", func() {
 		})
 	})
 
-	Describe("FindByName", func() {
+	Describe("GetInstanceByName", func() {
 		var (
 			instance          *osbapi.Instance
 			instanceID        string
@@ -145,7 +145,7 @@ var _ = Describe("Instance", func() {
 		)
 
 		JustBeforeEach(func() {
-			instance, err = instanceRepo.FindByName("instance")
+			instance, err = instanceRepo.GetInstanceByName("instance")
 		})
 
 		When("the instance exists", func() {
@@ -195,7 +195,7 @@ var _ = Describe("Instance", func() {
 		})
 	})
 
-	Describe("FindAllForBroker", func() {
+	Describe("GetInstancesForBroker", func() {
 		var (
 			instances          []*osbapi.Instance
 			instanceID1        string
@@ -242,7 +242,7 @@ var _ = Describe("Instance", func() {
 		})
 
 		JustBeforeEach(func() {
-			instances, err = instanceRepo.FindAllForBroker("my-broker-1")
+			instances, err = instanceRepo.GetInstancesForBroker("my-broker-1")
 		})
 
 		AfterEach(func() {
@@ -266,7 +266,7 @@ var _ = Describe("Instance", func() {
 		})
 	})
 
-	Describe("FindByID", func() {
+	Describe("GetInstanceByID", func() {
 		var (
 			instance          *osbapi.Instance
 			instanceCreatedAt string
@@ -275,7 +275,7 @@ var _ = Describe("Instance", func() {
 		)
 
 		JustBeforeEach(func() {
-			instance, err = instanceRepo.FindByID(instanceID)
+			instance, err = instanceRepo.GetInstanceByID(instanceID)
 		})
 
 		When("the instance exists", func() {

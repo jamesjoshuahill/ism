@@ -67,7 +67,7 @@ func (b *Binding) Delete(name string) error {
 	return b.KubeClient.Delete(context.TODO(), bindingResource)
 }
 
-func (b *Binding) FindByName(name string) (*osbapi.Binding, error) {
+func (b *Binding) GetBindingByName(name string) (*osbapi.Binding, error) {
 	binding := &v1alpha1.ServiceBinding{}
 	err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: "default"}, binding)
 
@@ -101,7 +101,7 @@ func (b *Binding) FindByName(name string) (*osbapi.Binding, error) {
 	return osbapiBinding, nil
 }
 
-func (b *Binding) FindAll() ([]*osbapi.Binding, error) {
+func (b *Binding) GetBindings() ([]*osbapi.Binding, error) {
 	list := &v1alpha1.ServiceBindingList{}
 	if err := b.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
 		return []*osbapi.Binding{}, err
@@ -125,7 +125,7 @@ func (b *Binding) FindAll() ([]*osbapi.Binding, error) {
 	return bindings, nil
 }
 
-func (b *Binding) FindAllForInstance(instanceID string) ([]*osbapi.Binding, error) {
+func (b *Binding) GetBindingsForInstance(instanceID string) ([]*osbapi.Binding, error) {
 	list := &v1alpha1.ServiceBindingList{}
 	if err := b.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
 		return []*osbapi.Binding{}, err

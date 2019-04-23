@@ -39,7 +39,7 @@ type Broker struct {
 	RegistrationTimeout time.Duration
 }
 
-func (b *Broker) FindByName(name string) (*osbapi.Broker, error) {
+func (b *Broker) GetBrokerByName(name string) (*osbapi.Broker, error) {
 	broker := &v1alpha1.Broker{}
 	err := b.KubeClient.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: "default"}, broker)
 	if err != nil {
@@ -60,7 +60,7 @@ func (b *Broker) FindByName(name string) (*osbapi.Broker, error) {
 	return osbapiBroker, nil
 }
 
-func (b *Broker) FindAll() ([]*osbapi.Broker, error) {
+func (b *Broker) GetBrokers() ([]*osbapi.Broker, error) {
 	list := &v1alpha1.BrokerList{}
 	if err := b.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
 		return []*osbapi.Broker{}, err

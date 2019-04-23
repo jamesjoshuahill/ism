@@ -145,7 +145,7 @@ var _ = Describe("Binding", func() {
 		})
 	})
 
-	Describe("FindByName", func() {
+	Describe("GetBindingByName", func() {
 		var (
 			binding          *osbapi.Binding
 			bindingCreatedAt string
@@ -156,7 +156,7 @@ var _ = Describe("Binding", func() {
 		)
 
 		JustBeforeEach(func() {
-			binding, err = bindingRepo.FindByName("my-binding")
+			binding, err = bindingRepo.GetBindingByName("my-binding")
 		})
 
 		When("the binding resource exists and has status created", func() {
@@ -301,7 +301,7 @@ var _ = Describe("Binding", func() {
 		})
 	})
 
-	Describe("FindAll", func() {
+	Describe("GetBindings", func() {
 		var (
 			bindings          []*osbapi.Binding
 			bindingCreatedAt1 string
@@ -353,7 +353,7 @@ var _ = Describe("Binding", func() {
 		})
 
 		JustBeforeEach(func() {
-			bindings, err = bindingRepo.FindAll()
+			bindings, err = bindingRepo.GetBindings()
 		})
 
 		AfterEach(func() {
@@ -388,7 +388,7 @@ var _ = Describe("Binding", func() {
 		})
 	})
 
-	Describe("FindAllForInstance", func() {
+	Describe("GetBindingsForInstance", func() {
 		var (
 			bindings          []*osbapi.Binding
 			bindingCreatedAt1 string
@@ -436,7 +436,7 @@ var _ = Describe("Binding", func() {
 		})
 
 		JustBeforeEach(func() {
-			bindings, err = bindingRepo.FindAllForInstance("instance-1")
+			bindings, err = bindingRepo.GetBindingsForInstance("instance-1")
 		})
 
 		AfterEach(func() {

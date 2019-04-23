@@ -35,7 +35,7 @@ type Service struct {
 	KubeClient client.Client
 }
 
-func (s *Service) Find(serviceID string) (*osbapi.Service, error) {
+func (s *Service) GetServiceByID(serviceID string) (*osbapi.Service, error) {
 	service := &v1alpha1.BrokerService{}
 	err := s.KubeClient.Get(context.TODO(), types.NamespacedName{Name: serviceID, Namespace: "default"}, service)
 
@@ -54,7 +54,7 @@ func (s *Service) Find(serviceID string) (*osbapi.Service, error) {
 	}, nil
 }
 
-func (s *Service) FindByBroker(brokerName string) ([]*osbapi.Service, error) {
+func (s *Service) GetServices(brokerName string) ([]*osbapi.Service, error) {
 	list := &v1alpha1.BrokerServiceList{}
 	if err := s.KubeClient.List(context.TODO(), &client.ListOptions{}, list); err != nil {
 		return []*osbapi.Service{}, err

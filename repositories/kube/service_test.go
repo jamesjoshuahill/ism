@@ -49,14 +49,14 @@ var _ = Describe("Service", func() {
 		}
 	})
 
-	Describe("Find", func() {
+	Describe("GetServiceByID", func() {
 		var (
 			service *osbapi.Service
 			err     error
 		)
 
 		JustBeforeEach(func() {
-			service, err = serviceRepo.Find("service-1")
+			service, err = serviceRepo.GetServiceByID("service-1")
 		})
 
 		When("the service exists", func() {
@@ -122,14 +122,14 @@ var _ = Describe("Service", func() {
 		})
 	})
 
-	Describe("FindByBroker", func() {
+	Describe("GetServices", func() {
 		var (
 			services []*osbapi.Service
 			err      error
 		)
 
 		JustBeforeEach(func() {
-			services, err = serviceRepo.FindByBroker("my-broker-1")
+			services, err = serviceRepo.GetServices("my-broker-1")
 		})
 
 		When("services contain owner references to brokers", func() {
