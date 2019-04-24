@@ -6,7 +6,7 @@ arch="amd64"
 
 go_version="1.11.5"
 dep_version="0.5.0"
-kubebuilder_version="1.0.7"
+kubebuilder_version="1.0.8"
 kustomize_version="1.0.11"
 
 # install packages

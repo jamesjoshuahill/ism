@@ -71,7 +71,7 @@ The following dependencies need to be installed in order to hack on ism:
   * [ginkgo](https://github.com/onsi/ginkgo)
   * [counterfeiter](https://github.com/maxbrunsfeld/counterfeiter)
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-* [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) (1.0.x)
+* [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) (v1.0.8)
 * [kustomize](https://github.com/kubernetes-sigs/kustomize)
 * Access to a k8s cluster
 
