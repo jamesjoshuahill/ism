@@ -26,7 +26,6 @@ import (
 )
 
 var _ = Describe("CLI broker command", func() {
-
 	var (
 		args    []string
 		session *Session

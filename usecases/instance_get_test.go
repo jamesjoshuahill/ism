@@ -27,29 +27,26 @@ import (
 	"github.com/pivotal-cf/ism/usecases/usecasesfakes"
 )
 
-var _ = Describe("Binding Get Usecase", func() {
+var _ = Describe("Instance Get Usecase", func() {
 	var (
-		bindingGetUsecase BindingGetUsecase
+		instanceGetUsecase InstanceGetUsecase
 
-		fakeBindingFetcher  *usecasesfakes.FakeBindingFetcher
 		fakeInstanceFetcher *usecasesfakes.FakeInstanceFetcher
 		fakeServiceFetcher  *usecasesfakes.FakeServiceFetcher
 		fakePlanFetcher     *usecasesfakes.FakePlanFetcher
 		fakeBrokerFetcher   *usecasesfakes.FakeBrokerFetcher
 
-		bindingDetails *BindingDetails
-		executeErr     error
+		instanceDetails *InstanceDetails
+		executeErr      error
 	)
 
 	BeforeEach(func() {
-		fakeBindingFetcher = &usecasesfakes.FakeBindingFetcher{}
 		fakeInstanceFetcher = &usecasesfakes.FakeInstanceFetcher{}
 		fakeServiceFetcher = &usecasesfakes.FakeServiceFetcher{}
 		fakePlanFetcher = &usecasesfakes.FakePlanFetcher{}
 		fakeBrokerFetcher = &usecasesfakes.FakeBrokerFetcher{}
 
-		bindingGetUsecase = BindingGetUsecase{
-			BindingFetcher:  fakeBindingFetcher,
+		instanceGetUsecase = InstanceGetUsecase{
 			InstanceFetcher: fakeInstanceFetcher,
 			ServiceFetcher:  fakeServiceFetcher,
 			PlanFetcher:     fakePlanFetcher,
@@ -58,24 +55,19 @@ var _ = Describe("Binding Get Usecase", func() {
 	})
 
 	JustBeforeEach(func() {
-		bindingDetails, executeErr = bindingGetUsecase.GetBindingDetailsByName("my-binding")
+		instanceDetails, executeErr = instanceGetUsecase.GetInstanceDetailsByName("my-instance")
 	})
 
-	When("the binding exists", func() {
+	When("the instance exists", func() {
 		BeforeEach(func() {
-			fakeBindingFetcher.GetBindingByNameReturns(&osbapi.Binding{
-				Name:        "my-binding",
-				InstanceID:  "instance-1",
-				ServiceID:   "service-1",
-				PlanID:      "plan-1",
-				BrokerName:  "my-broker",
-				Status:      "creating",
-				CreatedAt:   "time-1",
-				Credentials: map[string]interface{}{"username": "admin"},
-			}, nil)
-			fakeInstanceFetcher.GetInstanceByIDReturns(&osbapi.Instance{
-				ID:   "instance-1",
-				Name: "my-instance",
+			fakeInstanceFetcher.GetInstanceByNameReturns(&osbapi.Instance{
+				ID:         "instance-1",
+				Name:       "my-instance",
+				CreatedAt:  "time-1",
+				Status:     "created",
+				ServiceID:  "service-1",
+				PlanID:     "plan-1",
+				BrokerName: "my-broker",
 			}, nil)
 			fakeServiceFetcher.GetServiceByIDReturns(&osbapi.Service{
 				ID:   "service-1",
@@ -95,41 +87,35 @@ var _ = Describe("Binding Get Usecase", func() {
 		})
 
 		It("calls fetchers correctly", func() {
-			Expect(fakeBindingFetcher.GetBindingByNameArgsForCall(0)).To(Equal("my-binding"))
-			Expect(fakeInstanceFetcher.GetInstanceByIDArgsForCall(0)).To(Equal("instance-1"))
+			Expect(fakeInstanceFetcher.GetInstanceByNameArgsForCall(0)).To(Equal("my-instance"))
 			Expect(fakeServiceFetcher.GetServiceByIDArgsForCall(0)).To(Equal("service-1"))
+			Expect(fakePlanFetcher.GetPlanByIDArgsForCall(0)).To(Equal("plan-1"))
 			Expect(fakePlanFetcher.GetPlanByIDArgsForCall(0)).To(Equal("plan-1"))
 			Expect(fakeBrokerFetcher.GetBrokerByNameArgsForCall(0)).To(Equal("my-broker"))
 		})
 
-		It("returns the binding details", func() {
-			Expect(*bindingDetails).To(Equal(BindingDetails{
-				Name:         "my-binding",
-				InstanceName: "my-instance",
-				ServiceName:  "my-service",
-				PlanName:     "my-plan",
-				BrokerName:   "my-broker",
-				Status:       "creating",
-				CreatedAt:    "time-1",
-				Credentials:  map[string]interface{}{"username": "admin"},
+		It("returns the instance details", func() {
+			Expect(*instanceDetails).To(Equal(InstanceDetails{
+				Name:        "my-instance",
+				CreatedAt:   "time-1",
+				Status:      "created",
+				ServiceName: "my-service",
+				PlanName:    "my-plan",
+				BrokerName:  "my-broker",
 			}))
 		})
 	})
 
 	Describe("errors", func() {
 		BeforeEach(func() {
-			fakeBindingFetcher.GetBindingByNameReturns(&osbapi.Binding{
-				Name:       "my-binding",
-				InstanceID: "instance-1",
+			fakeInstanceFetcher.GetInstanceByNameReturns(&osbapi.Instance{
+				ID:         "instance-1",
+				Name:       "my-instance",
+				CreatedAt:  "time-1",
+				Status:     "created",
 				ServiceID:  "service-1",
 				PlanID:     "plan-1",
 				BrokerName: "my-broker",
-				Status:     "creating",
-				CreatedAt:  "time-1",
-			}, nil)
-			fakeInstanceFetcher.GetInstanceByIDReturns(&osbapi.Instance{
-				ID:   "instance-1",
-				Name: "my-instance",
 			}, nil)
 			fakeServiceFetcher.GetServiceByIDReturns(&osbapi.Service{
 				ID:   "service-1",
@@ -144,19 +130,9 @@ var _ = Describe("Binding Get Usecase", func() {
 			}, nil)
 		})
 
-		When("fetching the binding fails", func() {
-			BeforeEach(func() {
-				fakeBindingFetcher.GetBindingByNameReturns(nil, errors.New("error-fetching-binding"))
-			})
-
-			It("propagates the error", func() {
-				Expect(executeErr).To(MatchError("error-fetching-binding"))
-			})
-		})
-
 		When("fetching the instance fails", func() {
 			BeforeEach(func() {
-				fakeInstanceFetcher.GetInstanceByIDReturns(nil, errors.New("error-fetching-instance"))
+				fakeInstanceFetcher.GetInstanceByNameReturns(nil, errors.New("error-fetching-instance"))
 			})
 
 			It("propagates the error", func() {

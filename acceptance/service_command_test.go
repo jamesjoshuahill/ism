@@ -26,7 +26,6 @@ import (
 )
 
 var _ = Describe("CLI service command", func() {
-
 	var (
 		args    []string
 		session *Session

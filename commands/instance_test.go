@@ -88,6 +88,75 @@ var _ = Describe("Instance Command", func() {
 		})
 	})
 
+	Describe("Get sub command", func() {
+		var (
+			fakeInstanceGetUsecase *commandsfakes.FakeInstanceGetUsecase
+			fakeUI                 *commandsfakes.FakeUI
+
+			getCommand InstanceGetCommand
+
+			executeErr error
+		)
+
+		BeforeEach(func() {
+			fakeInstanceGetUsecase = &commandsfakes.FakeInstanceGetUsecase{}
+			fakeUI = &commandsfakes.FakeUI{}
+
+			getCommand = InstanceGetCommand{
+				Name:               "my-instance",
+				InstanceGetUsecase: fakeInstanceGetUsecase,
+				UI:                 fakeUI,
+			}
+		})
+
+		JustBeforeEach(func() {
+			executeErr = getCommand.Execute(nil)
+		})
+
+		It("calls to get the instance", func() {
+			instanceName := fakeInstanceGetUsecase.GetInstanceDetailsByNameArgsForCall(0)
+			Expect(instanceName).To(Equal("my-instance"))
+		})
+
+		When("the instance exists", func() {
+			BeforeEach(func() {
+				fakeInstanceGetUsecase.GetInstanceDetailsByNameReturns(&usecases.InstanceDetails{Name: "my-instance"}, nil)
+			})
+
+			It("doesn't error", func() {
+				Expect(executeErr).NotTo(HaveOccurred())
+			})
+
+			It("passes the instance details for display", func() {
+				Expect(fakeUI.DisplayYAMLCallCount()).To(Equal(1))
+
+				instanceDetailsArg := fakeUI.DisplayYAMLArgsForCall(0)
+
+				Expect(instanceDetailsArg).To(Equal(&usecases.InstanceDetails{Name: "my-instance"}))
+			})
+		})
+
+		When("get instance by name fails", func() {
+			BeforeEach(func() {
+				fakeInstanceGetUsecase.GetInstanceDetailsByNameReturns(&usecases.InstanceDetails{}, errors.New("error-instance-not-found"))
+			})
+
+			It("returns an error", func() {
+				Expect(executeErr).To(MatchError("error-instance-not-found"))
+			})
+		})
+
+		When("displaying the instance errors", func() {
+			BeforeEach(func() {
+				fakeUI.DisplayYAMLReturns(errors.New("error-displaying-yaml"))
+			})
+
+			It("returns an error", func() {
+				Expect(executeErr).To(MatchError("error-displaying-yaml"))
+			})
+		})
+	})
+
 	Describe("List sub command", func() {
 		var (
 			fakeUI                  *commandsfakes.FakeUI

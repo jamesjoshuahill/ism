@@ -26,7 +26,6 @@ import (
 )
 
 var _ = Describe("CLI instance command", func() {
-
 	var (
 		args    []string
 		session *Session
@@ -52,9 +51,15 @@ var _ = Describe("CLI instance command", func() {
 		It("displays help and exits 0", func() {
 			Eventually(session).Should(Exit(0))
 			Eventually(session).Should(Say("Usage:"))
-			Eventually(session).Should(Say(`ism \[OPTIONS\] instance <create | delete | list>`))
+			Eventually(session).Should(Say(`ism \[OPTIONS\] instance <command>`))
 			Eventually(session).Should(Say("\n"))
 			Eventually(session).Should(Say("The instance command group lets you create, list, and delete service instances"))
+			Eventually(session).Should(Say("\n"))
+			Eventually(session).Should(Say("Available commands:"))
+			Eventually(session).Should(Say("create"))
+			Eventually(session).Should(Say("delete"))
+			Eventually(session).Should(Say("get"))
+			Eventually(session).Should(Say("list"))
 		})
 	})
 
@@ -169,6 +174,73 @@ var _ = Describe("CLI instance command", func() {
 				Eventually(session).Should(Exit(0))
 				Eventually(session).Should(Say("NAME\\s+SERVICE\\s+PLAN\\s+BROKER\\s+STATUS\\s+CREATED AT"))
 				Eventually(session).Should(Say("instance-list-test-instance\\s+" + serviceName + "\\s+" + planName + "\\s+instance-list-command-broker\\s+" + "created" + "\\s+" + timeRegex))
+			})
+		})
+	})
+
+	Describe("get sub command", func() {
+		BeforeEach(func() {
+			args = append(args, "get")
+		})
+
+		When("--help is passed", func() {
+			BeforeEach(func() {
+				args = append(args, "--help")
+			})
+
+			It("displays help and exits 0", func() {
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("Usage:"))
+				Eventually(session).Should(Say(`ism \[OPTIONS\] instance get`))
+				Eventually(session).Should(Say("\n"))
+				Eventually(session).Should(Say("Get a service instance"))
+			})
+		})
+
+		When("the instance exists", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "instance-get-instance")
+				registerBroker("instance-get-broker")
+				createInstance("instance-get-instance", "instance-get-broker")
+			})
+
+			AfterEach(func() {
+				deleteInstance("instance-get-instance")
+				deleteBroker("instance-get-broker")
+				cleanBrokerData()
+			})
+
+			It("displays the instance and exits 0", func() {
+				timeRegex := `\d{4,}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}.+`
+
+				instances := getBrokerInstances()
+				Expect(instances).To(HaveLen(1))
+
+				Eventually(session).Should(Exit(0))
+				Eventually(session).Should(Say("broker: instance-get-broker\n" +
+					"createdAt:\\s+" + timeRegex + "\n" +
+					"name: instance-get-instance\n" +
+					"plan: " + planName + "\n" +
+					"service: overview-service\n" +
+					"status: created"))
+			})
+		})
+
+		When("the instance does not exist", func() {
+			BeforeEach(func() {
+				args = append(args, "--name", "instance-get-non-existant-instance")
+			})
+
+			It("displays 'Instance not found' and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("instance not found"))
+			})
+		})
+
+		When("required args are not passed", func() {
+			It("displays an informative message and exits 1", func() {
+				Eventually(session).Should(Exit(1))
+				Eventually(session.Err).Should(Say("the required flag `--name' was not specified"))
 			})
 		})
 	})

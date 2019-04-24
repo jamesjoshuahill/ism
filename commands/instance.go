@@ -26,6 +26,12 @@ type InstanceCreateUsecase interface {
 	Create(name, planName, serviceName, brokerName string) error
 }
 
+//go:generate counterfeiter . InstanceGetUsecase
+
+type InstanceGetUsecase interface {
+	GetInstanceDetailsByName(name string) (*usecases.InstanceDetails, error)
+}
+
 //go:generate counterfeiter . InstanceListUsecase
 
 type InstanceListUsecase interface {
@@ -42,6 +48,7 @@ type InstanceCommand struct {
 	InstanceCreateCommand InstanceCreateCommand `command:"create" long-description:"Create a service instance"`
 	InstanceListCommand   InstanceListCommand   `command:"list" long-description:"List the service instances"`
 	InstanceDeleteCommand InstanceDeleteCommand `command:"delete" long-description:"Delete a service instance"`
+	InstanceGetCommand    InstanceGetCommand    `command:"get" long-description:"Get a service instance"`
 }
 
 type InstanceCreateCommand struct {
@@ -52,6 +59,13 @@ type InstanceCreateCommand struct {
 
 	UI                    UI
 	InstanceCreateUsecase InstanceCreateUsecase
+}
+
+type InstanceGetCommand struct {
+	Name string `long:"name" description:"Name of the service instance" required:"true"`
+
+	UI                 UI
+	InstanceGetUsecase InstanceGetUsecase
 }
 
 type InstanceListCommand struct {
@@ -74,6 +88,14 @@ func (cmd *InstanceCreateCommand) Execute([]string) error {
 	cmd.UI.DisplayText("Instance '{{.InstanceName}}' is being created.", map[string]interface{}{"InstanceName": cmd.Name})
 
 	return nil
+}
+
+func (cmd *InstanceGetCommand) Execute([]string) error {
+	instance, err := cmd.InstanceGetUsecase.GetInstanceDetailsByName(cmd.Name)
+	if err != nil {
+		return err
+	}
+	return cmd.UI.DisplayYAML(instance)
 }
 
 func (cmd *InstanceListCommand) Execute([]string) error {

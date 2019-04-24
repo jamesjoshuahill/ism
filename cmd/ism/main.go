@@ -78,6 +78,13 @@ func main() {
 		PlanFetcher:     planRepository,
 	}
 
+	instanceGetUsecase := &usecases.InstanceGetUsecase{
+		InstanceFetcher: instanceRepository,
+		ServiceFetcher:  serviceRepository,
+		PlanFetcher:     planRepository,
+		BrokerFetcher:   brokerRepository,
+	}
+
 	instanceDeleteUsecase := &usecases.InstanceDeleteUsecase{
 		InstanceFetcher: instanceRepository,
 		InstanceDeleter: instanceRepository,
@@ -135,6 +142,10 @@ func main() {
 			InstanceDeleteCommand: commands.InstanceDeleteCommand{
 				UI:                    UI,
 				InstanceDeleteUsecase: instanceDeleteUsecase,
+			},
+			InstanceGetCommand: commands.InstanceGetCommand{
+				UI:                 UI,
+				InstanceGetUsecase: instanceGetUsecase,
 			},
 		},
 		BindingCommand: commands.BindingCommand{
