@@ -17,6 +17,9 @@ specific language governing permissions and limitations under the License.
 package acceptance
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -26,9 +29,22 @@ import (
 )
 
 var _ = Describe("CLI", func() {
+	var homePath string
+
+	BeforeEach(func() {
+		var err error
+		homePath, err = ioutil.TempDir("", "ism-root-command-acceptance-test")
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	AfterEach(func() {
+		Expect(os.RemoveAll(homePath)).To(Succeed())
+	})
+
 	When("no command or flag is passed", func() {
 		It("displays help and exits 0", func() {
 			command := exec.Command(nodePathToCLI)
+			command.Env = []string{fmt.Sprintf("HOME=%s", homePath)}
 			session, err := Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -47,6 +63,7 @@ var _ = Describe("CLI", func() {
 	When("--help is passed", func() {
 		It("displays help and exits 0", func() {
 			command := exec.Command(nodePathToCLI, "--help")
+			command.Env = []string{fmt.Sprintf("HOME=%s", homePath)}
 			session, err := Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 

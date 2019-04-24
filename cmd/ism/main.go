@@ -21,6 +21,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/pivotal-cf/ism/pkg/lazyclient"
+
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -188,16 +190,20 @@ func main() {
 }
 
 func buildKubeClient() (client.Client, error) {
-	home := os.Getenv("HOME")
-	kubeconfigFilepath := fmt.Sprintf("%s/.kube/config", home)
-	clientConfig, err := clientcmd.BuildConfigFromFlags("", kubeconfigFilepath)
-	if err != nil {
-		return nil, err
+	factory := func() (client.Client, error) {
+		home := os.Getenv("HOME")
+		kubeconfigFilepath := fmt.Sprintf("%s/.kube/config", home)
+		clientConfig, err := clientcmd.BuildConfigFromFlags("", kubeconfigFilepath)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := v1alpha1.AddToScheme(scheme.Scheme); err != nil {
+			return nil, err
+		}
+
+		return client.New(clientConfig, client.Options{Scheme: scheme.Scheme})
 	}
 
-	if err := v1alpha1.AddToScheme(scheme.Scheme); err != nil {
-		return nil, err
-	}
-
-	return client.New(clientConfig, client.Options{Scheme: scheme.Scheme})
+	return &lazyclient.LazyClient{Factory: factory}, nil
 }
