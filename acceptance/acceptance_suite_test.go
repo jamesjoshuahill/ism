@@ -61,8 +61,8 @@ func TestAcceptance(t *testing.T) {
 	SynchronizedBeforeSuite(func() []byte {
 		printTestSetup()
 		cliPath := buildCLI()
-		cleanCustomResources()
 		installCRDs()
+		cleanCustomResources()
 
 		var brokerURL, brokerUser, brokerPass string
 		if testingInCluster() {
